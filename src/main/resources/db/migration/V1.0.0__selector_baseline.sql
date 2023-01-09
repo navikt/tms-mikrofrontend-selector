@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS utkast(
+dummy VARCHAR
+);
+
