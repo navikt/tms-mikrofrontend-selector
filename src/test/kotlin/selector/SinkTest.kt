@@ -23,6 +23,4 @@ internal class SinkTest{
     fun `Ignorerer meldinger om endring som ikke endrer state`(){
         //TODO
     }
-
-
 }

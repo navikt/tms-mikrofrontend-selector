@@ -80,7 +80,7 @@ tasks {
         environment("GROUP_ID", "dittnav_varselbestiller")
         environment("DB_HOST", "localhost")
         environment("DB_PORT", "5432")
-        environment("DB_DATABASE", "tms-selector")
+        environment("DB_DATABASE", "mikrofrontend_selector")
         environment("DB_USERNAME", "testuser")
         environment("DB_PASSWORD", "testpassword")
         environment("NAIS_CLUSTER_NAME", "dev-gcp")

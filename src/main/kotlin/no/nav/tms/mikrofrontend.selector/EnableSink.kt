@@ -1,4 +1,4 @@
-package no.nav.tms.utkast
+package no.nav.tms.mikrofrontend.selector
 
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
@@ -6,9 +6,11 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.tms.mikrofrontend.selector.database.MikrofrontendRepository
 
 class EnableSink(
-    rapidsConnection: RapidsConnection
+    rapidsConnection: RapidsConnection,
+    mikrofrontendRepository: MikrofrontendRepository
 ) :
     River.PacketListener {
 

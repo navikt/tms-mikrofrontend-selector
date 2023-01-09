@@ -6,9 +6,11 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.tms.mikrofrontend.selector.database.MikrofrontendRepository
 
 class DisableSink(
     rapidsConnection: RapidsConnection,
+    mikrofrontendRepository: MikrofrontendRepository,
 ) :
     River.PacketListener {
 

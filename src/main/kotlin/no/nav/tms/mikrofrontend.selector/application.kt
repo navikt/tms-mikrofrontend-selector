@@ -5,7 +5,7 @@ import no.nav.helse.rapids_rivers.RapidApplication.RapidApplicationConfig.Compan
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.tms.mikrofrontend.selector.config.Environment
 import no.nav.tms.mikrofrontend.selector.config.Flyway
-import no.nav.tms.utkast.database.PostgresDatabase
+import no.nav.tms.mikrofrontend.selector.database.PostgresDatabase
 import no.nav.tms.mikrofrontend.selector.database.MikrofrontendRepository
 
 fun main() {

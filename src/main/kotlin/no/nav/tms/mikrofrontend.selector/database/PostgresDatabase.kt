@@ -1,11 +1,9 @@
-package no.nav.tms.utkast.database
+package no.nav.tms.mikrofrontend.selector.database
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import no.nav.tms.mikrofrontend.selector.config.Database
 import no.nav.tms.mikrofrontend.selector.config.Environment
-import java.time.LocalDateTime
-import java.time.ZoneId
 
 class PostgresDatabase(env: Environment) : Database {
 
