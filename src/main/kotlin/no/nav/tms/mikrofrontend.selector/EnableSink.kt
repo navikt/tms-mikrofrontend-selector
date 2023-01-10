@@ -6,11 +6,11 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.tms.mikrofrontend.selector.database.MicrofrontendRepository
+import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 
 class EnableSink(
     rapidsConnection: RapidsConnection,
-    val microfrontendRepository: MicrofrontendRepository
+    val personRepository: PersonRepository
 ) :
     River.PacketListener {
 
@@ -19,12 +19,12 @@ class EnableSink(
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("@event_name", "enable") }
-            validate { it.requireKey("ident", "mikrofrontend_id") }
+            validate { it.requireKey("ident", "microfrontend_id") }
         }.register(this)
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        microfrontendRepository.enable(fnr = packet.ident, mikrofrontendId = packet.mikrofrontendtId)
+        personRepository.enableMicrofrontend(ident = packet.ident, microfrontendId = packet.mikrofrontendtId)
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {

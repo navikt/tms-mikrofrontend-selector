@@ -1,19 +1,19 @@
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 
-fun enableMessage(mikrofrontendId: String, fnr: String) = """
+fun enableMessage(microfrontendId: String, fnr: String) = """
     {
-      "@event": "enable",
+      "@event_name": "enable",
       "ident": "$fnr",
-      "mikrofrontend_id": "$mikrofrontendId"
+      "microfrontend_id": "$microfrontendId"
     }
     """.trimIndent()
 
 fun disableMessage(mikrofrontendId: String, fnr: String) = """
     {
-      "@event": "enable",
+      "@event_namet": "disable",
       "ident": "$fnr",
-      "mikrofrontend_id": "$mikrofrontendId"
+      "microfrontend_id": "$mikrofrontendId"
     }
     """.trimIndent()
 

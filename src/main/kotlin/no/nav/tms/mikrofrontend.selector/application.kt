@@ -7,20 +7,20 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.tms.mikrofrontend.selector.config.Environment
 import no.nav.tms.mikrofrontend.selector.config.Flyway
 import no.nav.tms.mikrofrontend.selector.database.PostgresDatabase
-import no.nav.tms.mikrofrontend.selector.database.MicrofrontendRepository
+import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 
 fun main() {
     val environment = Environment()
 
     startRapid(
         environment = environment,
-        microfrontendRepository = MicrofrontendRepository(PostgresDatabase(environment))
+        personRepository = PersonRepository(PostgresDatabase(environment))
     )
 }
 
 private fun startRapid(
     environment: Environment,
-    microfrontendRepository: MicrofrontendRepository,
+    personRepository: PersonRepository,
 ) {
     RapidApplication.Builder(fromEnv(environment.rapidConfig())).withKtorModule {
         //api oppsett
@@ -41,5 +41,5 @@ val JsonMessage.ident: String
     }
 val JsonMessage.mikrofrontendtId: String
     get() {
-        return get("mikrofrontend_id").asText()
+        return get("microfrontend_id").asText()
     }

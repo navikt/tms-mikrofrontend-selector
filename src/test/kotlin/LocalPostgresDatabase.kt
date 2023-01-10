@@ -1,6 +1,4 @@
 import com.zaxxer.hikari.HikariDataSource
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import kotliquery.queryOf
 import no.nav.tms.mikrofrontend.selector.config.Database
 import org.flywaydb.core.Flyway
@@ -20,8 +18,8 @@ class LocalPostgresDatabase private constructor() : Database {
         }
 
         fun cleanDb(): LocalPostgresDatabase {
-            instance.update { queryOf("delete from microfrontend") }
             instance.update { queryOf("delete from changelog") }
+            instance.update { queryOf("delete from person") }
             return instance
         }
     }
@@ -55,21 +53,16 @@ class LocalPostgresDatabase private constructor() : Database {
     fun getChangelog(fnr: String) = list {
         queryOf("SELECT * FROM changelog where ident=:fnr", mapOf("fnr" to fnr))
             .map {
-                HistoryContent(
-                    oldData = it.string("old_data"),
+                ChangelogEntry(
+                    originalData = it.stringOrNull("original_data"),
                     newData = it.string("new_data"),
-                    date = it.localDateTime("date")
+                    date = it.localDateTime("timestamp")
                 )
             }.asList
     }
 }
 
-data class HistoryContent(val oldData: String?, val newData: String, val date: LocalDateTime)
-
-private fun Map<String, String>.toJson(): String = mapValues { (_, v) ->
-    JsonPrimitive(v)
-}.let { JsonObject(it) }
-    .toString()
+data class ChangelogEntry(val originalData: String?, val newData: String, val date: LocalDateTime)
 
 internal inline fun <T> T.assert(block: T.() -> Unit): T =
     apply {

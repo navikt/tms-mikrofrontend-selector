@@ -55,7 +55,6 @@ dependencies {
     testImplementation(Ktor2.Test.serverTestHost)
     testImplementation(Ktor2.TmsTokenSupport.authenticationInstallerMock)
     testImplementation(Ktor2.TmsTokenSupport.tokenXValidationMock)
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
     testImplementation("io.ktor:ktor-server-tests-jvm:2.1.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.7.20")
 }

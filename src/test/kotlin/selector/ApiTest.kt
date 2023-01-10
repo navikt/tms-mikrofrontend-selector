@@ -12,7 +12,7 @@ import io.ktor.server.testing.testApplication
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.DisableSink
 import no.nav.tms.mikrofrontend.selector.EnableSink
-import no.nav.tms.mikrofrontend.selector.database.MicrofrontendRepository
+import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.selectorApi
 import no.nav.tms.token.support.authentication.installer.mock.installMockedAuthenticators
 import no.nav.tms.token.support.tokenx.validation.mock.SecurityLevel
@@ -23,19 +23,19 @@ import org.junit.jupiter.api.Test
 internal class ApiTest{
 
     private val testRapid  = TestRapid()
-    private val microfrontendRepository = MicrofrontendRepository(LocalPostgresDatabase.cleanDb())
+    private val personRepository = PersonRepository(LocalPostgresDatabase.cleanDb())
 
     @BeforeAll
     fun setup(){
-        EnableSink(testRapid,microfrontendRepository)
-        DisableSink(testRapid,microfrontendRepository)
+        EnableSink(testRapid,personRepository)
+        DisableSink(testRapid,personRepository)
     }
     @Test
     fun `Skal svare med liste over mikrofrontends for person basert på fnr`() = testApplication {
         val testFnr1 = "12345678910"
         val expectedMicroforntends = listOf("mk-1","mk2","mk3")
 
-        application { selectorApi(microfrontendRepository, installAuthenticatorsFunction = {
+        application { selectorApi(personRepository, installAuthenticatorsFunction = {
             installMockedAuthenticators {
                 installTokenXAuthMock {
                     alwaysAuthenticated = true

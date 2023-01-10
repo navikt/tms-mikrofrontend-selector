@@ -3,6 +3,7 @@ package no.nav.tms.mikrofrontend.selector.config
 import com.zaxxer.hikari.HikariDataSource
 import kotliquery.Query
 import kotliquery.action.ListResultQueryAction
+import kotliquery.action.NullableResultQueryAction
 
 import kotliquery.sessionOf
 import kotliquery.using
@@ -15,7 +16,7 @@ interface Database {
         }
     }
 
-    fun <T> query(action: () -> ListResultQueryAction<T>): List<T> =
+    fun <T> query(action: () -> NullableResultQueryAction<T>): T? =
         using(sessionOf(dataSource)) {
             it.run(action.invoke())
         }
