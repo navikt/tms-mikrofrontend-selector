@@ -1,6 +1,6 @@
 import com.zaxxer.hikari.HikariDataSource
 import kotliquery.queryOf
-import no.nav.tms.mikrofrontend.selector.config.Database
+import no.nav.tms.mikrofrontend.selector.database.Database
 import org.flywaydb.core.Flyway
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDateTime

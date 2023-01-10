@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector.database
 
 import kotliquery.queryOf
-import no.nav.tms.mikrofrontend.selector.config.Database
 import java.time.LocalDateTime
 import java.time.ZoneId
 

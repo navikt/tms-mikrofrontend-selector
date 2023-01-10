@@ -1,4 +1,4 @@
-package no.nav.tms.mikrofrontend.selector.config
+package no.nav.tms.mikrofrontend.selector.database
 
 import com.zaxxer.hikari.HikariDataSource
 import kotliquery.Query

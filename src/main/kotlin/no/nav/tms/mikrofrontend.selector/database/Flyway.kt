@@ -1,7 +1,7 @@
-package no.nav.tms.mikrofrontend.selector.config
+package no.nav.tms.mikrofrontend.selector.database
 
 import com.zaxxer.hikari.HikariDataSource
-import no.nav.tms.mikrofrontend.selector.database.PostgresDatabase
+import no.nav.tms.mikrofrontend.selector.Environment
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.configuration.FluentConfiguration
 

@@ -1,4 +1,4 @@
-package no.nav.tms.mikrofrontend.selector.config
+package no.nav.tms.mikrofrontend.selector
 
 import no.nav.personbruker.dittnav.common.util.config.StringEnvVar.getEnvVar
 

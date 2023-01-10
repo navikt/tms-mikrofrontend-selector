@@ -65,22 +65,6 @@ tasks {
             events("passed", "skipped", "failed")
         }
     }
-
-    register("runServer", JavaExec::class) {
-        environment("KAFKA_BROKERS", "localhost:29092")
-        environment("KAFKA_SCHEMA_REGISTRY", "http://localhost:8081")
-        environment("GROUP_ID", "dittnav_varselbestiller")
-        environment("DB_HOST", "localhost")
-        environment("DB_PORT", "5432")
-        environment("DB_DATABASE", "mikrofrontend_selector")
-        environment("DB_USERNAME", "testuser")
-        environment("DB_PASSWORD", "testpassword")
-        environment("NAIS_CLUSTER_NAME", "dev-gcp")
-        environment("NAIS_NAMESPACE", "dev")
-
-        main = application.mainClass.get()
-        classpath = sourceSets["main"].runtimeClasspath
-    }
 }
 
 java {

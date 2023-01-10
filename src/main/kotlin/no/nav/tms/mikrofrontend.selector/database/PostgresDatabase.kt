@@ -2,8 +2,7 @@ package no.nav.tms.mikrofrontend.selector.database
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import no.nav.tms.mikrofrontend.selector.config.Database
-import no.nav.tms.mikrofrontend.selector.config.Environment
+import no.nav.tms.mikrofrontend.selector.Environment
 
 class PostgresDatabase(env: Environment) : Database {
 
