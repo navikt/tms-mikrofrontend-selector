@@ -26,7 +26,6 @@ repositories {
 }
 
 dependencies {
-    implementation(DittNAV.Common.influxdb)
     implementation(DittNAV.Common.utils)
     implementation(Flyway.core)
     implementation(Hikari.cp)
@@ -41,9 +40,6 @@ dependencies {
     implementation(Ktor2.TmsTokenSupport.tokenXValidation)
     implementation(Ktor2.TmsTokenSupport.authenticationInstaller)
     implementation(Postgresql.postgresql)
-    implementation(Prometheus.common)
-    implementation(Prometheus.hotspot)
-    implementation(Prometheus.logback)
     implementation(RapidsAndRivers)
     implementation(kotliquery)
 
@@ -55,8 +51,6 @@ dependencies {
     testImplementation(Ktor2.Test.serverTestHost)
     testImplementation(Ktor2.TmsTokenSupport.authenticationInstallerMock)
     testImplementation(Ktor2.TmsTokenSupport.tokenXValidationMock)
-    testImplementation("io.ktor:ktor-server-tests-jvm:2.1.2")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.7.20")
 }
 
 application {
