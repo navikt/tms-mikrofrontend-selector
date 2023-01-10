@@ -34,7 +34,7 @@ internal fun Application.selectorApi(
         authenticate {
             route("mikrofrontends") {
                 get(){
-                    call.respond(HttpStatusCode.NotImplemented)
+                    call.respond(personRepository.getEnabledMicrofrontends(userIdent))
                 }
             }
         }
@@ -49,6 +49,6 @@ private fun installAuth(): Application.() -> Unit = {
     }
 }
 
+
 private val PipelineContext<Unit, ApplicationCall>.userIdent get() = TokenXUserFactory.createTokenXUser(call).ident
 
-private val PipelineContext<Unit, ApplicationCall>.localeParam get() = call.request.queryParameters["la"]?.let { Locale(it) }

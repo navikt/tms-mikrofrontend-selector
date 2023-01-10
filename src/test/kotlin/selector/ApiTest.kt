@@ -20,48 +20,70 @@ import objectMapper
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
-internal class ApiTest{
+internal class ApiTest {
 
-    private val testRapid  = TestRapid()
+    private val testRapid = TestRapid()
     private val personRepository = PersonRepository(LocalPostgresDatabase.cleanDb())
 
     @BeforeAll
-    fun setup(){
-        EnableSink(testRapid,personRepository)
-        DisableSink(testRapid,personRepository)
+    fun setup() {
+        EnableSink(testRapid, personRepository)
+        DisableSink(testRapid, personRepository)
     }
+
     @Test
     fun `Skal svare med liste over mikrofrontends for person basert på fnr`() = testApplication {
         val testFnr1 = "12345678910"
-        val expectedMicroforntends = listOf("mk-1","mk2","mk3")
+        val expectedMicrofrontends = listOf("mk-1", "mk2", "mk3")
 
-        application { selectorApi(personRepository, installAuthenticatorsFunction = {
-            installMockedAuthenticators {
-                installTokenXAuthMock {
-                    alwaysAuthenticated = true
-                    setAsDefault = true
-                    staticUserPid = testFnr1
-                    staticSecurityLevel = SecurityLevel.LEVEL_4
+        application {
+            selectorApi(personRepository, installAuthenticatorsFunction = {
+                installMockedAuthenticators {
+                    installTokenXAuthMock {
+                        alwaysAuthenticated = true
+                        setAsDefault = true
+                        staticUserPid = testFnr1
+                        staticSecurityLevel = SecurityLevel.LEVEL_4
+                    }
                 }
-            }
-        } ) }
+            })
+        }
 
-        expectedMicroforntends.forEach {
-            enableMessage(it,testFnr1)
+        expectedMicrofrontends.forEach {
+            testRapid.sendTestMessage(enableMessage(it, testFnr1))
         }
 
         client.get("/mikrofrontends").assert {
             status shouldBe HttpStatusCode.OK
-            objectMapper.readTree(bodyAsText())["microfrontends"].toList().apply {
+            objectMapper.readTree(bodyAsText())["microfrontends"].toList().assert {
                 size shouldBe 3
-                map { it.asText() } shouldContainExactly expectedMicroforntends
+                map { it.asText() } shouldContainExactly expectedMicrofrontends
             }
+        }
+    }
+
+    @Test
+    fun `Skal svare med tom liste for personer som ikke har noen mikrofrontends`() = testApplication {
+        val testFnr2 = "12345678912"
+
+        application {
+            selectorApi(personRepository, installAuthenticatorsFunction = {
+                installMockedAuthenticators {
+                    installTokenXAuthMock {
+                        alwaysAuthenticated = true
+                        setAsDefault = true
+                        staticUserPid = testFnr2
+                        staticSecurityLevel = SecurityLevel.LEVEL_4
+                    }
+                }
+            })
         }
 
         client.get("/mikrofrontends").assert {
-            objectMapper.readTree(bodyAsText())["microfrontends"].toList().size shouldBe 0
-        }
+            status shouldBe HttpStatusCode.OK
+            objectMapper.readTree(bodyAsText())["microfrontends"].size() shouldBe 0
 
+        }
     }
 
 }
