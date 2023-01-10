@@ -1,44 +1,45 @@
 package no.nav.tms.mikrofrontend.selector.database
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotliquery.queryOf
 import no.nav.tms.mikrofrontend.selector.config.Database
-import org.intellij.lang.annotations.Language
-import org.postgresql.util.PGobject
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-
-private val objectMapper = jacksonObjectMapper().apply {
-    registerModule(JavaTimeModule())
-}
 
 class PersonRepository(private val database: Database) {
 
     object LocalDateTimeHelper {
         fun nowAtUtc(): LocalDateTime = LocalDateTime.now(ZoneId.of("UTC"))
     }
+    fun getEnabledMicrofrontends(ident: String): String = database.query {
+        queryOf("select microfrontends from person where ident=:ident", mapOf("ident" to ident)).map { row ->
+            row.string("microfrontends")
+        }.asSingle
+    } ?: Microfrontends.emptyList()
 
     fun enableMicrofrontend(ident: String, microfrontendId: String) {
-        val microfrontends = database.query {
-            queryOf("select microfrontends from person where ident=:ident", mapOf("ident" to ident)).map { row ->
-                Microfrontends(row.string("microfrontends"))
-            }.asSingle
-        } ?: Microfrontends()
+        val microfrontends = getMicrofrontends(ident)
 
-        if (microfrontends.updateData(microfrontendId)) {
+        if (microfrontends.addMicrofrontendId(microfrontendId)) {
             updatePersonTable(ident, microfrontends)
             addChangelogEntry(ident, microfrontends)
         }
     }
 
+    fun disableMicrofrontend(ident: String, microfrontendId: String) {
+        val microfrontends = getMicrofrontends(ident)
 
-    fun disableMicrofrontend() {
-        TODO("Disabled not yet implemented")
-
+        if (microfrontends.removeMicrofrontendId(microfrontendId)) {
+            updatePersonTable(ident, microfrontends)
+            addChangelogEntry(ident, microfrontends)
+        }
     }
 
+    private fun getMicrofrontends(ident: String) = database.query {
+        queryOf("select microfrontends from person where ident=:ident", mapOf("ident" to ident)).map { row ->
+            Microfrontends(row.string("microfrontends"))
+        }.asSingle
+    } ?: Microfrontends()
     private fun addChangelogEntry(ident: String, microfrontends: Microfrontends) {
         database.update {
             queryOf(
@@ -53,7 +54,6 @@ class PersonRepository(private val database: Database) {
             )
         }
     }
-
     private fun updatePersonTable(ident: String, microfrontends: Microfrontends) {
         database.update {
             queryOf(
@@ -67,40 +67,5 @@ class PersonRepository(private val database: Database) {
                 )
             )
         }
-    }
-
-    fun getEnabledMicrofrontends(ident: String): String? = database.query {
-        queryOf("select microfrontends from person where ident=:ident", mapOf("ident" to ident)).map { row ->
-            row.string("microfrontends")
-        }.asSingle
-    } ?: Microfrontends.emptyJsonResponse()
-}
-
-private class Microfrontends(stringlist: String? = null) {
-    val originalData: List<String>? =
-        stringlist?.let { objectMapper.readTree(it)["microfrontends"] }?.toList()?.map { it.asText() }
-    val newData = originalData?.toMutableList() ?: mutableSetOf()
-
-    fun updateData(microfrontendId: String) = newData.add(microfrontendId)
-
-    @Language("JSON")
-    fun newDataJsonB(): PGobject = """{ "microfrontends": ${newData.jsonArrayString()}}""".trimMargin().jsonB()
-    fun originalDataJsonB(): PGobject? =
-        originalData?.let { """{ "microfrontends": ${it.jsonArrayString()}}""".trimMargin() }?.jsonB()
-
-    private fun <E> Collection<E>.jsonArrayString(): String = joinToString(
-        prefix = "[",
-        postfix = "]",
-        separator = ",",
-        transform = { """"$it"""" }
-    )
-
-    private fun String.jsonB() = PGobject().apply {
-        type = "jsonb"
-        value = this@jsonB
-    }
-
-    companion object {
-        fun emptyJsonResponse(): String = """{ "microfrontends":[] }"""
     }
 }

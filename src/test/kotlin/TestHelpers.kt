@@ -9,11 +9,11 @@ fun enableMessage(microfrontendId: String, fnr: String) = """
     }
     """.trimIndent()
 
-fun disableMessage(mikrofrontendId: String, fnr: String) = """
+fun disableMessage(microfrontendId: String, fnr: String) = """
     {
-      "@event_namet": "disable",
+      "@event_name": "disable",
       "ident": "$fnr",
-      "microfrontend_id": "$mikrofrontendId"
+      "microfrontend_id": "$microfrontendId"
     }
     """.trimIndent()
 

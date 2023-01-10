@@ -39,7 +39,7 @@ val JsonMessage.ident: String
     get() {
         return get("ident").asText()
     }
-val JsonMessage.mikrofrontendtId: String
+val JsonMessage.microfrontendId: String
     get() {
         return get("microfrontend_id").asText()
     }

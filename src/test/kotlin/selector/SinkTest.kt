@@ -2,6 +2,7 @@ package selector
 
 import LocalPostgresDatabase
 import assert
+import disableMessage
 import enableMessage
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -43,6 +44,7 @@ internal class SinkTest {
 
         testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
         testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId2))
+        testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId2))
 
         personRepository.getEnabledMicrofrontends(ident = testFnr).microfrontendids().assert {
             size shouldBe 2
@@ -63,17 +65,34 @@ internal class SinkTest {
 
     @Test
     fun `Skal disable mikrofrontend og oppdatere historikk`() {
-        TODO()
-    }
+        val testFnr = "12345678910"
+        val testmicrofeId1 = "new-and-shiny"
+        val testmicrofeId2 = "also-new-and-shiny"
 
-    @Test
-    fun `Skal enable ekisisterende mikrofrontend og oppdatere historikk`() {
-        TODO()
-    }
+        testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
+        testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId2))
+        testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
+        testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
 
-    @Test
-    fun `Ignorerer meldinger om endring som ikke endrer state`() {
-        TODO()
+        personRepository.getEnabledMicrofrontends(ident = testFnr).microfrontendids().assert {
+            size shouldBe 1
+            this shouldContainExactly listOf( testmicrofeId2)
+        }
+        database.getChangelog(testFnr).assert {
+            size shouldBe 3
+            get(0).assert {
+                originalData shouldBe null
+                newData.microfrontendids().size shouldBe 1
+            }
+            get(1).assert { originalData }.assert {
+                originalData.microfrontendids().size shouldBe 1
+                newData.microfrontendids().size shouldBe 2
+            }
+            get(2).assert { originalData }.assert {
+                originalData.microfrontendids().size shouldBe 2
+                newData.microfrontendids().size shouldBe 1
+            }
+        }
     }
 }
 
