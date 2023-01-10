@@ -15,6 +15,11 @@ interface Database {
         }
     }
 
+    fun <T> query(action: () -> ListResultQueryAction<T>): List<T> =
+        using(sessionOf(dataSource)) {
+            it.run(action.invoke())
+        }
+
     fun <T> list(action: () -> ListResultQueryAction<T>): List<T> =
         using(sessionOf(dataSource)) {
             it.run(action.invoke())

@@ -1,14 +1,14 @@
-CREATE TABLE IF NOT EXISTS mikrofrontend
+CREATE TABLE IF NOT EXISTS person
 (
-    fnr        VARCHAR(11) NOT NULL,
-    data       jsonb       NOT NULL,
+    ident        VARCHAR(11) NOT NULL,
+    microfrontends       jsonb       NOT NULL,
     created  TIMESTAMP,
     last_changed TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS historikk
+CREATE TABLE IF NOT EXISTS changelog
 (
-    fnr  VARCHAR(11) NOT NULL,
+    ident  VARCHAR(11) NOT NULL,
     date       TIMESTAMP,
     old_data jsonb,
     new_data   jsonb

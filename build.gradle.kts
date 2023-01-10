@@ -49,7 +49,6 @@ dependencies {
 
     testImplementation(Junit.api)
     testImplementation(Junit.engine)
-    testImplementation(Mockk.mockk)
     testImplementation(TestContainers.postgresql)
     testImplementation(Kotest.runnerJunit5)
     testImplementation(Kotest.assertionsCore)

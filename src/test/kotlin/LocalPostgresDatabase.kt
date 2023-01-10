@@ -5,6 +5,7 @@ import kotliquery.queryOf
 import no.nav.tms.mikrofrontend.selector.config.Database
 import org.flywaydb.core.Flyway
 import org.testcontainers.containers.PostgreSQLContainer
+import java.time.LocalDateTime
 
 class LocalPostgresDatabase private constructor() : Database {
 
@@ -19,8 +20,8 @@ class LocalPostgresDatabase private constructor() : Database {
         }
 
         fun cleanDb(): LocalPostgresDatabase {
-            instance.update { queryOf("delete from mikrofrontend") }
-            instance.update { queryOf("delete from historikk") }
+            instance.update { queryOf("delete from microfrontend") }
+            instance.update { queryOf("delete from changelog") }
             return instance
         }
     }
@@ -50,10 +51,27 @@ class LocalPostgresDatabase private constructor() : Database {
             .load()
             .migrate()
     }
+
+    fun getChangelog(fnr: String) = list {
+        queryOf("SELECT * FROM changelog where ident=:fnr", mapOf("fnr" to fnr))
+            .map {
+                HistoryContent(
+                    oldData = it.string("old_data"),
+                    newData = it.string("new_data"),
+                    date = it.localDateTime("date")
+                )
+            }.asList
+    }
 }
 
+data class HistoryContent(val oldData: String?, val newData: String, val date: LocalDateTime)
 
 private fun Map<String, String>.toJson(): String = mapValues { (_, v) ->
-        JsonPrimitive(v)
-    }.let { JsonObject(it) }
+    JsonPrimitive(v)
+}.let { JsonObject(it) }
     .toString()
+
+internal inline fun <T> T.assert(block: T.() -> Unit): T =
+    apply {
+        block()
+    }

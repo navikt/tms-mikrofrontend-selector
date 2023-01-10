@@ -13,12 +13,12 @@ import io.ktor.server.routing.routing
 import io.ktor.util.pipeline.*
 import no.nav.tms.token.support.authentication.installer.installAuthenticators
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
-import no.nav.tms.mikrofrontend.selector.database.MikrofrontendRepository
+import no.nav.tms.mikrofrontend.selector.database.MicrofrontendRepository
 import java.text.DateFormat
 import java.util.*
 
 internal fun Application.selectorApi(
-    mikrofrontendRepository: MikrofrontendRepository,
+    microfrontendRepository: MicrofrontendRepository,
     installAuthenticatorsFunction: Application.() -> Unit = installAuth(),
 ) {
     installAuthenticatorsFunction()
@@ -32,8 +32,8 @@ internal fun Application.selectorApi(
 
     routing {
         authenticate {
-            route("mirofrontend") {
-                get("/show"){
+            route("mikrofrontends") {
+                get(){
                     call.respond(HttpStatusCode.NotImplemented)
                 }
             }
