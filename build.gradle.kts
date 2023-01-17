@@ -71,8 +71,3 @@ java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
 }
-
-// TODO: Fjern følgende work around i ny versjon av Shadow-pluginet:
-// Skal være løst i denne: https://github.com/johnrengelman/shadow/pull/612
-project.setProperty("mainClassName", application.mainClass.get())
-apply(plugin = Shadow.pluginId)

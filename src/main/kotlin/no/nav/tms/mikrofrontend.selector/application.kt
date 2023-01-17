@@ -26,6 +26,8 @@ private fun startRapid(
         selectorApi(personRepository)
     }.build().apply {
         //rapidsoppsett
+        DisableSink(this,personRepository)
+        EnableSink(this,personRepository)
     }.apply {
         register(object : RapidsConnection.StatusListener {
             override fun onStartup(rapidsConnection: RapidsConnection) {

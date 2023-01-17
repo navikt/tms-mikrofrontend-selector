@@ -19,7 +19,9 @@ import no.nav.tms.token.support.tokenx.validation.mock.SecurityLevel
 import objectMapper
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ApiTest {
 
     private val testRapid = TestRapid()
