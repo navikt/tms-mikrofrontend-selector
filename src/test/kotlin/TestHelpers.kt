@@ -3,7 +3,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 
 fun enableMessage(microfrontendId: String, fnr: String) = """
     {
-      "@event_name": "enable",
+      "@action": "enable",
       "ident": "$fnr",
       "microfrontend_id": "$microfrontendId"
     }
@@ -11,7 +11,7 @@ fun enableMessage(microfrontendId: String, fnr: String) = """
 
 fun disableMessage(microfrontendId: String, fnr: String) = """
     {
-      "@event_name": "disable",
+      "@action": "disable",
       "ident": "$fnr",
       "microfrontend_id": "$microfrontendId"
     }

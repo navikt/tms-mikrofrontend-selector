@@ -18,7 +18,7 @@ class DisableSink(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@event_name", "disable") }
+            validate { it.demandValue("@action", "disable") }
             validate { it.requireKey("ident", "microfrontend_id") }
         }.register(this)
     }

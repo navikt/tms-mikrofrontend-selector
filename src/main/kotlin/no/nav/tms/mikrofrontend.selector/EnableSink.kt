@@ -18,7 +18,7 @@ class EnableSink(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@event_name", "enable") }
+            validate { it.demandValue("@action", "enable") }
             validate { it.requireKey("ident", "microfrontend_id") }
         }.register(this)
     }
