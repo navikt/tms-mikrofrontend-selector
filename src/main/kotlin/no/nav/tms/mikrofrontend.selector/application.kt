@@ -34,7 +34,7 @@ private fun startRapid(
                 Flyway.runFlywayMigrations(environment)
             }
         })
-    }
+    }.start()
 }
 
 val JsonMessage.ident: String
