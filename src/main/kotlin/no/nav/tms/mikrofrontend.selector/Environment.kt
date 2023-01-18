@@ -25,7 +25,10 @@ data class Environment(
         "KAFKA_CREDSTORE_PASSWORD" to securityVars.aivenCredstorePassword,
         "KAFKA_TRUSTSTORE_PATH" to securityVars.aivenTruststorePath,
         "KAFKA_RESET_POLICY" to "earliest",
-        "HTTP_PORT" to "8080"
+        "HTTP_PORT" to "8080",
+        "NAIS_APP_NAME" to "tms-mikrofrontend-selector",
+        "NAIS_NAMESPACE" to namespace,
+        "NAIS_CLUSTER_NAME" to  clusterName
     )
 }
 
