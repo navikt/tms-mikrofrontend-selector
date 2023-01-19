@@ -5,14 +5,17 @@ import assert
 import enableMessage
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
-import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.testApplication
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.server.testing.*
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.DisableSink
 import no.nav.tms.mikrofrontend.selector.EnableSink
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
+import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.selectorApi
 import no.nav.tms.token.support.authentication.installer.mock.installMockedAuthenticators
 import no.nav.tms.token.support.tokenx.validation.mock.SecurityLevel
@@ -25,7 +28,12 @@ import org.junit.jupiter.api.TestInstance
 internal class ApiTest {
 
     private val testRapid = TestRapid()
-    private val personRepository = PersonRepository(LocalPostgresDatabase.cleanDb())
+    private val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+    private val counter = MicrofrontendCounter(registry)
+    private val personRepository = PersonRepository(
+        database = LocalPostgresDatabase.cleanDb(),
+        metricsRegistry = counter
+    )
 
     @BeforeAll
     fun setup() {
@@ -39,7 +47,7 @@ internal class ApiTest {
         val expectedMicrofrontends = listOf("mk-1", "mk2", "mk3")
 
         application {
-            selectorApi(personRepository, installAuthenticatorsFunction = {
+            selectorApi(personRepository, registry,installAuthenticatorsFunction = {
                 installMockedAuthenticators {
                     installTokenXAuthMock {
                         alwaysAuthenticated = true
@@ -69,7 +77,7 @@ internal class ApiTest {
         val testFnr2 = "12345678912"
 
         application {
-            selectorApi(personRepository, installAuthenticatorsFunction = {
+            selectorApi(personRepository, registry, installAuthenticatorsFunction = {
                 installMockedAuthenticators {
                     installTokenXAuthMock {
                         alwaysAuthenticated = true

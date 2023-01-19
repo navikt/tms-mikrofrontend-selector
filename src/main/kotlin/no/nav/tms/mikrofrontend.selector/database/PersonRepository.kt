@@ -1,15 +1,18 @@
 package no.nav.tms.mikrofrontend.selector.database
 
 import kotliquery.queryOf
+import no.nav.tms.mikrofrontend.selector.metrics.ActionMetricsType
+import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import java.time.LocalDateTime
 import java.time.ZoneId
 
 
-class PersonRepository(private val database: Database) {
+class PersonRepository(private val database: Database, private val metricsRegistry: MicrofrontendCounter) {
 
     object LocalDateTimeHelper {
         fun nowAtUtc(): LocalDateTime = LocalDateTime.now(ZoneId.of("UTC"))
     }
+
     fun getEnabledMicrofrontends(ident: String): String = database.query {
         queryOf("select microfrontends from person where ident=:ident", mapOf("ident" to ident)).map { row ->
             row.string("microfrontends")
@@ -22,6 +25,7 @@ class PersonRepository(private val database: Database) {
         if (microfrontends.addMicrofrontendId(microfrontendId)) {
             updatePersonTable(ident, microfrontends)
             addChangelogEntry(ident, microfrontends)
+            metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.ENABLE, microfrontendId)
         }
     }
 
@@ -31,6 +35,7 @@ class PersonRepository(private val database: Database) {
         if (microfrontends.removeMicrofrontendId(microfrontendId)) {
             updatePersonTable(ident, microfrontends)
             addChangelogEntry(ident, microfrontends)
+            metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.DISABLE, microfrontendId)
         }
     }
 
@@ -39,6 +44,7 @@ class PersonRepository(private val database: Database) {
             Microfrontends(row.string("microfrontends"))
         }.asSingle
     } ?: Microfrontends()
+
     private fun addChangelogEntry(ident: String, microfrontends: Microfrontends) {
         database.update {
             queryOf(
@@ -53,6 +59,7 @@ class PersonRepository(private val database: Database) {
             )
         }
     }
+
     private fun updatePersonTable(ident: String, microfrontends: Microfrontends) {
         database.update {
             queryOf(

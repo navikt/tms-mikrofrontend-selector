@@ -10,7 +10,7 @@ import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 
 class DisableSink(
     rapidsConnection: RapidsConnection,
-    private val personRepository: PersonRepository,
+    private val personRepository: PersonRepository
 ) :
     River.PacketListener {
 
@@ -24,7 +24,7 @@ class DisableSink(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        personRepository.disableMicrofrontend(packet.ident,packet.microfrontendId)
+        personRepository.disableMicrofrontend(packet.ident, packet.microfrontendId)
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {

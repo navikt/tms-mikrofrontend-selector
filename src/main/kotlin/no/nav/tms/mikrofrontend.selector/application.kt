@@ -1,33 +1,38 @@
 package no.nav.tms.mikrofrontend.selector
 
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidApplication.RapidApplicationConfig.Companion.fromEnv
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.tms.mikrofrontend.selector.database.Flyway
-import no.nav.tms.mikrofrontend.selector.database.PostgresDatabase
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
+import no.nav.tms.mikrofrontend.selector.database.PostgresDatabase
+import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 
 fun main() {
     val environment = Environment()
 
     startRapid(
         environment = environment,
-        personRepository = PersonRepository(PostgresDatabase(environment))
+        prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     )
 }
 
 private fun startRapid(
     environment: Environment,
-    personRepository: PersonRepository,
+    prometheusMeterRegistry: PrometheusMeterRegistry,
 ) {
+    val personRepository = PersonRepository(
+        database = PostgresDatabase(environment),
+        metricsRegistry = MicrofrontendCounter(prometheusMeterRegistry)
+    )
     RapidApplication.Builder(fromEnv(environment.rapidConfig())).withKtorModule {
-        //api oppsett
-        selectorApi(personRepository)
+        selectorApi(personRepository, prometheusMeterRegistry)
     }.build().apply {
-        //rapidsoppsett
-        DisableSink(this,personRepository)
-        EnableSink(this,personRepository)
+        DisableSink(this, personRepository)
+        EnableSink(this, personRepository)
     }.apply {
         register(object : RapidsConnection.StatusListener {
             override fun onStartup(rapidsConnection: RapidsConnection) {
