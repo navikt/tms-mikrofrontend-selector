@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
@@ -17,7 +16,6 @@ import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.metrics
 import java.text.DateFormat
-import java.util.*
 
 internal fun Application.selectorApi(
     personRepository: PersonRepository,
