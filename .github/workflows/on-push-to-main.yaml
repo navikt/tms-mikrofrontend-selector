@@ -3,6 +3,7 @@ name: Bygg og publiser docker-image for main
 on:
   push:
     branches:
+      - master
       - main
     paths-ignore:
       - .github/workflows/**
@@ -56,7 +57,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        cluster: [dev-gcp]
+        cluster: [dev-gcp, prod-gcp]
     steps:
       - name: Sjekk ut koden
         uses: actions/checkout@v2
@@ -74,4 +75,3 @@ jobs:
           RESOURCE: ./nais/${{ matrix.cluster }}/nais.yaml
           VAR: version=${{ needs.build.outputs.image }}
           PRINT_PAYLOAD: true
-
