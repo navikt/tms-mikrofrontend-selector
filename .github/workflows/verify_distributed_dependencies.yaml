@@ -32,7 +32,7 @@ jobs:
           docker build --tag $IMAGE_NAME .
           docker push $IMAGE_NAME
 
-      - name: 'Deploy-er til dev-gcp for å sjekke viability
+      - name: 'Deploy-er til dev-gcp for å sjekke viability'
         if: env.DEPLOY_CONFIG_DEFINED == 'true'
         uses: 'nais/deploy/actions/deploy@v1'
         env:
