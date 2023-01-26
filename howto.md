@@ -1,8 +1,8 @@
-## mikrofrontender på min side
+# mikrofrontender på min side
 
 TODO: Beskrivelse av når en mikrofrontend skal vises osv
 
-### Nice! Hvordan kan mitt team få en mikrofrontend på min side?
+## Nice! Hvordan kan mitt team få en mikrofrontend på min side?
 
 1. Lag en mikrofrontend! Om du vil bruke ett template finnes
    det [ett for typescript](https://github.com/navikt/tms-mikrofrontend-template-vitets) og ett for
