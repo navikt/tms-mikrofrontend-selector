@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - howto.md
+      - .github/workflows/update_docs.yaml
 
 jobs:
   trigger_doc_build:
