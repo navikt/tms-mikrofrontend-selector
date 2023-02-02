@@ -1,0 +1,18 @@
+name: Rebuild docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - howto.md
+
+jobs:
+  trigger_doc_build:
+    runs-on: ubuntu-latest
+    steps:
+      run: |
+        curl --request POST \
+          --url 'https://api.github.com/repos/navikt/tms-dokumentasjon/dispatches' \
+          -u "${{ secrets.READER_TOKEN }}:" \
+          --data '{"event_type": "rebuild_doc"}'

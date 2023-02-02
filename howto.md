@@ -1,6 +1,6 @@
 # mikrofrontender på min side
 
-TODO: Beskrivelse av når en mikrofrontend skal vises osv
+TODO: Kort beskrivelse av mikrofrontends
 
 ## Nice! Hvordan kan mitt team få en mikrofrontend på min side?
 
