@@ -15,7 +15,7 @@ jobs:
       - run: |
           curl --request POST \
           --url 'https://api.github.com/repos/navikt/tms-dokumentasjon/dispatches' \
-          -u "${{ secrets.READER_TOKEN }}:" \
+          -u "${{ secrets.DOC_TRIGGER_TOKEN }}:" \
           --data '{"event_type": "rebuild_doc"}'
 
 
