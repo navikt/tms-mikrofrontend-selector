@@ -38,7 +38,7 @@ interface AwaitilityDefaults: DependencyGroup {
 
 interface BouncycastleDefaults: DependencyGroup {
     override val groupId get() = "org.bouncycastle"
-    override val version get() = "1.66"
+    override val version get() = "1.69"
 
     val bcprovJdk15on get() = dependency("bcprov-jdk15on")
 }
@@ -85,7 +85,7 @@ interface GraphQLDefaults: DependencyGroup {
 
 interface H2DatabaseDefaults: DependencyGroup {
     override val groupId get() = "com.h2database"
-    override val version get() = "2.0.206"
+    override val version get() = "2.1.210"
 
     val h2 get() = dependency("h2")
 }
@@ -122,7 +122,7 @@ interface JunitDefaults: DependencyGroup {
 
 interface JjwtDefaults: DependencyGroup {
     override val groupId get() = "io.jsonwebtoken"
-    override val version get() = "0.11.2"
+    override val version get() = "0.11.5"
 
     val api get() = dependency("jjwt-api")
     val impl get() = dependency("jjwt-impl")
@@ -132,7 +132,7 @@ interface JjwtDefaults: DependencyGroup {
 
 interface KafkaDefaults: DependencyGroup {
     override val groupId get() = "org.apache.kafka"
-    override val version get() = "2.5.1"
+    override val version get() = "3.4.0"
 
     val clients get() = dependency("kafka-clients")
     val kafka_2_12 get() = dependency("kafka_2.12")
@@ -290,7 +290,7 @@ interface NAVDefaults {
 
 interface PostgresqlDefaults: DependencyGroup {
     override val groupId get() = "org.postgresql"
-    override val version get() = "42.4.1"
+    override val version get() = "42.5.1"
 
     val postgresql get() = dependency("postgresql")
 }
