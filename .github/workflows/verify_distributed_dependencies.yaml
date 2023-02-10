@@ -25,9 +25,6 @@ jobs:
         run: |
           ./gradlew clean build
 
-      - name: 'Sjekk om deploy til dev-gcp er mulig'
-        run: echo "DEPLOY_CONFIG_DEFINED=$([[ -f ./nais/dev-gcp/nais.yaml ]] && echo 'true' || echo 'false')" >> $GITHUB_ENV
-
       - name: 'Bygg, tag og push Docker image'
         run: |
           APP_NAME=$(echo $GITHUB_REPOSITORY | rev | cut -f1 -d"/" | rev )
@@ -38,14 +35,31 @@ jobs:
           docker push $IMAGE_NAME
           echo "IMAGE=$IMAGE_NAME" >> $GITHUB_ENV
 
+      - name: 'Sjekk om deploy til dev-gcp er mulig'
+        run: echo "CAN_DEPLOY_DEV=$([[ -f ./nais/dev-gcp/nais.yaml ]] && echo 'true' || echo 'false')" >> $GITHUB_ENV
+
       - name: 'Deploy-er til dev-gcp for å sjekke viability'
-        if: env.DEPLOY_CONFIG_DEFINED == 'true'
+        if: env.CAN_DEPLOY_DEV == 'true'
         uses: 'nais/deploy/actions/deploy@v1'
         env:
           REF: ${{ github.sha }}
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: ./nais/dev-gcp/nais.yaml
+          VAR: version=${{ env.IMAGE }}
+          PRINT_PAYLOAD: true
+
+      - name: 'Sjekk om deploy til prod-gcp er mulig'
+        run: echo "CAN_DEPLOY_PROD=$([[ -f ./nais/prod-gcp/nais.yaml ]] && echo 'true' || echo 'false')" >> $GITHUB_ENV
+
+      - name: 'Deploy-er til prod-gcp for å sjekke viability'
+        if: env.CAN_DEPLOY_PROD == 'true'
+        uses: 'nais/deploy/actions/deploy@v1'
+        env:
+          REF: ${{ github.sha }}
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: prod-gcp
+          RESOURCE: ./nais/prod-gcp/nais.yaml
           VAR: version=${{ env.IMAGE }}
           PRINT_PAYLOAD: true
 
