@@ -17,7 +17,7 @@ sende en melding på microfrontend-topicet.
 1. Enable-melding når en bruker skal se mikrofrontenden
    ```json
    {
-      "@event_name": "enable",
+      "@action": "enable",
       "ident": <ident for bruker, vanligvis fnr>,
       "microfrontend_id": <microfrontendId>
    }
@@ -25,7 +25,7 @@ sende en melding på microfrontend-topicet.
 2. Disable-melding når bruker ikke skal se mikrofrontenden lenger
    ```json
    {
-      "@event_name": "disable",
+      "@action":  "disable",
       "ident": <ident for bruker, vanligvis fnr>,
       "microfrontend_id": <microfrontendId>
    }
