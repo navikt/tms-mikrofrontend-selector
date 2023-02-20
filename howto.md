@@ -1,6 +1,7 @@
 # mikrofrontender på min side
 
-TODO: Kort beskrivelse av mikrofrontends
+Mikrofrontends gir teamene mulighet til å presentere den viktigste informasjonen til brukerne sine på Min side. Kan ses
+på som et butikkvindu inn til teamenes egne løsninger.
 
 ## Nice! Hvordan kan mitt team få en mikrofrontend på min side?
 
@@ -11,8 +12,8 @@ TODO: Kort beskrivelse av mikrofrontends
    mikrofrontenden i kode og avtal en `<microfrontendId>`
 3. Koble på [min-side-microfrontend-topicet](https://github.com/navikt/min-side-microfrontend-topic-iac)
 
-Om en mikrofrontend vises avhenger av om den er enablet for en gitt bruker. Dette setter du ved å
-sende en melding på microfrontend-topicet.
+Om en mikrofrontend vises avhenger av om den er enablet for en gitt bruker. Dette setter du ved å sende en melding på
+microfrontend-topicet.
 
 1. Enable-melding når en bruker skal se mikrofrontenden
    ```json
