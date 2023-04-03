@@ -19,9 +19,6 @@ import no.nav.tms.token.support.authentication.installer.installAuthenticators
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
 import java.text.DateFormat
 
-private val log = KotlinLogging.logger { }
-
-
 internal fun Application.selectorApi(
     personRepository: PersonRepository,
     prometheusMeterRegistry: PrometheusMeterRegistry,
