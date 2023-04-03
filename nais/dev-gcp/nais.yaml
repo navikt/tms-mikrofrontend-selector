@@ -27,6 +27,8 @@ spec:
     - "https://tms-mikrofrontend-selector-gcp.dev.nav.no"
   kafka:
     pool: nav-dev
+  securelogs:
+    enabled: true
   tokenx:
     enabled: true
   accessPolicy:

@@ -1,6 +1,7 @@
 package no.nav.tms.mikrofrontend.selector.database
 
 import kotliquery.queryOf
+import mu.KotlinLogging
 import no.nav.tms.mikrofrontend.selector.metrics.ActionMetricsType
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import java.time.LocalDateTime
@@ -8,34 +9,40 @@ import java.time.ZoneId
 
 
 class PersonRepository(private val database: Database, private val metricsRegistry: MicrofrontendCounter) {
+    private val secureLog = KotlinLogging.logger("secureLog")
+    private val log = KotlinLogging.logger { }
 
     object LocalDateTimeHelper {
         fun nowAtUtc(): LocalDateTime = LocalDateTime.now(ZoneId.of("UTC"))
     }
 
-    fun getEnabledMicrofrontends(ident: String): String = database.query {
-        queryOf("select microfrontends from person where ident=:ident", mapOf("ident" to ident)).map { row ->
-            row.string("microfrontends")
-        }.asSingle
-    } ?: Microfrontends.emptyList()
+    fun getEnabledMicrofrontends(ident: String): String = withCustomException(ident) {
+        database.query {
+            queryOf("select microfrontends from person where ident=:ident", mapOf("ident" to ident)).map { row ->
+                row.string("microfrontends")
+            }.asSingle
+        } ?: Microfrontends.emptyList()
+    }
 
     fun enableMicrofrontend(ident: String, microfrontendId: String) {
         val microfrontends = getMicrofrontends(ident)
-
-        if (microfrontends.addMicrofrontendId(microfrontendId)) {
-            updatePersonTable(ident, microfrontends)
-            addChangelogEntry(ident, microfrontends)
-            metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.ENABLE, microfrontendId)
+        withLogging(ident, microfrontendId, "enable") {
+            if (microfrontends.addMicrofrontendId(microfrontendId)) {
+                updatePersonTable(ident, microfrontends)
+                addChangelogEntry(ident, microfrontends)
+                metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.ENABLE, microfrontendId)
+            }
         }
     }
 
     fun disableMicrofrontend(ident: String, microfrontendId: String) {
         val microfrontends = getMicrofrontends(ident)
-
-        if (microfrontends.removeMicrofrontendId(microfrontendId)) {
-            updatePersonTable(ident, microfrontends)
-            addChangelogEntry(ident, microfrontends)
-            metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.DISABLE, microfrontendId)
+        withLogging(ident, microfrontendId, "disable") {
+            if (microfrontends.removeMicrofrontendId(microfrontendId)) {
+                updatePersonTable(ident, microfrontends)
+                addChangelogEntry(ident, microfrontends)
+                metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.DISABLE, microfrontendId)
+            }
         }
     }
 
@@ -74,4 +81,23 @@ class PersonRepository(private val database: Database, private val metricsRegist
             )
         }
     }
+
+    private fun withLogging(ident: String, microfrontendId: String, operation: String, function: () -> Unit) {
+        try {
+            function()
+        } catch (e: Exception) {
+            log.error { "Feil ved $operation for mikrofrontendId med id $microfrontendId\n ${e.stackTrace}" }
+            secureLog.error {
+                "Feil ved $operation for mikrofrontendId med id $microfrontendId for ident $ident\n ${e.stackTrace}"
+            }
+        }
+    }
+    private fun <T> withCustomException(ident: String, function: () -> T) =
+        try {
+            function()
+        } catch (e: Exception) {
+            throw DatabaseException(ident, e)
+        }
 }
+
+class DatabaseException(val ident: String, val originalException: Exception) : Exception()
