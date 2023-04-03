@@ -24,6 +24,7 @@ class EnableSink(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        log.info { "mottok enablemelding for ${packet.microfrontendId}" }
         personRepository.enableMicrofrontend(ident = packet.ident, microfrontendId = packet.microfrontendId)
     }
 
