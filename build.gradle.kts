@@ -42,6 +42,11 @@ dependencies {
     implementation(Postgresql.postgresql)
     implementation(RapidsAndRivers.rapidsAndRivers)
     implementation(KotliQuery.kotliquery)
+    implementation(Logback.classic)
+    implementation(KotlinLogging.logging)
+    implementation("io.ktor:ktor-server-core-jvm:2.1.2")
+    implementation("io.ktor:ktor-server-host-common-jvm:2.1.2")
+    implementation("io.ktor:ktor-server-status-pages-jvm:2.1.2")
 
     testImplementation(Junit.api)
     testImplementation(Junit.engine)
