@@ -9,7 +9,7 @@ på som et butikkvindu inn til teamenes egne løsninger.
    det [ett for typescript](https://github.com/navikt/tms-mikrofrontend-template-vitets) og ett for
    [ett for javascrip](https://github.com/navikt/tms-mikrofrontend-template-vitejs)
 2. Opprett ett issue i [tms-min-side repoet](https://github.com/navikt/tms-min-side), be om å få lagt inn
-   mikrofrontenden i kode og avtal en `<microfrontendId>`
+   mikrofrontenden i kode og avtal en `<microfrontendId>`. id-en bør være så generisk som mulig (slik at vi lagrer så lite omm inholdet som mulig), men gjenkjenbar nok til at det er mulig å skjønne hvor den kommer fra (internt). 
 3. Koble på [min-side-microfrontend-topicet](https://github.com/navikt/min-side-microfrontend-topic-iac)
 
 Om en mikrofrontend vises avhenger av om den er enablet for en gitt bruker. Dette setter du ved å sende en melding på
