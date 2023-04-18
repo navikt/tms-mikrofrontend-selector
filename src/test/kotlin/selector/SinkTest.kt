@@ -63,9 +63,14 @@ internal class SinkTest {
         testRapid.sendTestMessage(enableMessage(fnr = testIdent, microfrontendId = testmicrofeId2))
         testRapid.sendTestMessage(enableMessage(fnr = testIdent, microfrontendId = testmicrofeId2, sikkerhetsnivå = 3))
 
-        personRepository.getEnabledMicrofrontends(ident = testIdent).microfrontends().assert {
+        database.getMicrofrontends(ident = testIdent).assert {
+            require(this != null)
             size shouldBe 3
-            map { it["microfrontend_id"].asText() } shouldContainExactly listOf(oldAndRusty, testmicrofeId1, testmicrofeId2)
+            map { it["microfrontend_id"].asText() } shouldContainExactly listOf(
+                oldAndRusty,
+                testmicrofeId1,
+                testmicrofeId2
+            )
             find { it["microfrontend_id"].asText() == testmicrofeId1 }!!.get("sikkerhetsnivå")?.asInt() shouldBe 4
             find { it["microfrontend_id"].asText() == testmicrofeId2 }!!.get("sikkerhetsnivå")?.asInt() shouldBe 3
             find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sikkerhetsnivå")?.asInt() shouldBe 4
@@ -106,9 +111,10 @@ internal class SinkTest {
         testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
         testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
 
-        personRepository.getEnabledMicrofrontends(ident = testFnr).microfrontendids().assert {
+        database.getMicrofrontends(ident = testFnr).assert {
+            require(this != null)
             size shouldBe 1
-            this shouldContainExactly listOf(testmicrofeId2)
+            map { it["microfrontend_id"].asText() }  shouldContainExactly listOf(testmicrofeId2)
         }
         database.getChangelog(testFnr).assert {
             size shouldBe 3
@@ -137,11 +143,6 @@ internal class SinkTest {
 private fun String?.microfrontendids(): List<String> {
     require(this != null)
     return objectMapper.readTree(this)["microfrontends"].toList().map { it["microfrontend_id"].asText() }
-}
-
-private fun String?.microfrontends(): List<JsonNode> {
-    require(this != null)
-    return objectMapper.readTree(this)["microfrontends"].toList()
 }
 
 

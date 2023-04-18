@@ -42,39 +42,9 @@ internal class ApiTest {
     }
 
     @Test
-    fun `Skal svare med liste over mikrofrontends for person basert på fnr`() = testApplication {
-        val testFnr1 = "12345678910"
-        val expectedMicrofrontends = listOf("mk-1", "mk2", "mk3")
-
-        application {
-            selectorApi(personRepository, registry,installAuthenticatorsFunction = {
-                installMockedAuthenticators {
-                    installTokenXAuthMock {
-                        alwaysAuthenticated = true
-                        setAsDefault = true
-                        staticUserPid = testFnr1
-                        staticSecurityLevel = SecurityLevel.LEVEL_4
-                    }
-                }
-            })
-        }
-
-        expectedMicrofrontends.forEach {
-            testRapid.sendTestMessage(enableMessage(it, testFnr1))
-        }
-
-        client.get("/mikrofrontends").assert {
-            status shouldBe HttpStatusCode.OK
-            objectMapper.readTree(bodyAsText())["microfrontends"].toList().assert {
-                size shouldBe 3
-                map { it.asText() } shouldContainExactly expectedMicrofrontends
-            }
-        }
-    }
-
-    @Test
-    fun `Skal svare med tom liste for personer som ikke har noen mikrofrontends`() = testApplication {
-        val testFnr2 = "12345678912"
+    fun `Skal svare med liste over mikrofrontends basert på ident`() = testApplication {
+        val testIdent = "12345678910"
+        val expectedMicrofrontends = mutableListOf("mk-1", "mk2", "mk3")
 
         application {
             selectorApi(personRepository, registry, installAuthenticatorsFunction = {
@@ -82,7 +52,79 @@ internal class ApiTest {
                     installTokenXAuthMock {
                         alwaysAuthenticated = true
                         setAsDefault = true
-                        staticUserPid = testFnr2
+                        staticUserPid = testIdent
+                        staticSecurityLevel = SecurityLevel.LEVEL_4
+                    }
+                }
+            })
+        }
+
+        expectedMicrofrontends.forEach {
+            testRapid.sendTestMessage(enableMessage(it, testIdent))
+        }
+        testRapid.sendTestMessage(enableMessage("nivå3mkf", testIdent, 3))
+        expectedMicrofrontends.add("nivå3mkf")
+
+
+        client.get("/mikrofrontends").assert {
+            status shouldBe HttpStatusCode.OK
+            objectMapper.readTree(bodyAsText()).assert {
+                this["microfrontends"].toList().assert {
+                    size shouldBe 4
+                    map { it.asText() } shouldContainExactly expectedMicrofrontends
+                }
+                this["requireStepup"].asBoolean() shouldBe false
+            }
+        }
+    }
+
+    @Test
+    fun `Skal svare med liste over mikrofrontends for ident med innloggingsnivå 3`() = testApplication {
+        val testIdent = "12345678910"
+        val nivå4Mikrofrontends = mutableListOf("mk-1", "mk2", "mk3")
+
+        application {
+            selectorApi(personRepository, registry, installAuthenticatorsFunction = {
+                installMockedAuthenticators {
+                    installTokenXAuthMock {
+                        alwaysAuthenticated = true
+                        setAsDefault = true
+                        staticUserPid = testIdent
+                        staticSecurityLevel = SecurityLevel.LEVEL_3
+                    }
+                }
+            })
+        }
+
+        nivå4Mikrofrontends.forEach {
+            testRapid.sendTestMessage(enableMessage(it, testIdent))
+        }
+        testRapid.sendTestMessage(enableMessage("nivå3mkf", testIdent, 3))
+
+
+        client.get("/mikrofrontends").assert {
+            status shouldBe HttpStatusCode.OK
+            objectMapper.readTree(bodyAsText()).assert {
+                this["microfrontends"].toList().assert {
+                    size shouldBe 1
+                    first().asText() shouldBe "nivå3mkf"
+                }
+                this["requireStepup"].asBoolean() shouldBe true
+            }
+        }
+    }
+
+    @Test
+    fun `Skal svare med tom liste for personer som ikke har noen mikrofrontends`() = testApplication {
+        val testident2 = "12345678912"
+
+        application {
+            selectorApi(personRepository, registry, installAuthenticatorsFunction = {
+                installMockedAuthenticators {
+                    installTokenXAuthMock {
+                        alwaysAuthenticated = true
+                        setAsDefault = true
+                        staticUserPid = testident2
                         staticSecurityLevel = SecurityLevel.LEVEL_4
                     }
                 }
@@ -91,7 +133,10 @@ internal class ApiTest {
 
         client.get("/mikrofrontends").assert {
             status shouldBe HttpStatusCode.OK
-            objectMapper.readTree(bodyAsText())["microfrontends"].size() shouldBe 0
+            objectMapper.readTree(bodyAsText()).assert {
+                this["microfrontends"].size() shouldBe 0
+                this["requireStepup"].asBoolean() shouldBe false
+            }
 
         }
     }

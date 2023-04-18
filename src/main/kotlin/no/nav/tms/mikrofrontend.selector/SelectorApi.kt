@@ -51,7 +51,8 @@ internal fun Application.selectorApi(
         authenticate {
             route("mikrofrontends") {
                 get() {
-                    call.respond(personRepository.getEnabledMicrofrontends(userIdent))
+                    val user = TokenXUserFactory.createTokenXUser(call)
+                    call.respond(personRepository.getEnabledMicrofrontends(user.ident,user.loginLevel))
                 }
             }
         }
@@ -65,7 +66,3 @@ private fun installAuth(): Application.() -> Unit = {
         }
     }
 }
-
-
-private val PipelineContext<Unit, ApplicationCall>.userIdent get() = TokenXUserFactory.createTokenXUser(call).ident
-

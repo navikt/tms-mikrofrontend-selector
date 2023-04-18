@@ -28,29 +28,38 @@ internal class Microfrontends(initialJson: String? = null) {
     private val newData = originalData?.toMutableSet() ?: mutableSetOf()
 
     companion object {
-        fun emptyList(): String = """{ "microfrontends":[] }"""
+        fun emptyApiResponse(): String = """{ "microfrontends":[], "requireStepup": false }"""
     }
 
     fun addMicrofrontend(packet: JsonMessage): Boolean =
         newData
             .find { it["microfrontend_id"].asText() == packet.microfrontendId }
-            .let {
-                if (it != null) {
-                    if (it["sikkerhetsnivå"].asInt() != packet.sikkerhetsnivå) {
-                        removeMicrofrontend(packet.microfrontendId)
-                        newData.add(createNode(packet.microfrontendId,packet.sikkerhetsnivå))
-                    } else {
-                        false
-                    }
-                } else
+            ?.let {
+                if (it["sikkerhetsnivå"].asInt() == packet.sikkerhetsnivå) {
+                    false
+                } else {
+                    removeMicrofrontend(packet.microfrontendId)
                     newData.add(createNode(packet.microfrontendId, packet.sikkerhetsnivå))
+                }
             }
+            ?: newData.add(createNode(packet.microfrontendId, packet.sikkerhetsnivå))
 
-    fun addMicrofrontend(microfrontendId: String) = newData.add(createNodeAndAddSikkerhetsnivå(microfrontendId))
     fun removeMicrofrontend(microfrontendId: String) =
         newData.removeIf { node ->
             node["microfrontend_id"].asText() == microfrontendId
         }
+
+    fun apiResponse(innloggetnivå: Int): String = """
+        { 
+           "microfrontends": ${
+            newData
+                .filter { it["sikkerhetsnivå"].asInt() <= innloggetnivå }
+                .map { it["microfrontend_id"]}
+                .jsonArrayString()
+           }, 
+           "requireStepup": ${newData.any { it["sikkerhetsnivå"].asInt() > innloggetnivå }} 
+        }
+        """.trimIndent()
 
     fun newDataJsonB(): PGobject = """{ "microfrontends": ${newData.jsonArrayString()}}""".trimMargin().jsonB()
     fun originalDataJsonB(): PGobject? =
@@ -76,16 +85,28 @@ internal class Microfrontends(initialJson: String? = null) {
       """.trimMargin()
     )
 
-    private fun createNode(microfrontendId: String, sikkerhetsivå: Int) = objectMapper.readTree(
+    private fun createNode(microfrontendId: String, sikkerhetsnivå: Int) = objectMapper.readTree(
         """
         {
           "microfrontend_id": "$microfrontendId",
-          "sikkerhetsnivå": $sikkerhetsivå
+          "sikkerhetsnivå": $sikkerhetsnivå
         }
       """.trimMargin()
     )
 
-    private val JsonMessage.sikkerhetsnivå: Int
-        get() = get("sikkerhetsnivå").asInt(4)
+    private fun microfrontendApiList(innloggetnivå: Int) {
+        newData
+            .filter { it["sikkerhetsnivå"].asInt() <= innloggetnivå }
+            .map { it["microfrontend_id"]}
+            .jsonArrayString()
+
+    }
 }
+
+private val JsonMessage.sikkerhetsnivå: Int
+    get() = get("sikkerhetsnivå").asInt(4)
+
+
+
+
 

@@ -19,23 +19,13 @@ class PersonRepository(private val database: Database, private val metricsRegist
         fun nowAtUtc(): LocalDateTime = LocalDateTime.now(ZoneId.of("UTC"))
     }
 
-    fun getEnabledMicrofrontends(ident: String): String = withCustomException(ident) {
+    fun getEnabledMicrofrontends(ident: String, innloggetnivå:Int): String = withCustomException(ident) {
         database.query {
             queryOf("select microfrontends from person where ident=:ident", mapOf("ident" to ident)).map { row ->
                 row.string("microfrontends")
             }.asSingle
-        } ?: Microfrontends.emptyList()
-    }
-
-    fun enableMicrofrontend(ident: String, microfrontendId: String) {
-        val microfrontends = getMicrofrontends(ident)
-        withLogging(ident, microfrontendId, "enable") {
-            if (microfrontends.addMicrofrontend(microfrontendId)) {
-                updatePersonTable(ident, microfrontends)
-                addChangelogEntry(ident, microfrontends)
-                metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.ENABLE, microfrontendId)
-            }
-        }
+        }?.let { Microfrontends(it).apiResponse(innloggetnivå) }
+        ?: Microfrontends.emptyApiResponse()
     }
 
     fun enableMicrofrontend( microfrontendData: JsonMessage) {
