@@ -6,8 +6,6 @@ metadata:
   labels:
     team: min-side
 spec:
-  envFrom:
-    - secret: tms-mikrofrontend-selector-secrets
   image: {{version}}
   port: 8080
   liveness:
@@ -58,3 +56,8 @@ spec:
     requests:
       cpu: "50m"
       memory: 256Mi
+  env:
+    - name: GROUP_ID
+      value: tms-mikrofrontend-selector-01
+    - name: RAPID_TOPIC
+    - value: min-side.aapen-microfrontend-v1
