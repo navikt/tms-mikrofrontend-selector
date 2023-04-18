@@ -18,7 +18,7 @@ internal class PersonRepositoryTest {
     val repository = PersonRepository(testDb, mockk())
 
     @Test
-    fun `Setter inn mikrofrontend for ident`() {
+    fun `Skal sette inn mikrofrontend for ident`() {
         val testId1 = "13499"
         repository.enableMicrofrontend(enablePacket("mkf1", testId1))
         repository.enableMicrofrontend(enablePacket("mkf1", testId1))
@@ -36,7 +36,7 @@ internal class PersonRepositoryTest {
     }
 
     @Test
-    fun `Setter inn mikrofrontend for ident som har gamle innslag i tabellen`() {
+    fun `Skal sette inn mikrofrontend for ident som har gamle innslag i tabellen`() {
         val testId1 = "7766"
         testDb.insertWithLegacyFormat(testId1,"m1","m2","m3")
         repository.enableMicrofrontend(enablePacket("mkf1", testId1))
@@ -52,7 +52,7 @@ internal class PersonRepositoryTest {
     }
 
     @Test
-    fun `Sletter mikfrofrontender `() {
+    fun `Skal slette mikfrofrontender `() {
         val testId1 = "1345"
         repository.enableMicrofrontend(enablePacket("mkf1", testId1))
         repository.enableMicrofrontend(enablePacket("mkf3", testId1))
@@ -88,7 +88,7 @@ internal class PersonRepositoryTest {
 
 }
 
-fun enablePacket(microfrontendId: String, ident: String, sikkerhetsnivå: Int = 4) =
+private fun enablePacket(microfrontendId: String, ident: String, sikkerhetsnivå: Int = 4) =
     JsonMessage(enableMessage(microfrontendId, ident, sikkerhetsnivå), MessageProblems("")).also {
         it.interestedIn("sikkerhetsnivå","microfrontend_id", "ident")
     }

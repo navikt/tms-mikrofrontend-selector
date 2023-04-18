@@ -20,12 +20,13 @@ class EnableSink(
         River(rapidsConnection).apply {
             validate { it.demandValue("@action", "enable") }
             validate { it.requireKey("ident", "microfrontend_id") }
+            validate {it.interestedIn("sikkerhetsnivå")}
         }.register(this)
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         log.info { "mottok enablemelding for ${packet.microfrontendId}" }
-        personRepository.enableMicrofrontend(ident = packet.ident, microfrontendId = packet.microfrontendId)
+        personRepository.enableMicrofrontend(packet)
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {

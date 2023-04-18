@@ -31,14 +31,24 @@ internal class Microfrontends(initialJson: String? = null) {
         fun emptyList(): String = """{ "microfrontends":[] }"""
     }
 
-    fun addMicrofrontend(packet: JsonMessage): Boolean {
-        val addnew = newData.add(createNode(packet.microfrontendId, packet.sikkerhetsnivå))
-        return addnew
-    }
+    fun addMicrofrontend(packet: JsonMessage): Boolean =
+        newData
+            .find { it["microfrontend_id"].asText() == packet.microfrontendId }
+            .let {
+                if (it != null) {
+                    if (it["sikkerhetsnivå"].asInt() != packet.sikkerhetsnivå) {
+                        removeMicrofrontend(packet.microfrontendId)
+                        newData.add(createNode(packet.microfrontendId,packet.sikkerhetsnivå))
+                    } else {
+                        false
+                    }
+                } else
+                    newData.add(createNode(packet.microfrontendId, packet.sikkerhetsnivå))
+            }
 
     fun addMicrofrontend(microfrontendId: String) = newData.add(createNodeAndAddSikkerhetsnivå(microfrontendId))
     fun removeMicrofrontend(microfrontendId: String) =
-        newData.removeIf {node->
+        newData.removeIf { node ->
             node["microfrontend_id"].asText() == microfrontendId
         }
 

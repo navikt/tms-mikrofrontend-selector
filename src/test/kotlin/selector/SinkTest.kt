@@ -2,10 +2,12 @@ package selector
 
 import LocalPostgresDatabase
 import assert
+import com.fasterxml.jackson.databind.JsonNode
 import disableMessage
 import enableMessage
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotliquery.queryOf
@@ -34,7 +36,6 @@ internal class SinkTest {
     private val testRapid = TestRapid()
 
 
-
     @BeforeAll
     fun setupSinks() {
         EnableSink(testRapid, personRepository)
@@ -50,34 +51,45 @@ internal class SinkTest {
     }
 
     @Test
-    fun `Skal enable ny mikrofrontend og opprette historikk`() {
-        val testFnr = "12345678910"
+    fun `Skal enable+oppdatere mikrofrontends og opprette historikk`() {
+        val testIdent = "12345678910"
+        val oldAndRusty = "old-and-rusty"
         val testmicrofeId1 = "new-and-shiny"
         val testmicrofeId2 = "also-new-and-shiny"
 
-        testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
-        testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId2))
-        testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId2))
+        database.insertWithLegacyFormat(testIdent, oldAndRusty)
 
-        personRepository.getEnabledMicrofrontends(ident = testFnr).microfrontendids().assert {
-            size shouldBe 2
-            this shouldContainExactly listOf(testmicrofeId1, testmicrofeId2)
+        testRapid.sendTestMessage(enableMessage(fnr = testIdent, microfrontendId = testmicrofeId1))
+        testRapid.sendTestMessage(enableMessage(fnr = testIdent, microfrontendId = testmicrofeId2))
+        testRapid.sendTestMessage(enableMessage(fnr = testIdent, microfrontendId = testmicrofeId2, sikkerhetsnivå = 3))
+
+        personRepository.getEnabledMicrofrontends(ident = testIdent).microfrontends().assert {
+            size shouldBe 3
+            map { it["microfrontend_id"].asText() } shouldContainExactly listOf(oldAndRusty, testmicrofeId1, testmicrofeId2)
+            find { it["microfrontend_id"].asText() == testmicrofeId1 }!!.get("sikkerhetsnivå")?.asInt() shouldBe 4
+            find { it["microfrontend_id"].asText() == testmicrofeId2 }!!.get("sikkerhetsnivå")?.asInt() shouldBe 3
+            find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sikkerhetsnivå")?.asInt() shouldBe 4
         }
-        database.getChangelog(testFnr).assert {
-            size shouldBe 2
+
+        database.getChangelog(testIdent).assert {
+            size shouldBe 3
             get(0).assert {
-                originalData shouldBe null
-                newData.microfrontendids().size shouldBe 1
+                originalData shouldContain oldAndRusty
+                newData.microfrontendids().size shouldBe 2
             }
             get(1).assert { originalData }.assert {
-                originalData.microfrontendids().size shouldBe 1
-                newData.microfrontendids().size shouldBe 2
+                originalData.microfrontendids().size shouldBe 2
+                newData.microfrontendids().size shouldBe 3
+            }
+            get(2).assert { originalData }.assert {
+                originalData.microfrontendids().size shouldBe 3
+                newData.microfrontendids().size shouldBe 3
             }
         }
 
         registry.scrape().apply {
-            this.getPrometheusCount(testmicrofeId1,ActionMetricsType.ENABLE) shouldBe 1
-            this.getPrometheusCount(testmicrofeId2,ActionMetricsType.ENABLE) shouldBe 1
+            this.getPrometheusCount(testmicrofeId1, ActionMetricsType.ENABLE) shouldBe 1
+            this.getPrometheusCount(testmicrofeId2, ActionMetricsType.ENABLE) shouldBe 2
         }
     }
 
@@ -115,22 +127,28 @@ internal class SinkTest {
         }
 
         registry.scrape().apply {
-            this.getPrometheusCount(testmicrofeId1,ActionMetricsType.ENABLE) shouldBe 2
-            this.getPrometheusCount(testmicrofeId2,ActionMetricsType.ENABLE) shouldBe 1
-            this.getPrometheusCount(testmicrofeId1,ActionMetricsType.DISABLE) shouldBe 1
+            this.getPrometheusCount(testmicrofeId1, ActionMetricsType.ENABLE) shouldBe 2
+            this.getPrometheusCount(testmicrofeId2, ActionMetricsType.ENABLE) shouldBe 1
+            this.getPrometheusCount(testmicrofeId1, ActionMetricsType.DISABLE) shouldBe 1
         }
     }
 }
 
 private fun String?.microfrontendids(): List<String> {
     require(this != null)
-    return objectMapper.readTree(this)["microfrontends"].toList().map { it.asText() }
+    return objectMapper.readTree(this)["microfrontends"].toList().map { it["microfrontend_id"].asText() }
 }
+
+private fun String?.microfrontends(): List<JsonNode> {
+    require(this != null)
+    return objectMapper.readTree(this)["microfrontends"].toList()
+}
+
 
 private fun String.getPrometheusCount(key: String, action: ActionMetricsType): Int =
     split("\r?\n|\r".toRegex())
         .toTypedArray()
         .firstOrNull() { it.contains(key) && it.contains(action.name.lowercase()) }
         ?.let {
-            it[it.length-3].digitToInt()
-        }?: throw  IllegalArgumentException("fant ikke action $action for $key")
+            it[it.length - 3].digitToInt()
+        } ?: throw IllegalArgumentException("fant ikke action $action for $key")
