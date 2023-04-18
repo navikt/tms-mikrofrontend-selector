@@ -2,7 +2,6 @@ package selector
 
 import LocalPostgresDatabase
 import assert
-import com.fasterxml.jackson.databind.JsonNode
 import disableMessage
 import enableMessage
 import io.kotest.matchers.collections.shouldContainExactly
@@ -59,7 +58,7 @@ internal class SinkTest {
 
         database.insertWithLegacyFormat(testIdent, oldAndRusty)
 
-        testRapid.sendTestMessage(enableMessage(fnr = testIdent, microfrontendId = testmicrofeId1))
+        testRapid.sendTestMessage(enableMessageUtenSikkerhetsnivå(ident = testIdent, microfrontendId = testmicrofeId1))
         testRapid.sendTestMessage(enableMessage(fnr = testIdent, microfrontendId = testmicrofeId2))
         testRapid.sendTestMessage(enableMessage(fnr = testIdent, microfrontendId = testmicrofeId2, sikkerhetsnivå = 3))
 
@@ -153,3 +152,11 @@ private fun String.getPrometheusCount(key: String, action: ActionMetricsType): I
         ?.let {
             it[it.length - 3].digitToInt()
         } ?: throw IllegalArgumentException("fant ikke action $action for $key")
+
+private fun enableMessageUtenSikkerhetsnivå(microfrontendId: String, ident: String) = """
+    {
+      "@action": "enable",
+      "ident": "$ident",
+      "microfrontend_id": "$microfrontendId"
+    }
+    """.trimIndent()

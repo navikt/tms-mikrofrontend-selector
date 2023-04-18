@@ -3,9 +3,12 @@ package no.nav.tms.mikrofrontend.selector.database
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.tms.mikrofrontend.selector.microfrontendId
 import org.postgresql.util.PGobject
+
+private val log = KotlinLogging.logger { }
 
 internal class Microfrontends(initialJson: String? = null) {
     private val objectMapper = jacksonObjectMapper().apply {
@@ -17,6 +20,7 @@ internal class Microfrontends(initialJson: String? = null) {
             ?.let { objectMapper.readTree(it)["microfrontends"] }
             ?.map {
                 if (it.isValueNode) {
+                    log.info { "Konverterer mikrofrontend-entry fra gammelt til nytt format; ${it.asText()}" }
                     createNodeAndAddSikkerhetsnivå(it.asText())
                 } else {
                     createNode(it["microfrontend_id"].asText(), it["sikkerhetsnivå"].asInt())
@@ -35,9 +39,11 @@ internal class Microfrontends(initialJson: String? = null) {
         newData
             .find { it["microfrontend_id"].asText() == packet.microfrontendId }
             ?.let {
-                if (it["sikkerhetsnivå"].asInt() == packet.sikkerhetsnivå) {
+                val currentSikkerhetsnivå = it["sikkerhetsnivå"].asInt()
+                if (currentSikkerhetsnivå == packet.sikkerhetsnivå) {
                     false
                 } else {
+                    log.info { "Endring av sikkerhetsnivå for ${packet.microfrontendId} fra $currentSikkerhetsnivå til ${packet.sikkerhetsnivå}" }
                     removeMicrofrontend(packet.microfrontendId)
                     newData.add(createNode(packet.microfrontendId, packet.sikkerhetsnivå))
                 }
@@ -52,11 +58,11 @@ internal class Microfrontends(initialJson: String? = null) {
     fun apiResponse(innloggetnivå: Int): String = """
         { 
            "microfrontends": ${
-            newData
-                .filter { it["sikkerhetsnivå"].asInt() <= innloggetnivå }
-                .map { it["microfrontend_id"]}
-                .jsonArrayString()
-           }, 
+        newData
+            .filter { it["sikkerhetsnivå"].asInt() <= innloggetnivå }
+            .map { it["microfrontend_id"] }
+            .jsonArrayString()
+    }, 
            "requireStepup": ${newData.any { it["sikkerhetsnivå"].asInt() > innloggetnivå }} 
         }
         """.trimIndent()
@@ -97,7 +103,7 @@ internal class Microfrontends(initialJson: String? = null) {
     private fun microfrontendApiList(innloggetnivå: Int) {
         newData
             .filter { it["sikkerhetsnivå"].asInt() <= innloggetnivå }
-            .map { it["microfrontend_id"]}
+            .map { it["microfrontend_id"] }
             .jsonArrayString()
 
     }
