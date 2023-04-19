@@ -40,12 +40,20 @@ microfrontend-topicet.
 
 ### Hva er egentlig innloggngsnivå og sikkerhetsnivå?
 
+### Innloggingsnivå
 Når en person logger inn på NAV.no kan hen ha gått igjennom forskjelige tjenester, der noen anses som 
-mer sikker (nivå 4)  og andre anses som mindre sikker (nivå 3). Feltet `sikkerhetsnivå` i enablemeldingen
-korresponderer direkte til disse innloggingsnivåene. Altså; hvis det ligger informasjon i mikrofrontenden 
-som kun personer som har logger inn på nivå 4 skal kunne se, skal `sikkerhetsnivå` settes 4. Om informasjonen
-kan vises uavhengig av innloggingsnivå skal sikkerhetsnivå sette til 3. Om en person logger inn på nivå 3
-og det finnes mikrofrontender som personen kan se på nivå 4 vil bruker få beskjed om dette og link til en "steup"
-loging.
+mer sikker (nivå 4)  og andre anses som mindre sikker (nivå 3). 
 
-Om sikkerhetsnivå ikke er spesifisert settes det alltid til 4 hos oss.
+### Sikkerhetsnivå
+Feltet `sikkerhetsnivå` i enablemeldingen
+korresponderer direkte til disse innloggingsnivåene. Altså; hvis det ligger informasjon i mikrofrontenden 
+som kun personer som har logget inn på nivå 4 skal kunne se, skal `sikkerhetsnivå` settes til 4. Om informasjonen
+kan vises uavhengig av innloggingsnivå skal sikkerhetsnivå settes til 3.
+Om sikkerhetsnivå ikke er spesifisert i kafka-meldingen settes det alltid til 4 hos oss.
+
+
+#### Hva skjer om en person er innlogga på nivå 3, men har mikrofrontender på nivå 4 ?
+Om en person logger inn på nivå 3 og det finnes mikrofrontender som personen kan se på nivå 4 vil bruker få beskjed om dette og link til en "steup"
+login.
+
+
