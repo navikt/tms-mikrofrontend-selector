@@ -73,7 +73,7 @@ internal class ApiTest {
                     size shouldBe 4
                     map { it.asText() } shouldContainExactly expectedMicrofrontends
                 }
-                this["requireStepup"].asBoolean() shouldBe false
+                this["offerStepup"].asBoolean() shouldBe false
             }
         }
     }
@@ -109,7 +109,7 @@ internal class ApiTest {
                     size shouldBe 1
                     first().asText() shouldBe "nivå3mkf"
                 }
-                this["requireStepup"].asBoolean() shouldBe true
+                this["offerStepup"].asBoolean() shouldBe true
             }
         }
     }
@@ -135,7 +135,7 @@ internal class ApiTest {
             status shouldBe HttpStatusCode.OK
             objectMapper.readTree(bodyAsText()).assert {
                 this["microfrontends"].size() shouldBe 0
-                this["requireStepup"].asBoolean() shouldBe false
+                this["offerStepup"].asBoolean() shouldBe false
             }
 
         }

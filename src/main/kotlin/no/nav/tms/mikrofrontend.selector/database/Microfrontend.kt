@@ -32,7 +32,7 @@ internal class Microfrontends(initialJson: String? = null) {
     private val newData = originalData?.toMutableSet() ?: mutableSetOf()
 
     companion object {
-        fun emptyApiResponse(): String = """{ "microfrontends":[], "requireStepup": false }"""
+        fun emptyApiResponse(): String = """{ "microfrontends":[], "offerStepup": false }"""
     }
 
     fun addMicrofrontend(packet: JsonMessage): Boolean =
@@ -63,7 +63,7 @@ internal class Microfrontends(initialJson: String? = null) {
             .map { it["microfrontend_id"] }
             .jsonArrayString()
     }, 
-           "requireStepup": ${newData.any { it["sikkerhetsnivå"].asInt() > innloggetnivå }} 
+           "offerStepup": ${newData.any { it["sikkerhetsnivå"].asInt() > innloggetnivå }} 
         }
         """.trimIndent()
 
