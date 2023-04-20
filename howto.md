@@ -42,11 +42,10 @@ microfrontend-topicet.
 
 ### Innloggingsnivå
 Når en person logger inn på NAV.no kan hen ha gått igjennom forskjelige tjenester, der noen anses som 
-mer sikker (nivå 4)  og andre anses som mindre sikker (nivå 3). 
+mer sikker(nivå 4) og andre anses som mindre sikker (nivå 3). 
 
 ### Sikkerhetsnivå
-Feltet `sikkerhetsnivå` i enablemeldingen
-korresponderer direkte til disse innloggingsnivåene. Altså; hvis det ligger informasjon i mikrofrontenden 
+Feltet `sikkerhetsnivå` i enablemeldingen  korresponderer direkte til disse innloggingsnivåene. Altså; hvis det ligger informasjon i mikrofrontenden 
 som kun personer som har logget inn på nivå 4 skal kunne se, skal `sikkerhetsnivå` settes til 4. Om informasjonen
 kan vises uavhengig av innloggingsnivå skal sikkerhetsnivå settes til 3.
 Om sikkerhetsnivå ikke er spesifisert i kafka-meldingen settes det alltid til 4 hos oss.
