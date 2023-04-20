@@ -60,4 +60,4 @@ spec:
     - name: GROUP_ID
       value: tms-mikrofrontend-selector-01
     - name: RAPID_TOPIC
-    - value: min-side.aapen-microfrontend-v1
+      value: min-side.aapen-microfrontend-v1
