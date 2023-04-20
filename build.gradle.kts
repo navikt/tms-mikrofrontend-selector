@@ -36,6 +36,7 @@ dependencies {
     implementation(Ktor2.Server.contentNegotiation)
     implementation(Ktor2.Server.auth)
     implementation(Ktor2.Server.authJwt)
+    implementation(Ktor2.Server.statusPages)
     implementation(Ktor2.Serialization.jackson)
     implementation(TmsKtorTokenSupport.tokenXValidation)
     implementation(TmsKtorTokenSupport.authenticationInstaller)
@@ -44,9 +45,6 @@ dependencies {
     implementation(KotliQuery.kotliquery)
     implementation(Logback.classic)
     implementation(KotlinLogging.logging)
-    implementation("io.ktor:ktor-server-core-jvm:2.1.2")
-    implementation("io.ktor:ktor-server-host-common-jvm:2.1.2")
-    implementation("io.ktor:ktor-server-status-pages-jvm:2.1.2")
 
     testImplementation(Junit.api)
     testImplementation(Junit.engine)
@@ -56,6 +54,7 @@ dependencies {
     testImplementation(Ktor2.Test.serverTestHost)
     testImplementation(TmsKtorTokenSupport.authenticationInstallerMock)
     testImplementation(TmsKtorTokenSupport.tokenXValidationMock)
+    testImplementation(Mockk.mockk)
 }
 
 application {
