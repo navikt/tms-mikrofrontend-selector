@@ -33,6 +33,8 @@ class PersonRepository(private val database: Database, private val metricsRegist
         val microfrontends = getMicrofrontends(ident)
         withLogging(ident, microfrontendData.microfrontendId, "enable") {
             if (microfrontends.addMicrofrontend(microfrontendData)) {
+                secureLog.info { "Oppdaterer mikrofrontend fra packet: $microfrontendData" }
+                secureLog.info { "Nytt innhold er ${microfrontends.apiResponse(4)} " }
                 updatePersonTable(ident, microfrontends)
                 addChangelogEntry(ident, microfrontends)
                 metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.ENABLE, microfrontendData.microfrontendId)

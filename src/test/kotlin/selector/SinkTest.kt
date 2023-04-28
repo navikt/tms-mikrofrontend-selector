@@ -113,7 +113,7 @@ internal class SinkTest {
         database.getMicrofrontends(ident = testFnr).assert {
             require(this != null)
             size shouldBe 1
-            map { it["microfrontend_id"].asText() }  shouldContainExactly listOf(testmicrofeId2)
+            map { it["microfrontend_id"].asText() } shouldContainExactly listOf(testmicrofeId2)
         }
         database.getChangelog(testFnr).assert {
             size shouldBe 3
@@ -135,6 +135,25 @@ internal class SinkTest {
             this.getPrometheusCount(testmicrofeId1, ActionMetricsType.ENABLE) shouldBe 2
             this.getPrometheusCount(testmicrofeId2, ActionMetricsType.ENABLE) shouldBe 1
             this.getPrometheusCount(testmicrofeId1, ActionMetricsType.DISABLE) shouldBe 1
+        }
+    }
+
+    @Test
+    fun `Skal kunne re-enable mikrofrontend`() {
+        val testFnr = "12345678910"
+        val testmicrofeId1 = "same-same-but-different"
+        testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
+        testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
+        testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
+
+        database.getMicrofrontends(ident = testFnr).assert {
+            require(this != null)
+            size shouldBe 1
+            map { it["microfrontend_id"].asText() } shouldContainExactly listOf(testmicrofeId1)
+        }
+
+        database.getChangelog(testFnr).assert {
+            size shouldBe 3
         }
     }
 }

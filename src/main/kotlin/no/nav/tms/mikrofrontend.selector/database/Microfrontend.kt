@@ -23,6 +23,7 @@ internal class Microfrontends(initialJson: String? = null) {
                     log.info { "Konverterer mikrofrontend-entry fra gammelt til nytt format; ${it.asText()}" }
                     createNodeAndAddSikkerhetsnivå(it.asText())
                 } else {
+                    log.info { "Leser mikrofrontend-entry på nytt format d d" }
                     createNode(it["microfrontend_id"].asText(), it["sikkerhetsnivå"].asInt())
                 }
             }
@@ -39,6 +40,7 @@ internal class Microfrontends(initialJson: String? = null) {
         newData
             .find { it["microfrontend_id"].asText() == packet.microfrontendId }
             ?.let {
+                log.info { "oppdaterer eksisterende mikrofrontend med id ${packet.microfrontendId}" }
                 val currentSikkerhetsnivå = it["sikkerhetsnivå"].asInt()
                 if (currentSikkerhetsnivå == packet.sikkerhetsnivå) {
                     false
@@ -49,6 +51,7 @@ internal class Microfrontends(initialJson: String? = null) {
                 }
             }
             ?: newData.add(createNode(packet.microfrontendId, packet.sikkerhetsnivå))
+                .also { "Legger til ny mikrofrontend med id ${packet.microfrontendId} med sikkerhetsnivå ${packet.sikkerhetsnivå}" }
 
     fun removeMicrofrontend(microfrontendId: String) =
         newData.removeIf { node ->
