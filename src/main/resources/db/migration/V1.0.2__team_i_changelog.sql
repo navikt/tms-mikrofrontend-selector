@@ -1,0 +1,1 @@
+alter table person add column initiated_by varchar(100);

@@ -16,7 +16,7 @@ class LocalPostgresDatabase private constructor() : Database {
     companion object {
         private val instance by lazy {
             LocalPostgresDatabase().also {
-                it.migrate()
+                it.migrate(3)
             }
         }
 
@@ -45,12 +45,15 @@ class LocalPostgresDatabase private constructor() : Database {
         }
     }
 
-    private fun migrate() {
+    private fun migrate(expectedMigrations: Int) {
         Flyway.configure()
             .connectRetries(3)
             .dataSource(dataSource)
             .load()
             .migrate()
+            .also {
+                it.migrationsExecuted shouldBe expectedMigrations
+            }
     }
 
     fun getChangelog(ident: String) = list {
@@ -102,7 +105,12 @@ class LocalPostgresDatabase private constructor() : Database {
 }
 
 
-data class ChangelogEntry(val originalData: String?, val newData: String, val date: LocalDateTime, val initiatedBy:String?)
+data class ChangelogEntry(
+    val originalData: String?,
+    val newData: String,
+    val date: LocalDateTime,
+    val initiatedBy: String?
+)
 
 internal inline fun <T> T.assert(block: T.() -> Unit): T =
     apply {
