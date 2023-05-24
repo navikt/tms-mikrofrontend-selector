@@ -5,17 +5,19 @@ import assert
 import enableMessage
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import io.mockk.coEvery
 import io.mockk.mockk
-import kotliquery.queryOf
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
+import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import org.junit.jupiter.api.Test
 
-import org.junit.jupiter.api.Assertions.*
 
 internal class PersonRepositoryTest {
-    val testDb = LocalPostgresDatabase.cleanDb()
-    val repository = PersonRepository(testDb, mockk())
+    private val testDb = LocalPostgresDatabase.cleanDb()
+    private val repository = PersonRepository(testDb, mockk<MicrofrontendCounter>().also {
+        coEvery { it.countMicrofrontendEnabled(any(),any()) }.answers {  }
+    })
 
     @Test
     fun `Skal sette inn mikrofrontend for ident`() {
@@ -31,7 +33,11 @@ internal class PersonRepositoryTest {
             find { it["microfrontend_id"].asText() == "mkf4" }?.get("sikkerhetsnivå")?.asInt() shouldBe 3
             find { it["microfrontend_id"].asText() == "mkf1" }?.get("sikkerhetsnivå")?.asInt() shouldBe 4
         }
-        testDb.getChangelog(testId1).size shouldBe 3
+        testDb.getChangelog(testId1).assert {
+            size shouldBe 3
+            first().initiatedBy shouldBe "test-team-1"
+            last().initiatedBy shouldBe "test-team-2"
+        }
 
     }
 
@@ -66,7 +72,11 @@ internal class PersonRepositoryTest {
             size shouldBe 2
             map { it["microfrontend_id"].asText() } shouldContainExactly listOf("mkf1","mkf5")
         }
-        testDb.getChangelog(testId1).size shouldBe 6
+        testDb.getChangelog(testId1).assert {
+            size shouldBe 6
+            last().initiatedBy shouldBe "test-team-3"
+            first().initiatedBy shouldBe "test-team-4"
+        }
     }
 
     @Test
