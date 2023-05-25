@@ -20,7 +20,7 @@ class EnableSink(
         River(rapidsConnection).apply {
             validate { it.demandValue("@action", "enable") }
             validate { it.requireKey("ident", "microfrontend_id") }
-            validate {it.interestedIn("sikkerhetsnivå")}
+            validate {it.interestedIn("sikkerhetsnivå","initiated_by")}
         }.register(this)
     }
 
@@ -33,3 +33,4 @@ class EnableSink(
         log.info(problems.toString())
     }
 }
+

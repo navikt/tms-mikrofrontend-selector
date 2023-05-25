@@ -20,12 +20,14 @@ class DisableSink(
         River(rapidsConnection).apply {
             validate { it.demandValue("@action", "disable") }
             validate { it.requireKey("ident", "microfrontend_id") }
+            validate {it.interestedIn("initiated_by")}
+
         }.register(this)
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         log.info { "mottok disablemelding for ${packet.microfrontendId}" }
-        personRepository.disableMicrofrontend(packet.ident, packet.microfrontendId)
+        personRepository.disableMicrofrontend(packet.ident, packet.microfrontendId, packet.initiatedBy)
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {

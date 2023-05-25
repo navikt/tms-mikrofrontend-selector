@@ -63,7 +63,7 @@ class LocalPostgresDatabase private constructor() : Database {
                     originalData = it.stringOrNull("original_data"),
                     newData = it.string("new_data"),
                     date = it.localDateTime("timestamp"),
-                    initiatedBy = it.string("initiated_by")
+                    initiatedBy = it.stringOrNull("initiated_by")
                 )
             }.asList
     }

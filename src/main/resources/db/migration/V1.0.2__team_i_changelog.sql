@@ -1,1 +1,1 @@
-alter table person add column initiated_by varchar(100);
+alter table changelog add column initiated_by varchar(100);
