@@ -25,7 +25,7 @@ spec:
     - "https://tms-mikrofrontend-selector.nav.no"
   kafka:
     pool: nav-prod
-  securelogs:
+  secureLogs:
     enabled: true
   tokenx:
     enabled: true
