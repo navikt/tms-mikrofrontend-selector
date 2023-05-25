@@ -21,7 +21,8 @@ microfrontend-topicet.
       "@action": "enable",
       "ident": <ident for bruker, vanligvis fnr>,
       "microfrontend_id": <microfrontendId>,
-      "sikkerhetsnivå" : <innloggingsnivå som er påkrevd for å se innholdet i mikrofrontenden, gyldige verdier: 3 eller 4>
+      "sikkerhetsnivå" : <innloggingsnivå som er påkrevd for å se innholdet i mikrofrontenden, gyldige verdier: 3 eller 4>,
+      "initiated_by":<ditt-team>
    }
    ```
 2. Disable-melding når bruker ikke skal se mikrofrontenden lenger
@@ -29,7 +30,8 @@ microfrontend-topicet.
    {
       "@action":  "disable",
       "ident": <ident for bruker, vanligvis fnr>,
-      "microfrontend_id": <microfrontendId>
+      "microfrontend_id": <microfrontendId>,
+      "initiated_by":<ditt-team>
    }
    ```
 
