@@ -67,7 +67,7 @@ interface DittNAVCommonLibDefaults: DependencyGroup {
 
 interface FlywayDefaults: DependencyGroup {
     override val groupId get() = "org.flywaydb"
-    override val version get() = "6.5.7"
+    override val version get() = "9.18.0"
 
     val pluginId get() = "org.flywaydb.flyway"
     val core get() = dependency("flyway-core")

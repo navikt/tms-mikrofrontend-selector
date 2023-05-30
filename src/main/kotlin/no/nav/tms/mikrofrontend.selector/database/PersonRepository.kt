@@ -4,12 +4,12 @@ import kotliquery.queryOf
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.tms.mikrofrontend.selector.ident
+import no.nav.tms.mikrofrontend.selector.initiatedBy
 import no.nav.tms.mikrofrontend.selector.metrics.ActionMetricsType
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.microfrontendId
 import java.time.LocalDateTime
 import java.time.ZoneId
-
 
 class PersonRepository(private val database: Database, private val metricsRegistry: MicrofrontendCounter) {
     private val secureLog = KotlinLogging.logger("secureLog")
@@ -28,26 +28,27 @@ class PersonRepository(private val database: Database, private val metricsRegist
         ?: Microfrontends.emptyApiResponse()
     }
 
-    fun enableMicrofrontend( microfrontendData: JsonMessage) {
+    fun enableMicrofrontend(microfrontendData: JsonMessage) {
         val ident = microfrontendData.ident
+        val initiatedBy = microfrontendData.initiatedBy
         val microfrontends = getMicrofrontends(ident)
         withLogging(ident, microfrontendData.microfrontendId, "enable") {
             if (microfrontends.addMicrofrontend(microfrontendData)) {
                 secureLog.info { "Oppdaterer mikrofrontend fra packet: $microfrontendData" }
                 secureLog.info { "Nytt innhold er ${microfrontends.apiResponse(4)} " }
                 updatePersonTable(ident, microfrontends)
-                addChangelogEntry(ident, microfrontends)
+                addChangelogEntry(ident, microfrontends, initiatedBy)
                 metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.ENABLE, microfrontendData.microfrontendId)
             }
         }
     }
 
-    fun disableMicrofrontend(ident: String, microfrontendId: String) {
+    fun disableMicrofrontend(ident: String, microfrontendId: String, initiatedBy: String?) {
         val microfrontends = getMicrofrontends(ident)
         withLogging(ident, microfrontendId, "disable") {
             if (microfrontends.removeMicrofrontend(microfrontendId)) {
                 updatePersonTable(ident, microfrontends)
-                addChangelogEntry(ident, microfrontends)
+                addChangelogEntry(ident, microfrontends, initiatedBy)
                 metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.DISABLE, microfrontendId)
             }
         }
@@ -59,16 +60,18 @@ class PersonRepository(private val database: Database, private val metricsRegist
         }.asSingle
     } ?: Microfrontends()
 
-    private fun addChangelogEntry(ident: String, microfrontends: Microfrontends) {
+    private fun addChangelogEntry(ident: String, microfrontends: Microfrontends, initiatedBy: String?) {
         database.update {
             queryOf(
-                """INSERT INTO changelog (ident, original_data, new_data, timestamp) VALUES (:ident, :originalData, :newData, :now) 
+                """INSERT INTO changelog (ident, original_data, new_data, timestamp, initiated_by) 
+                    VALUES (:ident, :originalData, :newData, :now, :initiatedBy) 
                 """.trimMargin(),
                 mapOf(
                     "ident" to ident,
                     "originalData" to microfrontends.originalDataJsonB(),
                     "newData" to microfrontends.newDataJsonB(),
-                    "now" to LocalDateTimeHelper.nowAtUtc()
+                    "now" to LocalDateTimeHelper.nowAtUtc(),
+                    "initiatedBy" to initiatedBy
                 )
             )
         }
@@ -108,3 +111,4 @@ class PersonRepository(private val database: Database, private val metricsRegist
 }
 
 class DatabaseException(val ident: String, val originalException: Exception) : Exception()
+

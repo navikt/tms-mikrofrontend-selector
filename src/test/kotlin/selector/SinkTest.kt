@@ -59,8 +59,8 @@ internal class SinkTest {
         database.insertWithLegacyFormat(testIdent, oldAndRusty)
 
         testRapid.sendTestMessage(enableMessageUtenSikkerhetsnivå(ident = testIdent, microfrontendId = testmicrofeId1))
-        testRapid.sendTestMessage(enableMessage(fnr = testIdent, microfrontendId = testmicrofeId2))
-        testRapid.sendTestMessage(enableMessage(fnr = testIdent, microfrontendId = testmicrofeId2, sikkerhetsnivå = 3))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId2, fnr = testIdent, initiatedBy = null))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId2, fnr = testIdent, sikkerhetsnivå = 3,))
 
         database.getMicrofrontends(ident = testIdent).assert {
             require(this != null)
@@ -103,9 +103,9 @@ internal class SinkTest {
         val testmicrofeId1 = "new-and-shiny"
         val testmicrofeId2 = "also-new-and-shiny"
 
-        testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
-        testRapid.sendTestMessage(enableMessage(fnr = "9988776655", microfrontendId = testmicrofeId1))
-        testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId2))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr,))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = "9988776655",))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId2, fnr = testFnr,))
 
         testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
         testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
@@ -142,9 +142,9 @@ internal class SinkTest {
     fun `Skal kunne re-enable mikrofrontend`() {
         val testFnr = "12345678910"
         val testmicrofeId1 = "same-same-but-different"
-        testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr,))
         testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
-        testRapid.sendTestMessage(enableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr,))
 
         database.getMicrofrontends(ident = testFnr).assert {
             require(this != null)
@@ -177,5 +177,13 @@ private fun enableMessageUtenSikkerhetsnivå(microfrontendId: String, ident: Str
       "@action": "enable",
       "ident": "$ident",
       "microfrontend_id": "$microfrontendId"
+    }
+    """.trimIndent()
+private fun enableMessageUtenInitiatedBy(microfrontendId: String, ident: String) = """
+    {
+      "@action": "enable",
+      "ident": "$ident",
+      "microfrontend_id": "$microfrontendId",
+      "sikkerhetsnivå" : 4,
     }
     """.trimIndent()

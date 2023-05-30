@@ -1,4 +1,5 @@
 import com.zaxxer.hikari.HikariDataSource
+import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
 import no.nav.tms.mikrofrontend.selector.database.Database
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
@@ -10,12 +11,12 @@ import java.time.LocalDateTime
 class LocalPostgresDatabase private constructor() : Database {
 
     private val memDataSource: HikariDataSource
-    private val container = PostgreSQLContainer("postgres:14.5")
+    private val container = PostgreSQLContainer<Nothing>("postgres:14.5")
 
     companion object {
         private val instance by lazy {
             LocalPostgresDatabase().also {
-                it.migrate()
+                it.migrate(2)
             }
         }
 
@@ -44,12 +45,15 @@ class LocalPostgresDatabase private constructor() : Database {
         }
     }
 
-    private fun migrate() {
+    private fun migrate(expectedMigrations: Int) {
         Flyway.configure()
             .connectRetries(3)
             .dataSource(dataSource)
             .load()
             .migrate()
+            .also {
+                it.migrationsExecuted shouldBe expectedMigrations
+            }
     }
 
     fun getChangelog(ident: String) = list {
@@ -58,7 +62,8 @@ class LocalPostgresDatabase private constructor() : Database {
                 ChangelogEntry(
                     originalData = it.stringOrNull("original_data"),
                     newData = it.string("new_data"),
-                    date = it.localDateTime("timestamp")
+                    date = it.localDateTime("timestamp"),
+                    initiatedBy = it.stringOrNull("initiated_by")
                 )
             }.asList
     }
@@ -100,7 +105,12 @@ class LocalPostgresDatabase private constructor() : Database {
 }
 
 
-data class ChangelogEntry(val originalData: String?, val newData: String, val date: LocalDateTime)
+data class ChangelogEntry(
+    val originalData: String?,
+    val newData: String,
+    val date: LocalDateTime,
+    val initiatedBy: String?
+)
 
 internal inline fun <T> T.assert(block: T.() -> Unit): T =
     apply {

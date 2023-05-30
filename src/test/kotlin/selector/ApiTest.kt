@@ -60,9 +60,9 @@ internal class ApiTest {
         }
 
         expectedMicrofrontends.forEach {
-            testRapid.sendTestMessage(enableMessage(it, testIdent))
+            testRapid.sendTestMessage(enableMessage(it, testIdent,))
         }
-        testRapid.sendTestMessage(enableMessage("nivå3mkf", testIdent, 3))
+        testRapid.sendTestMessage(enableMessage("nivå3mkf", testIdent, 3,))
         expectedMicrofrontends.add("nivå3mkf")
 
 
@@ -97,9 +97,9 @@ internal class ApiTest {
         }
 
         nivå4Mikrofrontends.forEach {
-            testRapid.sendTestMessage(enableMessage(it, testIdent))
+            testRapid.sendTestMessage(enableMessage(it, testIdent,))
         }
-        testRapid.sendTestMessage(enableMessage("nivå3mkf", testIdent, 3))
+        testRapid.sendTestMessage(enableMessage("nivå3mkf", testIdent, 3,))
 
 
         client.get("/mikrofrontends").assert {
