@@ -1,7 +1,8 @@
 # mikrofrontender på min side
 
 Mikrofrontends gir teamene mulighet til å presentere den viktigste informasjonen til brukerne sine på Min side. Kan ses
-på som et butikkvindu inn til teamenes egne løsninger.
+på som et butikkvindu inn til teamenes egne løsninger. Dette gjøres gjennom at mikrofrontenden blir bygget til ESM og 
+deretter hentes inn som en remote ES-Modul.
 
 ## Nice! Hvordan kan mitt team få en mikrofrontend på min side?
 
@@ -35,10 +36,34 @@ microfrontend-topicet.
    }
    ```
 
+## Språk
+Vi bruker språkvelgeren i Dekoratøren. For å vite hvilket språk man skal vise så sender vi et event via session storage.
+Man kan enkelt sette opp en provider som vi har gjort [her](https://github.com/navikt/tms-utkast-mikrofrontend/blob/main/src/provider/LanguageProvider.tsx).
+
+## Shared dependencies
+For å unngå å ha for store bundles så deler vi noen dependencies på tvers av apper. Disse hentes ned en gang ved første
+page load fra en CDN og caches i browseren. Foreløpig ligger react, react-dom og ds-css i CDNen.
+
+CSSen fra designsystemet hentes i skallet til Min side. Denne skal deles på tvers og ikke bundles med i mikrofrontenden. 
+Vi bør ligge på samme major versjon, veilendende versjon ligger [her](https://github.com/navikt/tms-min-side/blob/main/index.html).
+
 ## FAQ
 
 ### Hva bør jeg velge som mikrofrontend-id?
 `<område>.<tjenste>` er ett bra utgangspunkt, prøv å holde det så generelt som mulig, men gjenkjenbart.
+
+### Hvordan skal mikrofrontenden se ut?
+Vi bruker en modifisert versjon av designsystemet. Ta kontakt med oss for å se hvordan en ny mikrofrontend kan passe inn
+i Min side.
+
+### Hvordan fungerer amplitude?
+
+Amplitude fungerer som vanlig (se [AAP sin mikrofrontend](https://github.com/navikt/aap-min-side-microfrontend/blob/main/src/utils/amplitude.ts)). 
+Dere kan fritt logge de eventene dere vil, men for å sette opp målinger på tvers i Amplitude har vi disse føringene 
+på [navigasjonseventer](https://github.com/navikt/analytics-taxonomy/tree/main/events/navigere):
+- komponent: tekstlig representasjon av komponenten det ble trykket på.
+
+Videre anbefaler vi å følge [taksonominen](https://github.com/navikt/analytics-taxonomy) i NAV.
 
 ### Hva er egentlig innloggngsnivå og sikkerhetsnivå?
 
