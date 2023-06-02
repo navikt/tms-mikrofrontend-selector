@@ -1,5 +1,5 @@
 FROM navikt/java:17-appdynamics
-COPY build/libs/tms-mikrofrontend-selector-all.jar /app/app.jar
+COPY app/build/libs/tms-mikrofrontend-selector-all.jar /app/app.jar
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75 \
                -XX:+HeapDumpOnOutOfMemoryError \
                -XX:HeapDumpPath=/oom-dump.hprof"
