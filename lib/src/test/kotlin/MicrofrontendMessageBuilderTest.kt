@@ -4,23 +4,23 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 
-internal class MessageBuilderTest {
+internal class MicrofrontendMessageBuilderTest {
 
-    val expectedIdent = "12345678910"
-    val expectedInitiatedBy = "team-something"
-    val expectedMicrofrontendId = "mkf3"
+    private val expectedIdent = "12345678910"
+    private val expectedInitiatedBy = "team-something"
+    private val expectedMicrofrontendId = "mkf3"
 
     @Test
     fun `disable med config objekt`() {
         shouldThrow<IllegalArgumentException> {
-            MessageBuilder.disable {
+            MicrofrontendMessageBuilder.disable {
                 ident = expectedIdent
                 initiatedBy = expectedInitiatedBy
             }.map()
         }
 
         shouldThrow<IllegalArgumentException> {
-            MessageBuilder.disable {
+            MicrofrontendMessageBuilder.disable {
                 ident = "ugyldigidentmedbokstaver"
                 initiatedBy = expectedInitiatedBy
                 microfrontendId = expectedMicrofrontendId
@@ -28,7 +28,7 @@ internal class MessageBuilderTest {
         }
 
         shouldThrow<IllegalArgumentException> {
-            MessageBuilder.disable {
+            MicrofrontendMessageBuilder.disable {
                 ident = "112345678910"
                 initiatedBy = expectedInitiatedBy
                 microfrontendId = expectedMicrofrontendId
@@ -36,7 +36,7 @@ internal class MessageBuilderTest {
         }
 
 
-        MessageBuilder.disable {
+        MicrofrontendMessageBuilder.disable {
             ident = expectedIdent
             initiatedBy = expectedInitiatedBy
             microfrontendId = expectedMicrofrontendId
@@ -56,7 +56,7 @@ internal class MessageBuilderTest {
 
     @Test
     fun `disable med parameter`() {
-        MessageBuilder.disable(
+        MicrofrontendMessageBuilder.disable(
             ident = expectedIdent,
             microfrontenId = expectedMicrofrontendId,
             initiatedBy = expectedInitiatedBy
@@ -77,13 +77,13 @@ internal class MessageBuilderTest {
     @Test
     fun `enable med config objekt`() {
         shouldThrow<IllegalArgumentException> {
-            MessageBuilder.enable {
+            MicrofrontendMessageBuilder.enable {
                 initiatedBy = expectedInitiatedBy
                 microfrontendId = expectedMicrofrontendId
             }.map()
         }
 
-        MessageBuilder.enable {
+        MicrofrontendMessageBuilder.enable {
             ident = expectedIdent
             initiatedBy = expectedInitiatedBy
             microfrontendId = expectedMicrofrontendId
@@ -97,7 +97,42 @@ internal class MessageBuilderTest {
                 this["sikkerhetsnivå"].asInt() shouldBe 4
                 assertCommonJsonFields(jsonNode())
             }
-            assertEnableText(text())
+            assertEnableText(text(), "4")
+        }
+
+        MicrofrontendMessageBuilder.enable {
+            ident = expectedIdent
+            initiatedBy = expectedInitiatedBy
+            microfrontendId = expectedMicrofrontendId
+        }.apply {
+            map().assert {
+                this["@action"] shouldBe "enable"
+                this["sikkerhetsnivå"] shouldBe "4"
+            }
+            jsonNode().assert {
+                this["@action"].asText() shouldBe "enable"
+                this["sikkerhetsnivå"].asInt() shouldBe 4
+                assertCommonJsonFields(jsonNode())
+            }
+            assertEnableText(text(), "4")
+        }
+
+        MicrofrontendMessageBuilder.enable {
+            ident = expectedIdent
+            initiatedBy = expectedInitiatedBy
+            microfrontendId = expectedMicrofrontendId
+            sikkerhetsnivå = Sikkerhetsnivå.NIVÅ_3
+        }.apply {
+            map().assert {
+                this["@action"] shouldBe "enable"
+                this["sikkerhetsnivå"] shouldBe "3"
+            }
+            jsonNode().assert {
+                this["@action"].asText() shouldBe "enable"
+                this["sikkerhetsnivå"].asInt() shouldBe 3
+                assertCommonJsonFields(jsonNode())
+            }
+            assertEnableText(text(), "3")
         }
 
 
@@ -131,14 +166,14 @@ internal class MessageBuilderTest {
 
     }
 
-    private fun assertEnableText(text: String) {
+    private fun assertEnableText(text: String, sikkerhetsnivå: String) {
         val expectedText =
             """{
                 "@action":"enable",
                 "ident":"$expectedIdent",
                 "microfrontend_id":"$expectedMicrofrontendId",
                 "initiated_by":"$expectedInitiatedBy",
-                "sikkerhetsnivå":"4" 
+                "sikkerhetsnivå":"$sikkerhetsnivå" 
                }"""
                 .replace("\\s".toRegex(), "")
         text shouldBe expectedText

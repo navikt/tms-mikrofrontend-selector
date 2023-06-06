@@ -47,7 +47,7 @@ enum class Sikkerhetsnivå(val tallverdi: String) {
     NIVÅ_4("4"), NIVÅ_3("3")
 }
 
-object MessageBuilder {
+object MicrofrontendMessageBuilder {
     private val objectMapper = ObjectMapper()
 
     fun disable(properties: Action.() -> Unit): Disable =
@@ -60,7 +60,7 @@ object MessageBuilder {
             message.initiatedBy = initiatedBy
         }
 
-    fun enable(properties: Action.() -> Unit): Enable =
+    fun enable(properties: Enable.() -> Unit): Enable =
         Enable(objectMapper).also(properties)
 
     fun enable(
