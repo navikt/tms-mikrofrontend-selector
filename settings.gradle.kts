@@ -8,4 +8,4 @@
  */
 
 rootProject.name = "tms-mikrofrontend-selector"
-include("app")
+include("app","lib")
