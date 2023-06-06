@@ -1,10 +1,15 @@
+package no.nav.tms.microfrontend.message.builder
+
+
 import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import no.nav.tms.microfrontend.MessageBuilder
+import no.nav.tms.microfrontend.Sikkerhetsnivå
 import org.junit.jupiter.api.Test
 
 
-internal class MicrofrontendMessageBuilderTest {
+internal class MessageBuilderTest {
 
     private val expectedIdent = "12345678910"
     private val expectedInitiatedBy = "team-something"
@@ -13,14 +18,14 @@ internal class MicrofrontendMessageBuilderTest {
     @Test
     fun `disable med config objekt`() {
         shouldThrow<IllegalArgumentException> {
-            MicrofrontendMessageBuilder.disable {
+            MessageBuilder.disable {
                 ident = expectedIdent
                 initiatedBy = expectedInitiatedBy
             }.map()
         }
 
         shouldThrow<IllegalArgumentException> {
-            MicrofrontendMessageBuilder.disable {
+            MessageBuilder.disable {
                 ident = "ugyldigidentmedbokstaver"
                 initiatedBy = expectedInitiatedBy
                 microfrontendId = expectedMicrofrontendId
@@ -28,7 +33,7 @@ internal class MicrofrontendMessageBuilderTest {
         }
 
         shouldThrow<IllegalArgumentException> {
-            MicrofrontendMessageBuilder.disable {
+            MessageBuilder.disable {
                 ident = "112345678910"
                 initiatedBy = expectedInitiatedBy
                 microfrontendId = expectedMicrofrontendId
@@ -36,7 +41,7 @@ internal class MicrofrontendMessageBuilderTest {
         }
 
 
-        MicrofrontendMessageBuilder.disable {
+        MessageBuilder.disable {
             ident = expectedIdent
             initiatedBy = expectedInitiatedBy
             microfrontendId = expectedMicrofrontendId
@@ -56,7 +61,7 @@ internal class MicrofrontendMessageBuilderTest {
 
     @Test
     fun `disable med parameter`() {
-        MicrofrontendMessageBuilder.disable(
+        MessageBuilder.disable(
             ident = expectedIdent,
             microfrontenId = expectedMicrofrontendId,
             initiatedBy = expectedInitiatedBy
@@ -77,13 +82,13 @@ internal class MicrofrontendMessageBuilderTest {
     @Test
     fun `enable med config objekt`() {
         shouldThrow<IllegalArgumentException> {
-            MicrofrontendMessageBuilder.enable {
+            MessageBuilder.enable {
                 initiatedBy = expectedInitiatedBy
                 microfrontendId = expectedMicrofrontendId
             }.map()
         }
 
-        MicrofrontendMessageBuilder.enable {
+        MessageBuilder.enable {
             ident = expectedIdent
             initiatedBy = expectedInitiatedBy
             microfrontendId = expectedMicrofrontendId
@@ -100,7 +105,7 @@ internal class MicrofrontendMessageBuilderTest {
             assertEnableText(text(), "4")
         }
 
-        MicrofrontendMessageBuilder.enable {
+        MessageBuilder.enable {
             ident = expectedIdent
             initiatedBy = expectedInitiatedBy
             microfrontendId = expectedMicrofrontendId
@@ -117,7 +122,7 @@ internal class MicrofrontendMessageBuilderTest {
             assertEnableText(text(), "4")
         }
 
-        MicrofrontendMessageBuilder.enable {
+        MessageBuilder.enable {
             ident = expectedIdent
             initiatedBy = expectedInitiatedBy
             microfrontendId = expectedMicrofrontendId

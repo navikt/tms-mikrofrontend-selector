@@ -1,3 +1,5 @@
+package no.nav.tms.microfrontend
+
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.lang.IllegalArgumentException
@@ -47,7 +49,7 @@ enum class Sikkerhetsnivå(val tallverdi: String) {
     NIVÅ_4("4"), NIVÅ_3("3")
 }
 
-object MicrofrontendMessageBuilder {
+object MessageBuilder {
     private val objectMapper = ObjectMapper()
 
     fun disable(properties: Action.() -> Unit): Disable =
@@ -65,13 +67,13 @@ object MicrofrontendMessageBuilder {
 
     fun enable(
         ident: String,
-        microfrontenId: String,
+        microfrontendId: String,
         initiatedBy: String,
         sikkerhetsnivå: Sikkerhetsnivå = Sikkerhetsnivå.NIVÅ_4
     ) =
         Enable(objectMapper).also { message ->
             message.ident = ident
-            message.microfrontendId = microfrontenId
+            message.microfrontendId = microfrontendId
             message.initiatedBy = initiatedBy
             message.sikkerhetsnivå = sikkerhetsnivå
         }
