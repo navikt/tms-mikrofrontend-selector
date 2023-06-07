@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector
 
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidApplication.RapidApplicationConfig.Companion.fromEnv
@@ -16,30 +15,31 @@ fun main() {
 
     startRapid(
         environment = environment,
-        prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+        collectorRegistry = CollectorRegistry.defaultRegistry
     )
 }
 
 private fun startRapid(
     environment: Environment,
-    prometheusMeterRegistry: PrometheusMeterRegistry,
+    collectorRegistry: CollectorRegistry,
 ) {
     val personRepository = PersonRepository(
         database = PostgresDatabase(environment),
-        metricsRegistry = MicrofrontendCounter(prometheusMeterRegistry)
+        metricsRegistry = MicrofrontendCounter(collectorRegistry)
     )
-    RapidApplication.Builder(fromEnv(environment.rapidConfig())).withKtorModule {
-        selectorApi(personRepository, prometheusMeterRegistry)
-    }.build().apply {
-        DisableSink(this, personRepository)
-        EnableSink(this, personRepository)
-    }.apply {
-        register(object : RapidsConnection.StatusListener {
-            override fun onStartup(rapidsConnection: RapidsConnection) {
-                Flyway.runFlywayMigrations(environment)
-            }
-        })
-    }.start()
+    RapidApplication.Builder(fromEnv(environment.rapidConfig()))
+        .withKtorModule { selectorApi(personRepository) }
+        .withCollectorRegistry(collectorRegistry)
+        .build().apply {
+            DisableSink(this, personRepository)
+            EnableSink(this, personRepository)
+        }.apply {
+            register(object : RapidsConnection.StatusListener {
+                override fun onStartup(rapidsConnection: RapidsConnection) {
+                    Flyway.runFlywayMigrations(environment)
+                }
+            })
+        }.start()
 }
 
 val JsonMessage.ident: String

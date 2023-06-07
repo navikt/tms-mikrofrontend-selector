@@ -1,27 +1,22 @@
 package no.nav.tms.mikrofrontend.selector.metrics
 
-import io.ktor.server.application.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.prometheus.client.CollectorRegistry
+import io.prometheus.client.Counter
 
-private const val METRIC_NAMESPACE = "tms.mikrofrontend.selector.v1"
+private const val METRIC_NAME = "tms_mikrofrontend_selector_changed"
 
-class MicrofrontendCounter(private val prometheusMeterRegistry: PrometheusMeterRegistry) {
+class MicrofrontendCounter(collectorRegistry: CollectorRegistry) {
+    private val counter = Counter.build()
+        .name(METRIC_NAME)
+        .help("Endringer i mikrofrontender på min side")
+        .labelNames("action", "microfrontendId")
+        .register(collectorRegistry)
 
     fun countMicrofrontendEnabled(actionMetricsType: ActionMetricsType, microfrontendId: String) {
-         prometheusMeterRegistry.counter("${METRIC_NAMESPACE}.microfrontend.changed", "action", actionMetricsType.name.lowercase(), "microfrontendId", microfrontendId)
-            .increment()
+        counter
+            .labels(actionMetricsType.name, microfrontendId)
+            .inc()
     }
 
 }
-
 enum class ActionMetricsType { ENABLE, DISABLE }
-
-fun Routing.metrics(prometheusMeterRegistry: PrometheusMeterRegistry){
-    route("/metrics"){
-        get {
-          call.respond(prometheusMeterRegistry.scrape())
-        }
-    }
-}

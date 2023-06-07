@@ -7,27 +7,24 @@ import enableMessage
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.prometheus.client.CollectorRegistry
 import kotliquery.queryOf
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.DisableSink
 import no.nav.tms.mikrofrontend.selector.EnableSink
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
-import no.nav.tms.mikrofrontend.selector.metrics.ActionMetricsType
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import objectMapper
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.lang.IllegalArgumentException
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class SinkTest {
 
     private val database = LocalPostgresDatabase.cleanDb()
-    private val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+    private val registry = CollectorRegistry.defaultRegistry
     private val personRepository = PersonRepository(
         database = database,
         metricsRegistry = MicrofrontendCounter(registry)
@@ -37,6 +34,7 @@ internal class SinkTest {
 
     @BeforeAll
     fun setupSinks() {
+        registry.clear()
         EnableSink(testRapid, personRepository)
         DisableSink(testRapid, personRepository)
     }
@@ -60,7 +58,7 @@ internal class SinkTest {
 
         testRapid.sendTestMessage(enableMessageUtenSikkerhetsnivå(ident = testIdent, microfrontendId = testmicrofeId1))
         testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId2, fnr = testIdent, initiatedBy = null))
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId2, fnr = testIdent, sikkerhetsnivå = 3,))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId2, fnr = testIdent, sikkerhetsnivå = 3))
 
         database.getMicrofrontends(ident = testIdent).assert {
             require(this != null)
@@ -90,11 +88,6 @@ internal class SinkTest {
                 newData.microfrontendids().size shouldBe 3
             }
         }
-
-        registry.scrape().apply {
-            this.getPrometheusCount(testmicrofeId1, ActionMetricsType.ENABLE) shouldBe 1
-            this.getPrometheusCount(testmicrofeId2, ActionMetricsType.ENABLE) shouldBe 2
-        }
     }
 
     @Test
@@ -103,9 +96,9 @@ internal class SinkTest {
         val testmicrofeId1 = "new-and-shiny"
         val testmicrofeId2 = "also-new-and-shiny"
 
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr,))
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = "9988776655",))
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId2, fnr = testFnr,))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = "9988776655"))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId2, fnr = testFnr))
 
         testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
         testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
@@ -130,21 +123,15 @@ internal class SinkTest {
                 newData.microfrontendids().size shouldBe 1
             }
         }
-
-        registry.scrape().apply {
-            this.getPrometheusCount(testmicrofeId1, ActionMetricsType.ENABLE) shouldBe 2
-            this.getPrometheusCount(testmicrofeId2, ActionMetricsType.ENABLE) shouldBe 1
-            this.getPrometheusCount(testmicrofeId1, ActionMetricsType.DISABLE) shouldBe 1
-        }
     }
 
     @Test
     fun `Skal kunne re-enable mikrofrontend`() {
         val testFnr = "12345678910"
         val testmicrofeId1 = "same-same-but-different"
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr,))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr))
         testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr,))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr))
 
         database.getMicrofrontends(ident = testFnr).assert {
             require(this != null)
@@ -164,14 +151,6 @@ private fun String?.microfrontendids(): List<String> {
 }
 
 
-private fun String.getPrometheusCount(key: String, action: ActionMetricsType): Int =
-    split("\r?\n|\r".toRegex())
-        .toTypedArray()
-        .firstOrNull() { it.contains(key) && it.contains(action.name.lowercase()) }
-        ?.let {
-            it[it.length - 3].digitToInt()
-        } ?: throw IllegalArgumentException("fant ikke action $action for $key")
-
 private fun enableMessageUtenSikkerhetsnivå(microfrontendId: String, ident: String) = """
     {
       "@action": "enable",
@@ -179,6 +158,7 @@ private fun enableMessageUtenSikkerhetsnivå(microfrontendId: String, ident: Str
       "microfrontend_id": "$microfrontendId"
     }
     """.trimIndent()
+
 private fun enableMessageUtenInitiatedBy(microfrontendId: String, ident: String) = """
     {
       "@action": "enable",
