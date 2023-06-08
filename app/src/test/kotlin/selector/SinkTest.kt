@@ -24,17 +24,16 @@ import org.junit.jupiter.api.TestInstance
 internal class SinkTest {
 
     private val database = LocalPostgresDatabase.cleanDb()
-    private val registry = CollectorRegistry.defaultRegistry
     private val personRepository = PersonRepository(
         database = database,
-        metricsRegistry = MicrofrontendCounter(registry)
+        metricsRegistry = MicrofrontendCounter()
     )
     private val testRapid = TestRapid()
 
 
     @BeforeAll
     fun setupSinks() {
-        registry.clear()
+        CollectorRegistry.defaultRegistry.clear()
         EnableSink(testRapid, personRepository)
         DisableSink(testRapid, personRepository)
     }
@@ -43,8 +42,6 @@ internal class SinkTest {
     fun cleanDb() {
         database.update { queryOf("delete from changelog") }
         database.update { queryOf("delete from person") }
-        registry.clear()
-
     }
 
     @Test

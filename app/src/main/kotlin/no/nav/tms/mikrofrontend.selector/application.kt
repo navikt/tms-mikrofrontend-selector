@@ -15,21 +15,18 @@ fun main() {
 
     startRapid(
         environment = environment,
-        collectorRegistry = CollectorRegistry.defaultRegistry
     )
 }
 
 private fun startRapid(
     environment: Environment,
-    collectorRegistry: CollectorRegistry,
 ) {
     val personRepository = PersonRepository(
         database = PostgresDatabase(environment),
-        metricsRegistry = MicrofrontendCounter(collectorRegistry)
+        metricsRegistry = MicrofrontendCounter()
     )
     RapidApplication.Builder(fromEnv(environment.rapidConfig()))
         .withKtorModule { selectorApi(personRepository) }
-        .withCollectorRegistry(collectorRegistry)
         .build().apply {
             DisableSink(this, personRepository)
             EnableSink(this, personRepository)

@@ -27,8 +27,7 @@ import org.junit.jupiter.api.TestInstance
 internal class ApiTest {
 
     private val testRapid = TestRapid()
-    private val registry = CollectorRegistry.defaultRegistry
-    private val counter = MicrofrontendCounter(registry)
+    private val counter = MicrofrontendCounter()
     private val personRepository = PersonRepository(
         database = LocalPostgresDatabase.cleanDb(),
         metricsRegistry = counter
@@ -36,7 +35,7 @@ internal class ApiTest {
 
     @BeforeAll
     fun setup() {
-        registry.clear()
+        CollectorRegistry.defaultRegistry.clear()
         EnableSink(testRapid, personRepository)
         DisableSink(testRapid, personRepository)
     }
@@ -64,7 +63,6 @@ internal class ApiTest {
         }
         testRapid.sendTestMessage(enableMessage("nivå3mkf", testIdent, 3,))
         expectedMicrofrontends.add("nivå3mkf")
-
 
         client.get("/mikrofrontends").assert {
             status shouldBe HttpStatusCode.OK
