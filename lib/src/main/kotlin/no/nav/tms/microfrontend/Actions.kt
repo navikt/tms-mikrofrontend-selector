@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.lang.IllegalArgumentException
 
+
+//Publish test
 abstract class Action(protected val objectMapper: ObjectMapper) {
 
     var ident: String? = null
