@@ -8,8 +8,10 @@ plugins {
     `maven-publish`
 }
 
+
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+   // kotlin.jvm.target.validation.mode=
 }
 
 repositories {
