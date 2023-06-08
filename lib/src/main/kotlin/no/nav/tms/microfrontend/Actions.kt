@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import java.lang.IllegalArgumentException
 
 
-//Publish test
+//Trigg publish
 abstract class Action(protected val objectMapper: ObjectMapper) {
 
     var ident: String? = null
