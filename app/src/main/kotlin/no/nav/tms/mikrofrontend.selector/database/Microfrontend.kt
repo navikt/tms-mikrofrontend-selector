@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector.database
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
@@ -11,19 +10,15 @@ import org.postgresql.util.PGobject
 private val log = KotlinLogging.logger { }
 
 internal class Microfrontends(initialJson: String? = null) {
-    private val objectMapper = jacksonObjectMapper().apply {
-        registerModule(JavaTimeModule())
-    }
-
     private val originalData: List<JsonNode>? =
         initialJson
-            ?.let { objectMapper.readTree(it)["microfrontends"] }
+            ?.let { microfrontendMapper.readTree(it)["microfrontends"] }
             ?.map {
                 if (it.isValueNode) {
                     log.info { "Konverterer mikrofrontend-entry fra gammelt til nytt format; ${it.asText()}" }
                     createNodeAndAddSikkerhetsnivå(it.asText())
                 } else {
-                    log.info { "Leser mikrofrontend-entry på nytt format d d" }
+                    log.info { "Leser mikrofrontend-entry på nytt format" }
                     createNode(it["microfrontend_id"].asText(), it["sikkerhetsnivå"].asInt())
                 }
             }
@@ -33,6 +28,7 @@ internal class Microfrontends(initialJson: String? = null) {
     private val newData = originalData?.toMutableSet() ?: mutableSetOf()
 
     companion object {
+        val microfrontendMapper = jacksonObjectMapper()
         fun emptyApiResponse(): String = """{ "microfrontends":[], "offerStepup": false }"""
     }
 
@@ -85,7 +81,7 @@ internal class Microfrontends(initialJson: String? = null) {
         value = this@jsonB
     }
 
-    private fun createNodeAndAddSikkerhetsnivå(microfrontendId: String) = objectMapper.readTree(
+    private fun createNodeAndAddSikkerhetsnivå(microfrontendId: String) = microfrontendMapper.readTree(
         """
          {
          "microfrontend_id": "$microfrontendId",
@@ -94,7 +90,7 @@ internal class Microfrontends(initialJson: String? = null) {
       """.trimMargin()
     )
 
-    private fun createNode(microfrontendId: String, sikkerhetsnivå: Int) = objectMapper.readTree(
+    private fun createNode(microfrontendId: String, sikkerhetsnivå: Int) = microfrontendMapper.readTree(
         """
         {
           "microfrontend_id": "$microfrontendId",
@@ -102,14 +98,6 @@ internal class Microfrontends(initialJson: String? = null) {
         }
       """.trimMargin()
     )
-
-    private fun microfrontendApiList(innloggetnivå: Int) {
-        newData
-            .filter { it["sikkerhetsnivå"].asInt() <= innloggetnivå }
-            .map { it["microfrontend_id"] }
-            .jsonArrayString()
-
-    }
 }
 
 private val JsonMessage.sikkerhetsnivå: Int
