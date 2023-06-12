@@ -1,15 +1,32 @@
 package no.nav.tms.mikrofrontend.selector.database
 
+import com.fasterxml.jackson.databind.JsonNode
 import mu.KotlinLogging
-
+import no.nav.tms.mikrofrontend.selector.database.Microfrontends.Companion.microfrontendMapper
 
 private val log = KotlinLogging.logger { }
 
-
 object JsonVersions {
 
-    fun latestVersion(id: String, sensitivitet: Sensitivitet) {
+    private fun latestVersion(id: String, sensitivitet: Sensitivitet) = microfrontendMapper.readTree(
+        """
+         {
+            "microfrontend_id": "$id",
+            "sensitivitet" : "${sensitivitet.name}"
+        }
+      """.trimMargin()
+    )
 
+    fun konverterTilObjekter(jsonNode: JsonNode): JsonNode = latestVersion(jsonNode.asText(),Sensitivitet.HIGH)
+    fun migrerFraSikkerhetsnivåTilSensitivitet(jsonNode: JsonNode): JsonNode =
+        latestVersion(jsonNode.mikrofrontendId, Sensitivitet.resolve(jsonNode.sikkerhetsnivå))
+
+    fun JsonNode.erVersjonMedSikkerhetsnivå(): Boolean = this.get("sikkerhetsnivå") != null
+
+    fun JsonNode.migrateToLatestVersion(): JsonNode = when {
+        erVersjonMedSikkerhetsnivå() -> migrerFraSikkerhetsnivåTilSensitivitet(this)
+        isValueNode -> konverterTilObjekter(this)
+        else -> this
     }
 }
 
@@ -42,5 +59,9 @@ enum class Sensitivitet(val korresponderendeSikkerhetsnivå: Int) {
     }
 }
 
+private val JsonNode.mikrofrontendId: String
+    get() = this["microfrontend_id"].asText()
 
+private val JsonNode.sikkerhetsnivå: Int
+    get() = this["sikkerhetsnivå"].asInt()
 

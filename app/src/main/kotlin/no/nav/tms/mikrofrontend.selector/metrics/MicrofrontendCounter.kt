@@ -1,6 +1,5 @@
 package no.nav.tms.mikrofrontend.selector.metrics
 
-import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.Counter
 
 private const val METRIC_NAME = "tms_mikrofrontend_selector_changed"
