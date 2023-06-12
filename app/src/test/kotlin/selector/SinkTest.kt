@@ -53,9 +53,13 @@ internal class SinkTest {
 
         database.insertWithLegacyFormat(testIdent, oldAndRusty)
 
-        testRapid.sendTestMessage(enableMessageUtenSikkerhetsnivå(ident = testIdent, microfrontendId = testmicrofeId1))
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId2, fnr = testIdent, initiatedBy = null))
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId2, fnr = testIdent, sikkerhetsnivå = 3))
+        val enableMsg1 = enableMessageUtenSikkerhetsnivå(ident = testIdent, microfrontendId = testmicrofeId1, initiatedBy="testteam")
+        val enableMsg2 = enableMessage(microfrontendId = testmicrofeId2, fnr = testIdent, initiatedBy = null)
+        val enableMsg3 = enableMessage(microfrontendId = testmicrofeId2, fnr = testIdent, sikkerhetsnivå = 3)
+
+        testRapid.sendTestMessage(enableMsg1)
+        testRapid.sendTestMessage(enableMsg2)
+        testRapid.sendTestMessage(enableMsg3)
 
         database.getMicrofrontends(ident = testIdent).assert {
             require(this != null)
@@ -65,7 +69,7 @@ internal class SinkTest {
                 testmicrofeId1,
                 testmicrofeId2
             )
-            find { it["microfrontend_id"].asText() == testmicrofeId1 }!!.get("sikkerhetsnivå")?.asInt() shouldBe 4
+            find { it["microfrontend_id"].asText() == testmicrofeId1 }.assert {  }!!.get("sikkerhetsnivå")?.asInt() shouldBe 4
             find { it["microfrontend_id"].asText() == testmicrofeId2 }!!.get("sikkerhetsnivå")?.asInt() shouldBe 3
             find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sikkerhetsnivå")?.asInt() shouldBe 4
         }
@@ -75,14 +79,17 @@ internal class SinkTest {
             get(0).assert {
                 originalData shouldContain oldAndRusty
                 newData.microfrontendids().size shouldBe 2
+                initiatedBy shouldBe "testteam"
             }
             get(1).assert { originalData }.assert {
                 originalData.microfrontendids().size shouldBe 2
                 newData.microfrontendids().size shouldBe 3
+                initiatedBy shouldBe ""
             }
             get(2).assert { originalData }.assert {
                 originalData.microfrontendids().size shouldBe 3
                 newData.microfrontendids().size shouldBe 3
+                initiatedBy shouldBe "default-team"
             }
         }
     }
@@ -93,11 +100,11 @@ internal class SinkTest {
         val testmicrofeId1 = "new-and-shiny"
         val testmicrofeId2 = "also-new-and-shiny"
 
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr, initiatedBy = "id1team"))
         testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = "9988776655"))
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId2, fnr = testFnr))
+        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId2, fnr = testFnr, initiatedBy = "id2team"))
 
-        testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
+        testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1, initiatedBy = "id1team2"))
         testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
 
         database.getMicrofrontends(ident = testFnr).assert {
@@ -109,15 +116,18 @@ internal class SinkTest {
             size shouldBe 3
             get(0).assert {
                 originalData shouldBe null
-                newData.microfrontendids().size shouldBe 1
+                newData.microfrontendids() shouldContainExactly listOf(testmicrofeId1)
+                initiatedBy shouldBe "id1team"
             }
             get(1).assert { originalData }.assert {
                 originalData.microfrontendids().size shouldBe 1
-                newData.microfrontendids().size shouldBe 2
+                newData.microfrontendids() shouldContainExactly listOf(testmicrofeId1,testmicrofeId2)
+                initiatedBy shouldBe "id2team"
             }
             get(2).assert { originalData }.assert {
                 originalData.microfrontendids().size shouldBe 2
                 newData.microfrontendids().size shouldBe 1
+                initiatedBy shouldBe "id1team2"
             }
         }
     }
@@ -148,19 +158,11 @@ private fun String?.microfrontendids(): List<String> {
 }
 
 
-private fun enableMessageUtenSikkerhetsnivå(microfrontendId: String, ident: String) = """
-    {
-      "@action": "enable",
-      "ident": "$ident",
-      "microfrontend_id": "$microfrontendId"
-    }
-    """.trimIndent()
-
-private fun enableMessageUtenInitiatedBy(microfrontendId: String, ident: String) = """
+private fun enableMessageUtenSikkerhetsnivå(microfrontendId: String, ident: String, initiatedBy: String) = """
     {
       "@action": "enable",
       "ident": "$ident",
       "microfrontend_id": "$microfrontendId",
-      "sikkerhetsnivå" : 4,
+      "initiated_by":"$initiatedBy"
     }
     """.trimIndent()
