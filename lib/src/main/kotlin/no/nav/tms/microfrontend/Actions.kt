@@ -24,7 +24,7 @@ abstract class Action(protected val objectMapper: ObjectMapper) {
                 "@action" to action,
                 "ident" to ident,
                 "microfrontend_id" to microfrontendId,
-                "initiated_by" to initiatedBy
+                "@initiated_by" to initiatedBy
             )
         }
 

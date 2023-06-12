@@ -146,7 +146,7 @@ internal class MessageBuilderTest {
     private fun assertCommonMap(map: MutableMap<String, String?>) {
         map["ident"] shouldBe expectedIdent
         map["microfrontend_id"] shouldBe expectedMicrofrontendId
-        map["initiated_by"] shouldBe expectedInitiatedBy
+        map["@initiated_by"] shouldBe expectedInitiatedBy
     }
 
     @Test
@@ -156,7 +156,7 @@ internal class MessageBuilderTest {
     private fun assertCommonJsonFields(jsonNode: JsonNode) {
         jsonNode["ident"].asText() shouldBe expectedIdent
         jsonNode["microfrontend_id"].asText() shouldBe expectedMicrofrontendId
-        jsonNode["initiated_by"].asText() shouldBe expectedInitiatedBy
+        jsonNode["@initiated_by"].asText() shouldBe expectedInitiatedBy
     }
 
     private fun assertDisableText(text: String) {
@@ -165,7 +165,7 @@ internal class MessageBuilderTest {
                 "@action":"disable",
                 "ident":"$expectedIdent",
                 "microfrontend_id":"$expectedMicrofrontendId",
-                "initiated_by":"$expectedInitiatedBy"}"""
+                "@initiated_by":"$expectedInitiatedBy"}"""
                 .replace("\\s".toRegex(), "")
         text shouldBe expectedText
 
@@ -177,7 +177,7 @@ internal class MessageBuilderTest {
                 "@action":"enable",
                 "ident":"$expectedIdent",
                 "microfrontend_id":"$expectedMicrofrontendId",
-                "initiated_by":"$expectedInitiatedBy",
+                "@initiated_by":"$expectedInitiatedBy",
                 "sikkerhetsnivå":"$sikkerhetsnivå" 
                }"""
                 .replace("\\s".toRegex(), "")
