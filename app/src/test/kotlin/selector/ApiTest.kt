@@ -9,8 +9,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.DisableSink
 import no.nav.tms.mikrofrontend.selector.EnableSink
@@ -28,8 +27,7 @@ import org.junit.jupiter.api.TestInstance
 internal class ApiTest {
 
     private val testRapid = TestRapid()
-    private val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-    private val counter = MicrofrontendCounter(registry)
+    private val counter = MicrofrontendCounter()
     private val personRepository = PersonRepository(
         database = LocalPostgresDatabase.cleanDb(),
         metricsRegistry = counter
@@ -37,6 +35,7 @@ internal class ApiTest {
 
     @BeforeAll
     fun setup() {
+        CollectorRegistry.defaultRegistry.clear()
         EnableSink(testRapid, personRepository)
         DisableSink(testRapid, personRepository)
     }
@@ -47,7 +46,7 @@ internal class ApiTest {
         val expectedMicrofrontends = mutableListOf("mk-1", "mk2", "mk3")
 
         application {
-            selectorApi(personRepository, registry, installAuthenticatorsFunction = {
+            selectorApi(personRepository) {
                 installMockedAuthenticators {
                     installTokenXAuthMock {
                         alwaysAuthenticated = true
@@ -56,7 +55,7 @@ internal class ApiTest {
                         staticSecurityLevel = SecurityLevel.LEVEL_4
                     }
                 }
-            })
+            }
         }
 
         expectedMicrofrontends.forEach {
@@ -64,7 +63,6 @@ internal class ApiTest {
         }
         testRapid.sendTestMessage(enableMessage("nivå3mkf", testIdent, 3,))
         expectedMicrofrontends.add("nivå3mkf")
-
 
         client.get("/mikrofrontends").assert {
             status shouldBe HttpStatusCode.OK
@@ -84,7 +82,7 @@ internal class ApiTest {
         val nivå4Mikrofrontends = mutableListOf("mk-1", "mk2", "mk3")
 
         application {
-            selectorApi(personRepository, registry, installAuthenticatorsFunction = {
+            selectorApi(personRepository) {
                 installMockedAuthenticators {
                     installTokenXAuthMock {
                         alwaysAuthenticated = true
@@ -93,7 +91,7 @@ internal class ApiTest {
                         staticSecurityLevel = SecurityLevel.LEVEL_3
                     }
                 }
-            })
+            }
         }
 
         nivå4Mikrofrontends.forEach {
@@ -119,7 +117,7 @@ internal class ApiTest {
         val testident2 = "12345678912"
 
         application {
-            selectorApi(personRepository, registry, installAuthenticatorsFunction = {
+            selectorApi(personRepository) {
                 installMockedAuthenticators {
                     installTokenXAuthMock {
                         alwaysAuthenticated = true
@@ -128,7 +126,7 @@ internal class ApiTest {
                         staticSecurityLevel = SecurityLevel.LEVEL_4
                     }
                 }
-            })
+            }
         }
 
         client.get("/mikrofrontends").assert {
