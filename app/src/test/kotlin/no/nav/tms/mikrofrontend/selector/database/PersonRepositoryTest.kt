@@ -100,6 +100,6 @@ internal class PersonRepositoryTest {
 private fun enablePacket(microfrontendId: String, ident: String, sikkerhetsnivå: Int = 4, initatedBy: String? = null) =
     JsonMessage(enableMessage(microfrontendId, ident, sikkerhetsnivå, initatedBy ?: "default-team"), MessageProblems(""))
         .also {
-            it.interestedIn("sikkerhetsnivå", "microfrontend_id", "ident", "initiated_by")
+            it.interestedIn("sikkerhetsnivå", "microfrontend_id", "ident", "@initiated_by")
         }
 

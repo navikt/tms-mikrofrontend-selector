@@ -8,7 +8,7 @@ fun enableMessage(microfrontendId: String, fnr: String, sikkerhetsnivå: Int = 4
       "ident": "$fnr",
       "microfrontend_id": "$microfrontendId",
       "sikkerhetsnivå" : $sikkerhetsnivå
-      ${initiatedBy?.let { """ ,"initiated_by": "$initiatedBy" """ }?:""}
+      ${initiatedBy?.let { """ ,"@initiated_by": "$initiatedBy" """ }?:""}
     }
     """.trimIndent()
 
@@ -17,7 +17,7 @@ fun disableMessage(microfrontendId: String, fnr: String, initiatedBy: String = "
       "@action": "disable",
       "ident": "$fnr",
       "microfrontend_id": "$microfrontendId",
-      "initiated_by": "$initiatedBy"
+      "@initiated_by": "$initiatedBy"
 }
     """.trimIndent()
 

@@ -54,7 +54,7 @@ class MessageLibraryVerificatiion {
 
         jsonMessages.first { it.microfrontendId == "microf4" }.assert {
             get("ident").asText() shouldBe "12345678920"
-            get("initiated_by").asText() shouldBe "minside"
+            get("@initiated_by").asText() shouldBe "minside"
             get("sikkerhetsnivå").asInt() shouldBe 4
         }
     }

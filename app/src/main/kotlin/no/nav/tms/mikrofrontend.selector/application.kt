@@ -48,4 +48,4 @@ val JsonMessage.microfrontendId: String
         return get("microfrontend_id").asText()
     }
 val JsonMessage.initiatedBy: String?
-    get() = get("initiated_by").asText()
+    get() = get("@initiated_by").asText()

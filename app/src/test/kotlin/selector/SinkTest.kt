@@ -163,6 +163,6 @@ private fun enableMessageUtenSikkerhetsnivå(microfrontendId: String, ident: Str
       "@action": "enable",
       "ident": "$ident",
       "microfrontend_id": "$microfrontendId",
-      "initiated_by":"$initiatedBy"
+      "@initiated_by":"$initiatedBy"
     }
     """.trimIndent()
