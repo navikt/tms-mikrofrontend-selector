@@ -9,7 +9,33 @@ import no.nav.tms.mikrofrontend.selector.microfrontendId
 
 private val log = KotlinLogging.logger { }
 
+
+abstract class KeyRequirements {
+    protected abstract val requiredKeys: List<String>
+    protected abstract val interestedInKeys: List<String>
+
+    fun setRequiredKeys(jsonMessage: JsonMessage) = requiredKeys.forEach { key -> jsonMessage.requireKey(key) }
+    fun setInterestedInKeys(jsonMessage: JsonMessage) =
+        interestedInKeys.forEach { key -> jsonMessage.interestedIn(key) }
+}
+
+
 object JsonVersions {
+
+    private val requiredKeyBase = listOf("microfrontend_id", "ident")
+
+    object Enabled : KeyRequirements() {
+        override val requiredKeys: List<String> = requiredKeyBase
+        private val requiredKeysV2 = listOf("sikkerhetsnivå", "@initiated_by")
+        private val requiredKeyv3 = listOf("sensitivitet", "@initiated_by")
+        override val interestedInKeys: List<String> = (requiredKeysV2 + requiredKeyv3).toSet().toList()
+    }
+
+    object Disabled : KeyRequirements() {
+        override val requiredKeys: List<String> = requiredKeyBase
+        override val interestedInKeys: List<String> = listOf("@initiated_by")
+    }
+
 
     fun currentVersionNode(id: String, sensitivitet: Sensitivitet) = microfrontendMapper.readTree(
         """
@@ -62,17 +88,10 @@ object JsonVersions {
 }
 
 
-enum class Sensitivitet(val korresponderendeSikkerhetsnivå: Int) {
+enum class Sensitivitet(val sikkerhetsnivå: Int) {
     HIGH(4), SUBSTANTIAL(3);
-
-    fun innholdKanVises(other: Sensitivitet): Boolean =
-        korresponderendeSikkerhetsnivå >= other.korresponderendeSikkerhetsnivå
-
-    fun innholdKanVises(other: Int): Boolean =
-        korresponderendeSikkerhetsnivå >= resolve(other).korresponderendeSikkerhetsnivå
-
-    fun innholdKanVises(s: String) = korresponderendeSikkerhetsnivå >= valueOf(s).korresponderendeSikkerhetsnivå
-
+    operator fun compareTo(innloggetnivå: Int): Int =
+        sikkerhetsnivå - resolve(innloggetnivå).sikkerhetsnivå
 
     companion object {
         fun resolve(sikkerhetsnivå: Int?) = when (sikkerhetsnivå) {

@@ -2,7 +2,10 @@ package selector
 
 import LocalPostgresDatabase
 import assert
-import enableMessage
+import currentVersionMessage
+import io.kotest.matchers.collections.shouldBeIn
+import io.kotest.matchers.collections.shouldContain
+import legacyMessage
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.*
@@ -41,7 +44,7 @@ internal class ApiTest {
     }
 
     @Test
-    fun `Skal svare med liste over mikrofrontends basert på ident`() = testApplication {
+    fun `Skal svare med liste over mikrofrontends basert på ident nivå 4`() = testApplication {
         val testIdent = "12345678910"
         val expectedMicrofrontends = mutableListOf("mk-1", "mk2", "mk3")
 
@@ -59,17 +62,23 @@ internal class ApiTest {
         }
 
         expectedMicrofrontends.forEach {
-            testRapid.sendTestMessage(enableMessage(it, testIdent,))
+            testRapid.sendTestMessage(currentVersionMessage(action = "enable", ident = testIdent, microfrontendId = it))
         }
-        testRapid.sendTestMessage(enableMessage("nivå3mkf", testIdent, 3,))
-        expectedMicrofrontends.add("nivå3mkf")
+
+        //legacy
+        testRapid.sendTestMessage(legacyMessage(microfrontendId = "legacyNivå4mkf", ident = testIdent,))
+        testRapid.sendTestMessage(legacyMessage("nivå3mkf", testIdent, 3,))
+
+        expectedMicrofrontends.addAll(listOf("nivå3mkf","legacyNivå4mkf"))
 
         client.get("/mikrofrontends").assert {
             status shouldBe HttpStatusCode.OK
             objectMapper.readTree(bodyAsText()).assert {
                 this["microfrontends"].toList().assert {
-                    size shouldBe 4
-                    map { it.asText() } shouldContainExactly expectedMicrofrontends
+                    size shouldBe expectedMicrofrontends.size
+                    forEach {
+                        it.asText() shouldBeIn expectedMicrofrontends
+                    }
                 }
                 this["offerStepup"].asBoolean() shouldBe false
             }
@@ -95,9 +104,9 @@ internal class ApiTest {
         }
 
         nivå4Mikrofrontends.forEach {
-            testRapid.sendTestMessage(enableMessage(it, testIdent,))
+            testRapid.sendTestMessage(legacyMessage(it, testIdent,))
         }
-        testRapid.sendTestMessage(enableMessage("nivå3mkf", testIdent, 3,))
+        testRapid.sendTestMessage(legacyMessage("nivå3mkf", testIdent, 3,))
 
 
         client.get("/mikrofrontends").assert {

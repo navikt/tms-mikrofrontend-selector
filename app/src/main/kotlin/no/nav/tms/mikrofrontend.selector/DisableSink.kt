@@ -6,6 +6,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.tms.mikrofrontend.selector.database.JsonVersions
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 
 class DisableSink(
@@ -19,8 +20,8 @@ class DisableSink(
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("@action", "disable") }
-            validate { it.requireKey("ident", "microfrontend_id") }
-            validate {it.interestedIn("@initiated_by")}
+            validate { JsonVersions.Disabled.setRequiredKeys(it) }
+            validate { JsonVersions.Enabled.setInterestedInKeys(it) }
 
         }.register(this)
     }

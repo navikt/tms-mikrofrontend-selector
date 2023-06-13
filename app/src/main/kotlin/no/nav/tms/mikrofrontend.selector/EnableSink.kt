@@ -6,6 +6,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.tms.mikrofrontend.selector.database.JsonVersions
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 
 class EnableSink(
@@ -19,8 +20,8 @@ class EnableSink(
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("@action", "enable") }
-            validate { it.requireKey("ident", "microfrontend_id") }
-            validate {it.interestedIn("sikkerhetsnivå","@initiated_by")}
+            validate { message ->  JsonVersions.Enabled.setRequiredKeys(message) }
+            validate { message -> JsonVersions.Enabled.setInterestedInKeys(message)}
         }.register(this)
     }
 
@@ -33,4 +34,10 @@ class EnableSink(
         log.info(problems.toString())
     }
 }
+
+fun JsonMessage.requireKeys(requiredKeys: List<String>) =
+    requiredKeys.forEach { key -> requireKey(key) }
+
+fun JsonMessage.interestedInKeys(interestedInKeys: List<String>) =
+    interestedInKeys.forEach { key -> key }
 

@@ -10,6 +10,7 @@ import objectMapper
 import org.junit.jupiter.api.Test
 
 internal class JsonVersionsTest {
+
     class DatabaseObjectMigrations {
 
         private val currentFormatHigh = objectMapper.readTree(
@@ -94,7 +95,7 @@ internal class JsonVersionsTest {
         val version2MessageSikkerhetsnivå3 = JsonMessage.newMessage(
             version1Map + mapOf(
                 "initiated_by" to "team3",
-                "sikkerhetsnivå" to 4
+                "sikkerhetsnivå" to 3
             )
         ).applyInterestedIn()
         val version3Message = JsonMessage.newMessage(
@@ -102,11 +103,11 @@ internal class JsonVersionsTest {
                 "initiated_by" to "team3",
                 "sikkerhetsnivå" to 4
             )
-        )
+        ).applyInterestedIn()
         val version3MessageSensitivitetSubstantial = JsonMessage.newMessage(
             version1Map + mapOf(
                 "initiated_by" to "team3",
-                "sikkerhetsnivå" to 4
+                "sikkerhetsnivå" to 3
             )
         ).applyInterestedIn()
 
@@ -116,7 +117,7 @@ internal class JsonVersionsTest {
             version2Message.sensitivitet shouldBe Sensitivitet.HIGH
             version2MessageSikkerhetsnivå3.sensitivitet shouldBe Sensitivitet.SUBSTANTIAL
             version3Message.sensitivitet shouldBe Sensitivitet.HIGH
-            version3MessageSensitivitetSubstantial shouldBe Sensitivitet.SUBSTANTIAL
+            version3MessageSensitivitetSubstantial.sensitivitet shouldBe Sensitivitet.SUBSTANTIAL
 
         }
     }

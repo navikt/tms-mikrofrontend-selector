@@ -2,8 +2,9 @@ package selector
 
 import LocalPostgresDatabase
 import assert
+import currentVersionMessage
 import disableMessage
-import enableMessage
+import legacyMessage
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -13,7 +14,6 @@ import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.DisableSink
 import no.nav.tms.mikrofrontend.selector.EnableSink
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
-import no.nav.tms.mikrofrontend.selector.database.Sensitivitet
 import no.nav.tms.mikrofrontend.selector.database.Sensitivitet.HIGH
 import no.nav.tms.mikrofrontend.selector.database.Sensitivitet.SUBSTANTIAL
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
@@ -53,38 +53,51 @@ internal class SinkTest {
         val oldAndRusty = "old-and-rusty"
         val testmicrofeId1 = "new-and-shiny"
         val testmicrofeId2 = "also-new-and-shiny"
+        val microNewVersion = "current-json-version"
 
         database.insertWithLegacyFormat(testIdent, oldAndRusty)
 
-        val enableMsg1 = enableMessageUtenSikkerhetsnivå(
+        val enableMsg1 = legacyEnabledMessageUtenSikkerhetsnivå(
             ident = testIdent,
             microfrontendId = testmicrofeId1,
             initiatedBy = "testteam"
         )
-        val enableMsg2 = enableMessage(microfrontendId = testmicrofeId2, fnr = testIdent, initiatedBy = null)
-        val enableMsg3 = enableMessage(microfrontendId = testmicrofeId2, fnr = testIdent, sikkerhetsnivå = 3)
+        val enableMsg2 = legacyMessage(microfrontendId = testmicrofeId2, ident = testIdent, initiatedBy = null)
+        val enableMsg3 = legacyMessage(microfrontendId = testmicrofeId2, ident = testIdent, sikkerhetsnivå = 3)
 
         testRapid.sendTestMessage(enableMsg1)
         testRapid.sendTestMessage(enableMsg2)
         testRapid.sendTestMessage(enableMsg3)
 
+        testRapid.sendTestMessage(
+            currentVersionMessage(
+                action = "enable",
+                microfrontendId = microNewVersion,
+                ident = testIdent,
+                sensitivitet = HIGH,
+                initiatedBy = "test-team"
+            )
+        )
+
         database.getMicrofrontends(ident = testIdent).assert {
             require(this != null)
-            size shouldBe 3
+            size shouldBe 4
             map { it["microfrontend_id"].asText() } shouldContainExactly listOf(
                 oldAndRusty,
                 testmicrofeId1,
-                testmicrofeId2
+                testmicrofeId2,
+                microNewVersion
             )
             find { it["microfrontend_id"].asText() == testmicrofeId1 }!!
                 .get("sensitivitet")?.asText() shouldBe HIGH.name
             find { it["microfrontend_id"].asText() == testmicrofeId2 }!!
                 .get("sensitivitet")?.asText() shouldBe SUBSTANTIAL.name
-            find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sensitivitet")?.asInt() shouldBe HIGH.name
+            find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sensitivitet")?.asText() shouldBe HIGH.name
+            find { it["microfrontend_id"].asText() == microNewVersion }!!.get("sensitivitet")?.asText() shouldBe HIGH.name
         }
 
         database.getChangelog(testIdent).assert {
-            size shouldBe 3
+            size shouldBe 4
             get(0).assert {
                 originalData shouldContain oldAndRusty
                 newData.microfrontendids().size shouldBe 2
@@ -100,6 +113,13 @@ internal class SinkTest {
                 newData.microfrontendids().size shouldBe 3
                 initiatedBy shouldBe "default-team"
             }
+
+            get(3).assert { originalData }.assert {
+                originalData.microfrontendids().size shouldBe 3
+                newData.microfrontendids().size shouldBe 4
+                initiatedBy shouldBe "test-team"
+
+            }
         }
     }
 
@@ -110,17 +130,17 @@ internal class SinkTest {
         val testmicrofeId2 = "also-new-and-shiny"
 
         testRapid.sendTestMessage(
-            enableMessage(
+            legacyMessage(
                 microfrontendId = testmicrofeId1,
-                fnr = testFnr,
+                ident = testFnr,
                 initiatedBy = "id1team"
             )
         )
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = "9988776655"))
+        testRapid.sendTestMessage(legacyMessage(microfrontendId = testmicrofeId1, ident = "9988776655"))
         testRapid.sendTestMessage(
-            enableMessage(
+            legacyMessage(
                 microfrontendId = testmicrofeId2,
-                fnr = testFnr,
+                ident = testFnr,
                 initiatedBy = "id2team"
             )
         )
@@ -163,9 +183,9 @@ internal class SinkTest {
     fun `Skal kunne re-enable mikrofrontend`() {
         val testFnr = "12345678910"
         val testmicrofeId1 = "same-same-but-different"
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr))
+        testRapid.sendTestMessage(legacyMessage(microfrontendId = testmicrofeId1, ident = testFnr))
         testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr))
+        testRapid.sendTestMessage(legacyMessage(microfrontendId = testmicrofeId1, ident = testFnr))
 
         database.getMicrofrontends(ident = testFnr).assert {
             require(this != null)
@@ -185,7 +205,7 @@ private fun String?.microfrontendids(): List<String> {
 }
 
 
-private fun enableMessageUtenSikkerhetsnivå(microfrontendId: String, ident: String, initiatedBy: String) = """
+private fun legacyEnabledMessageUtenSikkerhetsnivå(microfrontendId: String, ident: String, initiatedBy: String) = """
     {
       "@action": "enable",
       "ident": "$ident",
