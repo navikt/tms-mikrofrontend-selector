@@ -35,10 +35,10 @@ abstract class Action(protected val objectMapper: ObjectMapper) {
 
 class Enable(objectMapper: ObjectMapper) : Action(objectMapper) {
     override val action = "enable"
-    var sikkerhetsnivå: Sikkerhetsnivå = Sikkerhetsnivå.NIVÅ_4
+    var sensitivitet: Sensitivitet = Sensitivitet.HIGH
 
     override fun map() = super.map().apply {
-        this["sikkerhetsnivå"] = sikkerhetsnivå.tallverdi
+        this["sensitivitet"] = sensitivitet.name
     }
 }
 
@@ -46,9 +46,8 @@ class Disable(objectMapper: ObjectMapper) : Action(objectMapper) {
     override val action = "disable"
 }
 
-
-enum class Sikkerhetsnivå(val tallverdi: String) {
-    NIVÅ_4("4"), NIVÅ_3("3")
+enum class Sensitivitet{
+    HIGH, SUBSTANTIAL
 }
 
 object MessageBuilder {
@@ -71,13 +70,13 @@ object MessageBuilder {
         ident: String,
         microfrontendId: String,
         initiatedBy: String,
-        sikkerhetsnivå: Sikkerhetsnivå = Sikkerhetsnivå.NIVÅ_4
+        sensitivitet: Sensitivitet = Sensitivitet.HIGH
     ) =
         Enable(objectMapper).also { message ->
             message.ident = ident
             message.microfrontendId = microfrontendId
             message.initiatedBy = initiatedBy
-            message.sikkerhetsnivå = sikkerhetsnivå
+            message.sensitivitet = sensitivitet
         }
 }
 

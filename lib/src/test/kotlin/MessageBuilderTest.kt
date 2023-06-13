@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import no.nav.tms.microfrontend.MessageBuilder
-import no.nav.tms.microfrontend.Sikkerhetsnivå
+import no.nav.tms.microfrontend.Sensitivitet
 import org.junit.jupiter.api.Test
 
 
@@ -95,14 +95,14 @@ internal class MessageBuilderTest {
         }.apply {
             map().assert {
                 this["@action"] shouldBe "enable"
-                this["sikkerhetsnivå"] shouldBe "4"
+                this["sensitivitet"] shouldBe Sensitivitet.HIGH.name
             }
             jsonNode().assert {
                 this["@action"].asText() shouldBe "enable"
-                this["sikkerhetsnivå"].asInt() shouldBe 4
+                this["sensitivitet"].asText() shouldBe Sensitivitet.HIGH.name
                 assertCommonJsonFields(jsonNode())
             }
-            assertEnableText(text(), "4")
+            assertEnableText(text(), Sensitivitet.HIGH.name)
         }
 
         MessageBuilder.enable {
@@ -112,32 +112,32 @@ internal class MessageBuilderTest {
         }.apply {
             map().assert {
                 this["@action"] shouldBe "enable"
-                this["sikkerhetsnivå"] shouldBe "4"
+                this["sensitivitet"] shouldBe Sensitivitet.HIGH.name
             }
             jsonNode().assert {
                 this["@action"].asText() shouldBe "enable"
-                this["sikkerhetsnivå"].asInt() shouldBe 4
+                this["sensitivitet"].asText() shouldBe Sensitivitet.HIGH.name
                 assertCommonJsonFields(jsonNode())
             }
-            assertEnableText(text(), "4")
+            assertEnableText(text(), "HIGH")
         }
 
         MessageBuilder.enable {
             ident = expectedIdent
             initiatedBy = expectedInitiatedBy
             microfrontendId = expectedMicrofrontendId
-            sikkerhetsnivå = Sikkerhetsnivå.NIVÅ_3
+            sensitivitet = Sensitivitet.SUBSTANTIAL
         }.apply {
             map().assert {
                 this["@action"] shouldBe "enable"
-                this["sikkerhetsnivå"] shouldBe "3"
+                this["sensitivitet"] shouldBe Sensitivitet.SUBSTANTIAL.name
             }
             jsonNode().assert {
                 this["@action"].asText() shouldBe "enable"
-                this["sikkerhetsnivå"].asInt() shouldBe 3
+                this["sensitivitet"].asText() shouldBe Sensitivitet.SUBSTANTIAL.name
                 assertCommonJsonFields(jsonNode())
             }
-            assertEnableText(text(), "3")
+            assertEnableText(text(), "SUBSTANTIAL")
         }
 
 
@@ -171,14 +171,14 @@ internal class MessageBuilderTest {
 
     }
 
-    private fun assertEnableText(text: String, sikkerhetsnivå: String) {
+    private fun assertEnableText(text: String, sensitivitet: String) {
         val expectedText =
             """{
                 "@action":"enable",
                 "ident":"$expectedIdent",
                 "microfrontend_id":"$expectedMicrofrontendId",
                 "@initiated_by":"$expectedInitiatedBy",
-                "sikkerhetsnivå":"$sikkerhetsnivå" 
+                "sensitivitet":"$sensitivitet" 
                }"""
                 .replace("\\s".toRegex(), "")
         text shouldBe expectedText

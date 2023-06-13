@@ -1,14 +1,17 @@
 
+import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.microfrontend.MessageBuilder
-import no.nav.tms.microfrontend.Sikkerhetsnivå
+import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.tms.mikrofrontend.selector.DisableSink
 import no.nav.tms.mikrofrontend.selector.EnableSink
+import no.nav.tms.mikrofrontend.selector.database.JsonVersions
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.microfrontendId
 import org.junit.jupiter.api.BeforeAll
@@ -37,7 +40,7 @@ class MessageLibraryVerificatiion {
                 ident = "12345678920",
                 microfrontendId = "microf4",
                 initiatedBy = "minside",
-                sikkerhetsnivå = Sikkerhetsnivå.NIVÅ_4
+                sensitivitet = Sensitivitet.HIGH
             ).text()
         )
 
@@ -46,7 +49,7 @@ class MessageLibraryVerificatiion {
                 ident = "12345678920"
                 microfrontendId= "microf9"
                 initiatedBy = "minside"
-                sikkerhetsnivå = Sikkerhetsnivå.NIVÅ_4
+                sensitivitet = Sensitivitet.HIGH
             }.text()
         )
 
@@ -55,8 +58,14 @@ class MessageLibraryVerificatiion {
         jsonMessages.first { it.microfrontendId == "microf4" }.assert {
             get("ident").asText() shouldBe "12345678920"
             get("@initiated_by").asText() shouldBe "minside"
-            get("sikkerhetsnivå").asInt() shouldBe 4
+            get("sensitivitet").asText() shouldBe Sensitivitet.HIGH.name
+
+            val lastVersionKeys = JsonVersions.Enabled.requiredKeys + JsonVersions.Enabled.requiredKeysV3
+            lastVersionKeys.forEach { expectedKey ->
+                withClue("$expectedKey mangler i melding fra messagebuilder"){ get(expectedKey).isMissingOrNull() shouldBe false}
+            }
         }
+
     }
 
     @Test

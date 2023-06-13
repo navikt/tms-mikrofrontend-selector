@@ -11,8 +11,8 @@ private val log = KotlinLogging.logger { }
 
 
 abstract class KeyRequirements {
-    protected abstract val requiredKeys: List<String>
-    protected abstract val interestedInKeys: List<String>
+    abstract val requiredKeys: List<String>
+    abstract val interestedInKeys: List<String>
 
     fun setRequiredKeys(jsonMessage: JsonMessage) = requiredKeys.forEach { key -> jsonMessage.requireKey(key) }
     fun setInterestedInKeys(jsonMessage: JsonMessage) =
@@ -27,8 +27,8 @@ object JsonVersions {
     object Enabled : KeyRequirements() {
         override val requiredKeys: List<String> = requiredKeyBase
         private val requiredKeysV2 = listOf("sikkerhetsnivå", "@initiated_by")
-        private val requiredKeyv3 = listOf("sensitivitet", "@initiated_by")
-        override val interestedInKeys: List<String> = (requiredKeysV2 + requiredKeyv3).toSet().toList()
+        val requiredKeysV3 = listOf("sensitivitet", "@initiated_by")
+        override val interestedInKeys: List<String> = (requiredKeysV2 + requiredKeysV3).toSet().toList()
     }
 
     object Disabled : KeyRequirements() {
@@ -90,6 +90,7 @@ object JsonVersions {
 
 enum class Sensitivitet(val sikkerhetsnivå: Int) {
     HIGH(4), SUBSTANTIAL(3);
+
     operator fun compareTo(innloggetnivå: Int): Int =
         sikkerhetsnivå - resolve(innloggetnivå).sikkerhetsnivå
 
