@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.tms.mikrofrontend.selector.database.JsonVersions.applyMigrations
+import no.nav.tms.mikrofrontend.selector.database.JsonVersions.sensitivitet
 import no.nav.tms.mikrofrontend.selector.microfrontendId
 import org.postgresql.util.PGobject
 
@@ -14,13 +16,7 @@ internal class Microfrontends(initialJson: String? = null) {
         initialJson
             ?.let { microfrontendMapper.readTree(it)["microfrontends"] }
             ?.map {
-                if (it.isValueNode) {
-                    log.info { "Konverterer mikrofrontend-entry fra gammelt til nytt format; ${it.asText()}" }
-                    createNodeAndAddSikkerhetsnivå(it.asText())
-                } else {
-                    log.info { "Leser mikrofrontend-entry på nytt format" }
-                    createNode(it["microfrontend_id"].asText(), it["sikkerhetsnivå"].asInt())
-                }
+                it.applyMigrations()
             }
             ?.toList()
 
@@ -37,17 +33,17 @@ internal class Microfrontends(initialJson: String? = null) {
             .find { it["microfrontend_id"].asText() == packet.microfrontendId }
             ?.let {
                 log.info { "oppdaterer eksisterende mikrofrontend med id ${packet.microfrontendId}" }
-                val currentSikkerhetsnivå = it["sikkerhetsnivå"].asInt()
-                if (currentSikkerhetsnivå == packet.sikkerhetsnivå) {
+                val originalSensitivitet = it.sensitivitet
+                if (originalSensitivitet == packet.sensitivitet) {
                     false
                 } else {
-                    log.info { "Endring av sikkerhetsnivå for ${packet.microfrontendId} fra $currentSikkerhetsnivå til ${packet.sikkerhetsnivå}" }
+                    log.info { "Endring av sikkerhetsnivå for ${packet.microfrontendId} fra $originalSensitivitet til ${packet.sensitivitet}" }
                     removeMicrofrontend(packet.microfrontendId)
-                    newData.add(createNode(packet.microfrontendId, packet.sikkerhetsnivå))
+                    newData.add(packet.applyMigrations())
                 }
             }
-            ?: newData.add(createNode(packet.microfrontendId, packet.sikkerhetsnivå))
-                .also { "Legger til ny mikrofrontend med id ${packet.microfrontendId} med sikkerhetsnivå ${packet.sikkerhetsnivå}" }
+            ?: newData.add(packet.applyMigrations())
+                .also { "Legger til ny mikrofrontend med id ${packet.microfrontendId} med sensitivitet ${packet.sensitivitet}" }
 
     fun removeMicrofrontend(microfrontendId: String) =
         newData.removeIf { node ->
@@ -81,27 +77,7 @@ internal class Microfrontends(initialJson: String? = null) {
         value = this@jsonB
     }
 
-    private fun createNodeAndAddSikkerhetsnivå(microfrontendId: String) = microfrontendMapper.readTree(
-        """
-         {
-         "microfrontend_id": "$microfrontendId",
-            "sikkerhetsnivå" : 4
-        }
-      """.trimMargin()
-    )
-
-    private fun createNode(microfrontendId: String, sikkerhetsnivå: Int) = microfrontendMapper.readTree(
-        """
-        {
-          "microfrontend_id": "$microfrontendId",
-          "sikkerhetsnivå": $sikkerhetsnivå
-        }
-      """.trimMargin()
-    )
 }
-
-private val JsonMessage.sikkerhetsnivå: Int
-    get() = get("sikkerhetsnivå").asInt(4)
 
 
 

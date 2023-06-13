@@ -13,6 +13,9 @@ import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.DisableSink
 import no.nav.tms.mikrofrontend.selector.EnableSink
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
+import no.nav.tms.mikrofrontend.selector.database.Sensitivitet
+import no.nav.tms.mikrofrontend.selector.database.Sensitivitet.HIGH
+import no.nav.tms.mikrofrontend.selector.database.Sensitivitet.SUBSTANTIAL
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import objectMapper
 import org.junit.jupiter.api.AfterEach
@@ -53,7 +56,11 @@ internal class SinkTest {
 
         database.insertWithLegacyFormat(testIdent, oldAndRusty)
 
-        val enableMsg1 = enableMessageUtenSikkerhetsnivå(ident = testIdent, microfrontendId = testmicrofeId1, initiatedBy="testteam")
+        val enableMsg1 = enableMessageUtenSikkerhetsnivå(
+            ident = testIdent,
+            microfrontendId = testmicrofeId1,
+            initiatedBy = "testteam"
+        )
         val enableMsg2 = enableMessage(microfrontendId = testmicrofeId2, fnr = testIdent, initiatedBy = null)
         val enableMsg3 = enableMessage(microfrontendId = testmicrofeId2, fnr = testIdent, sikkerhetsnivå = 3)
 
@@ -69,9 +76,11 @@ internal class SinkTest {
                 testmicrofeId1,
                 testmicrofeId2
             )
-            find { it["microfrontend_id"].asText() == testmicrofeId1 }.assert {  }!!.get("sikkerhetsnivå")?.asInt() shouldBe 4
-            find { it["microfrontend_id"].asText() == testmicrofeId2 }!!.get("sikkerhetsnivå")?.asInt() shouldBe 3
-            find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sikkerhetsnivå")?.asInt() shouldBe 4
+            find { it["microfrontend_id"].asText() == testmicrofeId1 }!!
+                .get("sensitivitet")?.asText() shouldBe HIGH.name
+            find { it["microfrontend_id"].asText() == testmicrofeId2 }!!
+                .get("sensitivitet")?.asText() shouldBe SUBSTANTIAL.name
+            find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sensitivitet")?.asInt() shouldBe HIGH.name
         }
 
         database.getChangelog(testIdent).assert {
@@ -100,11 +109,29 @@ internal class SinkTest {
         val testmicrofeId1 = "new-and-shiny"
         val testmicrofeId2 = "also-new-and-shiny"
 
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = testFnr, initiatedBy = "id1team"))
+        testRapid.sendTestMessage(
+            enableMessage(
+                microfrontendId = testmicrofeId1,
+                fnr = testFnr,
+                initiatedBy = "id1team"
+            )
+        )
         testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId1, fnr = "9988776655"))
-        testRapid.sendTestMessage(enableMessage(microfrontendId = testmicrofeId2, fnr = testFnr, initiatedBy = "id2team"))
+        testRapid.sendTestMessage(
+            enableMessage(
+                microfrontendId = testmicrofeId2,
+                fnr = testFnr,
+                initiatedBy = "id2team"
+            )
+        )
 
-        testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1, initiatedBy = "id1team2"))
+        testRapid.sendTestMessage(
+            disableMessage(
+                fnr = testFnr,
+                microfrontendId = testmicrofeId1,
+                initiatedBy = "id1team2"
+            )
+        )
         testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
 
         database.getMicrofrontends(ident = testFnr).assert {
@@ -121,7 +148,7 @@ internal class SinkTest {
             }
             get(1).assert { originalData }.assert {
                 originalData.microfrontendids().size shouldBe 1
-                newData.microfrontendids() shouldContainExactly listOf(testmicrofeId1,testmicrofeId2)
+                newData.microfrontendids() shouldContainExactly listOf(testmicrofeId1, testmicrofeId2)
                 initiatedBy shouldBe "id2team"
             }
             get(2).assert { originalData }.assert {
