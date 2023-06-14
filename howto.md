@@ -74,6 +74,8 @@ Altså; hvis det ligger informasjon i mikrofrontenden som kun personer som har l
 kan vises uavhengig av innloggingsnivå skal sensitivitet være `SUBSTANTIAL`.
 Om sensitivitet ikke er spesifisert i kafka-meldingen settes det alltid til `HIGH` hos oss.
 Om en person logger inn med `idporten-loa-substantial` og det finnes mikrofrontender som personen kan se på `idporten-loa-high` vil bruker få beskjed om dette og link til en "steup"
-login.
+login. Se også [NAIS docs](https://docs.nais.io/security/auth/idporten/#security-levels) for mer info om acr-verdiene
+
+
 
 
