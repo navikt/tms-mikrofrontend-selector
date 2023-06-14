@@ -197,6 +197,28 @@ internal class SinkTest {
             size shouldBe 3
         }
     }
+
+    @Test
+    fun `fungerer med gammel versjon av initiatedBy`(){
+        val enableMsg = legacyEnabledMessageUtenSikkerhetsnivå(
+            ident = "12345678910",
+            microfrontendId = "testingtesting",
+            initiatedBy = "legacy-team"
+        )
+
+        testRapid.sendTestMessage(enableMsg)
+        database.getMicrofrontends(ident = "12345678910").assert {
+            require(this != null)
+            size shouldBe 1
+            first().assert {
+                this["microfrontend_id"].asText() shouldBe "testingtesting"}
+        }
+
+        database.getChangelog("12345678910").assert {
+            size shouldBe 1
+            first().initiatedBy shouldBe "legacy-team"
+        }
+    }
 }
 
 private fun String?.microfrontendids(): List<String> {
@@ -210,6 +232,6 @@ private fun legacyEnabledMessageUtenSikkerhetsnivå(microfrontendId: String, ide
       "@action": "enable",
       "ident": "$ident",
       "microfrontend_id": "$microfrontendId",
-      "@initiated_by":"$initiatedBy"
+      "initiated_by":"$initiatedBy"
     }
     """.trimIndent()

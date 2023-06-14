@@ -8,6 +8,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.tms.mikrofrontend.selector.database.JsonVersions
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
+import no.nav.tms.mikrofrontend.selector.database.initiatedBy
 
 class DisableSink(
     rapidsConnection: RapidsConnection,

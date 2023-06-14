@@ -26,7 +26,7 @@ object JsonVersions {
 
     object Enabled : KeyRequirements() {
         override val requiredKeys: List<String> = requiredKeyBase
-        private val requiredKeysV2 = listOf("sikkerhetsnivå", "@initiated_by")
+        private val requiredKeysV2 = listOf("sikkerhetsnivå", "initiated_by")
         val requiredKeysV3 = listOf("sensitivitet", "@initiated_by")
         override val interestedInKeys: List<String> = (requiredKeysV2 + requiredKeysV3).toSet().toList()
     }
@@ -109,4 +109,10 @@ enum class Sensitivitet(val sikkerhetsnivå: Int) {
 
 private val JsonNode.mikrofrontendId: String
     get() = this["microfrontend_id"].asText()
+
+val JsonMessage.initiatedBy: String?
+    get() =
+        get("@initiated_by")
+            .takeIf { !it.isMissingOrNull() }?.asText()
+            ?: get("initiated_by").asText()
 

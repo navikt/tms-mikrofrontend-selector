@@ -47,5 +47,3 @@ val JsonMessage.microfrontendId: String
     get() {
         return get("microfrontend_id").asText()
     }
-val JsonMessage.initiatedBy: String?
-    get() = get("@initiated_by").asText()
