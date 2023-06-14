@@ -22,7 +22,7 @@ microfrontend-topicet.
       "@action": "enable",
       "ident": <ident for bruker, vanligvis fnr>,
       "microfrontend_id": <microfrontendId>,
-      "sikkerhetsnivå" : <innloggingsnivå som er påkrevd for å se innholdet i mikrofrontenden, gyldige verdier: 3 eller 4>,
+      "sensitivitet" : <nivå som kreves for å se innholdet i mikrofrontenden, gyldige verdier: SUBSTANTIAL og HIGH>,
       "initiated_by":<ditt-team>
    }
    ```
@@ -35,6 +35,9 @@ microfrontend-topicet.
       "initiated_by":<ditt-team>
    }
    ```
+
+Finnes det ett meldingsbygger bibliotek? Ofc gjør det det! Det er tilgjengelig på [jitpack](https://jitpack.io/#navikt/tms-mikrofrontend-selector) og [github packages](https://github.com/navikt/tms-mikrofrontend-selector/packages/1875650)
+
 
 ## Språk
 Vi bruker språkvelgeren i Dekoratøren. For å vite hvilket språk man skal vise så sender vi et event via session storage.
@@ -65,21 +68,12 @@ på [navigasjonseventer](https://github.com/navikt/analytics-taxonomy/tree/main/
 
 Videre anbefaler vi å følge [taksonominen](https://github.com/navikt/analytics-taxonomy) i NAV.
 
-### Hva er egentlig innloggngsnivå og sikkerhetsnivå?
-
-### Innloggingsnivå
-Når en person logger inn på NAV.no kan hen ha gått igjennom forskjelige tjenester, der noen anses som 
-mer sikker(nivå 4) og andre anses som mindre sikker (nivå 3). 
-
-### Sikkerhetsnivå
-Feltet `sikkerhetsnivå` i enablemeldingen  korresponderer direkte til disse innloggingsnivåene. Altså; hvis det ligger informasjon i mikrofrontenden 
-som kun personer som har logget inn på nivå 4 skal kunne se, skal `sikkerhetsnivå` settes til 4. Om informasjonen
-kan vises uavhengig av innloggingsnivå skal sikkerhetsnivå settes til 3.
-Om sikkerhetsnivå ikke er spesifisert i kafka-meldingen settes det alltid til 4 hos oss.
-
-
-#### Hva skjer om en person er innlogga på nivå 3, men har mikrofrontender på nivå 4 ?
-Om en person logger inn på nivå 3 og det finnes mikrofrontender som personen kan se på nivå 4 vil bruker få beskjed om dette og link til en "steup"
+### Hva er egentlig sensitivitet?
+Feltet `sensitivitet` i enablemeldingen  korresponderer direkte til de [nye acr-veridene](https://docs.digdir.no/docs/idporten/oidc/oidc_protocol_id_token#acr-values) i IDporten token. 
+Altså; hvis det ligger informasjon i mikrofrontenden som kun personer som har logget inn med `idporten-loa-high` skal kunne se, skal `sensitivitet` settes til `HIGH` Om informasjonen
+kan vises uavhengig av innloggingsnivå skal sensitivitet være `SUBSTANTIAL`.
+Om sensitivitet ikke er spesifisert i kafka-meldingen settes det alltid til `HIGH` hos oss.
+Om en person logger inn med `idporten-loa-substantial` og det finnes mikrofrontender som personen kan se på `idporten-loa-high` vil bruker få beskjed om dette og link til en "steup"
 login.
 
 
