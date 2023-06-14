@@ -10,7 +10,7 @@ abstract class Action(protected val objectMapper: ObjectMapper) {
 
     var ident: String? = null
     var microfrontendId: String? = null
-    var initiatedBy: String? = null
+    var initiatedBy: String = System.getenv("NAIS_NAMESPACE")?:""
     abstract val action: String
 
     open fun map() =
@@ -19,7 +19,7 @@ abstract class Action(protected val objectMapper: ObjectMapper) {
             ident?.any { !it.isDigit() } ?: false -> throw IllegalArgumentException("ident kan kun inneholde siffer")
             ident?.length != 11 -> throw IllegalArgumentException("ident må inneholde 11 siffer")
             microfrontendId == null -> throw IllegalArgumentException("microfrontend_id kan ikke være null i $action meldinger")
-            initiatedBy == null -> throw IllegalArgumentException("initiated_by kan ikke være null i $action meldinger, bruk navnet til ditt team i gcp")
+            initiatedBy == "" -> throw IllegalArgumentException("initiated_by kan ikke være null i $action meldinger, bruk navnet til ditt team i gcp")
             else -> mutableMapOf(
                 "@action" to action,
                 "ident" to ident,
