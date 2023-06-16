@@ -3,9 +3,7 @@ package selector
 import LocalPostgresDatabase
 import assert
 import currentVersionMessage
-import dbV1
 import dbv1Format
-import disableMessage
 import legacyMessage
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -238,4 +236,13 @@ private fun legacyEnabledMessageUtenSikkerhetsnivå(microfrontendId: String, ide
       "microfrontend_id": "$microfrontendId",
       "initiated_by":"$initiatedBy"
     }
+    """.trimIndent()
+
+private fun disableMessage(microfrontendId: String, fnr: String, initiatedBy: String = "default-team") = """
+    {
+      "@action": "disable",
+      "ident": "$fnr",
+      "microfrontend_id": "$microfrontendId",
+      "@initiated_by": "$initiatedBy"
+}
     """.trimIndent()
