@@ -29,9 +29,9 @@ object LegacyJsonMessages {
                 "sikkerhetsnivå" to sikkerhetsnivå
             )
         ).apply {
-            JsonVersions.Enable.requireCommonKeys(this)
-            JsonVersions.Enable.interestedInLegacyKeys(this)
-            JsonVersions.Enable.interestedInCurrentVersionKeys(this)
+            JsonVersions.EnableKeys.requireCommonKeys(this)
+            JsonVersions.EnableKeys.interestedInLegacyKeys(this)
+            JsonVersions.EnableKeys.interestedInCurrentVersionKeys(this)
         }
 
     fun disableV2Message(ident: String, microfrontendId: String, initiatedBy: String) =
@@ -42,9 +42,9 @@ object LegacyJsonMessages {
                 "initiated_by" to initiatedBy
             )
         ).apply {
-            JsonVersions.Enable.requireCommonKeys(this)
-            JsonVersions.Enable.interestedInCurrentVersionKeys(this)
-            JsonVersions.Enable.interestedInLegacyKeys(this)
+            JsonVersions.EnableKeys.requireCommonKeys(this)
+            JsonVersions.EnableKeys.interestedInCurrentVersionKeys(this)
+            JsonVersions.EnableKeys.interestedInLegacyKeys(this)
         }
 }
 
@@ -83,7 +83,7 @@ fun currentVersionMessage(
 ).toJson()
 
 fun currentVersionPacket(
-    keyRequirements: KeyRequirements = JsonVersions.Enable,
+    keyRequirements: KeyRequirements = JsonVersions.EnableKeys,
     microfrontendId: String,
     ident: String,
     sensitivitet: Sensitivitet = HIGH,

@@ -37,7 +37,7 @@ internal class PersonRepositoryTest {
                 initiatedBy = "test-team-1"
             )
         )
-        repository.enableMicrofrontend(v1Message(personIdent, "mkf3", JsonVersions.Enable))
+        repository.enableMicrofrontend(v1Message(personIdent, "mkf3", JsonVersions.EnableKeys))
         repository.enableMicrofrontend(enableV2Message(personIdent, "mkf3"))
         repository.enableMicrofrontend(
             enableV2Message(
@@ -118,7 +118,7 @@ internal class PersonRepositoryTest {
 
         repository.disableMicrofrontend(
             currentVersionPacket(
-                keyRequirements = JsonVersions.Disable,
+                keyRequirements = JsonVersions.DisableKeys,
                 ident = testIdent,
                 microfrontendId = "mkf3",
                 initatedBy = "test-team5"
@@ -128,7 +128,7 @@ internal class PersonRepositoryTest {
 
         repository.disableMicrofrontend(
             currentVersionPacket(
-                keyRequirements = JsonVersions.Disable,
+                keyRequirements = JsonVersions.DisableKeys,
                 ident = testIdent,
                 microfrontendId = "mkf4",
                 initatedBy = "test-team-4"
@@ -169,7 +169,7 @@ internal class PersonRepositoryTest {
 
         testDb.insertLegacyFormat(ident = testId2, format = ::dbv1Format, "m1", "m2", "m3")
         repository.disableMicrofrontend(
-            currentVersionPacket(JsonVersions.Disable, "mkk", testId2, SUBSTANTIAL, "init-team")
+            currentVersionPacket(JsonVersions.DisableKeys, "mkk", testId2, SUBSTANTIAL, "init-team")
         )
 
         testDb.getMicrofrontends(testId1).assert {
@@ -180,7 +180,7 @@ internal class PersonRepositoryTest {
 
         testDb.insertLegacyFormat(ident = testId3, format = ::dbv2Format, "m1", "m2", "m3")
         repository.disableMicrofrontend(
-            currentVersionPacket(JsonVersions.Disable, "mkk", testId3, SUBSTANTIAL, "init-team")
+            currentVersionPacket(JsonVersions.DisableKeys, "mkk", testId3, SUBSTANTIAL, "init-team")
         )
 
         testDb.getMicrofrontends(testId1).assert {

@@ -60,7 +60,7 @@ class MessageLibraryVerificatiion {
             get("@initiated_by").asText() shouldBe "minside"
             get("sensitivitet").asText() shouldBe Sensitivitet.HIGH.name
 
-            val lastVersionKeys = JsonVersions.Enable.commonKeys + JsonVersions.Enable.currentVersionKeys
+            val lastVersionKeys = JsonVersions.EnableKeys.commonKeys + JsonVersions.EnableKeys.currentVersionKeys
             lastVersionKeys.forEach { expectedKey ->
                 withClue("$expectedKey mangler i melding fra messagebuilder"){ get(expectedKey).isMissingOrNull() shouldBe false}
             }
@@ -70,6 +70,9 @@ class MessageLibraryVerificatiion {
 
     @Test
     fun `riktige felt i disable`() {
+        val jsonMessages = mutableListOf<JsonMessage>()
+        coEvery { personRepository.disableMicrofrontend(capture(jsonMessages)) } answers { }
+
         testRapid.sendTestMessage(
             MessageBuilder.disable(
                ident = "12345678910",
@@ -87,6 +90,11 @@ class MessageLibraryVerificatiion {
         )
 
         coVerify(exactly = 2){personRepository.disableMicrofrontend(any())}
+        val lastVersionKeys = JsonVersions.DisableKeys.commonKeys + JsonVersions.DisableKeys.currentVersionKeys
+        lastVersionKeys.forEach { expectedKey ->
+            withClue("$expectedKey mangler i melding fra messagebuilder"){ jsonMessages.first()[expectedKey].isMissingOrNull() shouldBe false}
+        }
+
     }
 
 }

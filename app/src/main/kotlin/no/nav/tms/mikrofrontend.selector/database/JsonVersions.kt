@@ -29,14 +29,14 @@ object JsonVersions {
     private val JsonNode.isFirstVersion
         get() = isValueNode
 
-    object Enable : KeyRequirements() {
+    object EnableKeys : KeyRequirements() {
         override val action: String = "enable"
         private val requiredKeysV2 = listOf("sikkerhetsnivå", "initiated_by")
         override val olderVersionKeys = requiredKeysV2
         override val currentVersionKeys = listOf("sensitivitet", "@initiated_by")
     }
 
-    object Disable : KeyRequirements() {
+    object DisableKeys : KeyRequirements() {
         override val action: String = "disable"
         private val requiredKeysV2 = listOf("initiated_by")
         override val olderVersionKeys = requiredKeysV2

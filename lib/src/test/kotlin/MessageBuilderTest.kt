@@ -154,6 +154,7 @@ internal class MessageBuilderTest {
     }
 
     private fun assertCommonJsonFields(jsonNode: JsonNode) {
+        jsonNode["version"].asText() shouldBe "3"
         jsonNode["ident"].asText() shouldBe expectedIdent
         jsonNode["microfrontend_id"].asText() shouldBe expectedMicrofrontendId
         jsonNode["@initiated_by"].asText() shouldBe expectedInitiatedBy
@@ -161,7 +162,8 @@ internal class MessageBuilderTest {
 
     private fun assertDisableText(text: String) {
         val expectedText =
-            """{
+            """{                
+                "version":"3",
                 "@action":"disable",
                 "ident":"$expectedIdent",
                 "microfrontend_id":"$expectedMicrofrontendId",
@@ -174,6 +176,7 @@ internal class MessageBuilderTest {
     private fun assertEnableText(text: String, sensitivitet: String) {
         val expectedText =
             """{
+                "version":"3",
                 "@action":"enable",
                 "ident":"$expectedIdent",
                 "microfrontend_id":"$expectedMicrofrontendId",
