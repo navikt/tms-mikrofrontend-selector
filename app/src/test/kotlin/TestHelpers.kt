@@ -9,21 +9,29 @@ import no.nav.tms.mikrofrontend.selector.database.Sensitivitet.HIGH
 internal val objectMapper = jacksonObjectMapper().apply {
     registerModule(JavaTimeModule())
 }
+
 object LegacyJsonMessages {
+
+    private fun v1Map(ident: String, microfrontendId: String, messageRequirements: MessageRequirements) = mapOf(
+        "@action" to messageRequirements.action,
+        "ident" to ident,
+        "microfrontend_id" to microfrontendId
+    )
+
     fun v1Message(ident: String, microfrontendId: String, messageRequirements: MessageRequirements) =
         JsonMessage.newMessage(
-            mapOf(
-                "@action" to messageRequirements.action,
-                "ident" to ident,
-                "microfrontend_id" to microfrontendId
-            )
+            v1Map(ident,microfrontendId,messageRequirements)
         ).apply { messageRequirements.addRequiredAndInterestedIn(this) }
 
-    fun enableV2Message(ident: String, microfrontendId: String, initiatedBy: String = "defaultteam", sikkerhetsnivå: Int = 4) =
+    fun enableV2Message(
+        ident: String,
+        microfrontendId: String,
+        initiatedBy: String = "defaultteam",
+        sikkerhetsnivå: Int = 4
+    ) =
         JsonMessage.newMessage(
+            v1Map(ident,microfrontendId,JsonVersions.EnableMessage) +
             mapOf(
-                "ident" to ident,
-                "microfrontend_id" to microfrontendId,
                 "initiated_by" to initiatedBy,
                 "sikkerhetsnivå" to sikkerhetsnivå
             )
@@ -31,11 +39,8 @@ object LegacyJsonMessages {
 
     fun disableV2Message(ident: String, microfrontendId: String, initiatedBy: String) =
         JsonMessage.newMessage(
-            mapOf(
-                "ident" to ident,
-                "microfrontend_id" to microfrontendId,
-                "initiated_by" to initiatedBy
-            )
+            v1Map(ident,microfrontendId,JsonVersions.DisableMessage) +
+            mapOf("initiated_by" to initiatedBy)
         ).apply { JsonVersions.DisableMessage.addRequiredAndInterestedIn(this) }
 }
 
@@ -94,7 +99,8 @@ fun currentVersionMap(
     "@action" to action,
     "ident" to ident,
     "microfrontend_id" to microfrontendId,
-    "@initiated_by" to initiatedBy).apply { if (action == "enable") this["sensitivitet"] to sensitivitet }
+    "@initiated_by" to initiatedBy
+).apply { if (action == "enable") this["sensitivitet"] to sensitivitet }
 
 
 private fun MessageRequirements.addRequiredAndInterestedIn(jsonMessage: JsonMessage) {
