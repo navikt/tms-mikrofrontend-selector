@@ -11,7 +11,7 @@ class MicrofrontendCounter {
         .labelNames("action", "microfrontendId")
         .register()
 
-    fun countMicrofrontendEnabled(actionMetricsType: ActionMetricsType, microfrontendId: String) {
+    fun countMicrofrontendActions(actionMetricsType: ActionMetricsType, microfrontendId: String) {
         counter
             .labels(actionMetricsType.name, microfrontendId)
             .inc()

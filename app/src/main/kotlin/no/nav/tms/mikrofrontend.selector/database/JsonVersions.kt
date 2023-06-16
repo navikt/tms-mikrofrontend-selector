@@ -11,12 +11,15 @@ private val log = KotlinLogging.logger { }
 
 
 abstract class KeyRequirements {
+    abstract val actionString: String
     abstract val requiredKeys: List<String>
     abstract val interestedInKeys: List<String>
 
     fun setRequiredKeys(jsonMessage: JsonMessage) = requiredKeys.forEach { key -> jsonMessage.requireKey(key) }
     fun setInterestedInKeys(jsonMessage: JsonMessage) =
         interestedInKeys.forEach { key -> jsonMessage.interestedIn(key) }
+
+    companion object
 }
 
 
@@ -25,6 +28,7 @@ object JsonVersions {
     private val requiredKeyBase = listOf("microfrontend_id", "ident")
 
     object Enabled : KeyRequirements() {
+        override val actionString: String="enable"
         override val requiredKeys: List<String> = requiredKeyBase
         private val requiredKeysV2 = listOf("sikkerhetsnivå", "initiated_by")
         val requiredKeysV3 = listOf("sensitivitet", "@initiated_by")
@@ -32,6 +36,7 @@ object JsonVersions {
     }
 
     object Disabled : KeyRequirements() {
+        override val actionString: String="disable"
         override val requiredKeys: List<String> = requiredKeyBase
         override val interestedInKeys: List<String> = listOf("@initiated_by")
     }

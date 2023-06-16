@@ -27,28 +27,28 @@ class PersonRepository(private val database: Database, private val metricsRegist
         ?: Microfrontends.emptyApiResponse()
     }
 
-    fun enableMicrofrontend(microfrontendData: JsonMessage) {
-        val ident = microfrontendData.ident
-        val initiatedBy = microfrontendData.initiatedBy
+    fun enableMicrofrontend(jsonMessage: JsonMessage) {
+        val ident = jsonMessage.ident
+        val initiatedBy = jsonMessage.initiatedBy
         val microfrontends = getMicrofrontends(ident)
-        withLogging(ident, microfrontendData.microfrontendId, "enable") {
-            if (microfrontends.addMicrofrontend(microfrontendData)) {
-                secureLog.info { "Oppdaterer mikrofrontend fra packet: $microfrontendData" }
+        withLogging(ident, jsonMessage.microfrontendId, "enable") {
+            if (microfrontends.addMicrofrontend(jsonMessage)) {
+                secureLog.info { "Oppdaterer mikrofrontend fra packet: $jsonMessage" }
                 secureLog.info { "Nytt innhold er ${microfrontends.apiResponse(3)} " }
                 updatePersonTable(ident, microfrontends)
                 addChangelogEntry(ident, microfrontends, initiatedBy)
-                metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.ENABLE, microfrontendData.microfrontendId)
+                metricsRegistry.countMicrofrontendActions(ActionMetricsType.ENABLE, jsonMessage.microfrontendId)
             }
         }
     }
 
-    fun disableMicrofrontend(ident: String, microfrontendId: String, initiatedBy: String?) {
-        val microfrontends = getMicrofrontends(ident)
-        withLogging(ident, microfrontendId, "disable") {
-            if (microfrontends.removeMicrofrontend(microfrontendId)) {
-                updatePersonTable(ident, microfrontends)
-                addChangelogEntry(ident, microfrontends, initiatedBy)
-                metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.DISABLE, microfrontendId)
+    fun disableMicrofrontend(jsonMessage: JsonMessage) {
+        val microfrontends = getMicrofrontends(jsonMessage.ident)
+        withLogging(jsonMessage.ident, jsonMessage.microfrontendId, "disable") {
+            if (microfrontends.removeMicrofrontend(jsonMessage.microfrontendId)) {
+                updatePersonTable(jsonMessage.ident, microfrontends)
+                addChangelogEntry(jsonMessage.ident, microfrontends, jsonMessage.initiatedBy)
+                metricsRegistry.countMicrofrontendActions(ActionMetricsType.DISABLE, jsonMessage.microfrontendId)
             }
         }
     }

@@ -3,6 +3,8 @@ package selector
 import LocalPostgresDatabase
 import assert
 import currentVersionMessage
+import dbV1
+import dbv1Format
 import disableMessage
 import legacyMessage
 import io.kotest.matchers.collections.shouldContainExactly
@@ -55,7 +57,7 @@ internal class SinkTest {
         val testmicrofeId2 = "also-new-and-shiny"
         val microNewVersion = "current-json-version"
 
-        database.insertWithLegacyFormat(testIdent, oldAndRusty)
+        database.insertLegacyFormat(ident = testIdent, format = ::dbv1Format, oldAndRusty)
 
         val enableMsg1 = legacyEnabledMessageUtenSikkerhetsnivå(
             ident = testIdent,
@@ -93,7 +95,8 @@ internal class SinkTest {
             find { it["microfrontend_id"].asText() == testmicrofeId2 }!!
                 .get("sensitivitet")?.asText() shouldBe SUBSTANTIAL.name
             find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sensitivitet")?.asText() shouldBe HIGH.name
-            find { it["microfrontend_id"].asText() == microNewVersion }!!.get("sensitivitet")?.asText() shouldBe HIGH.name
+            find { it["microfrontend_id"].asText() == microNewVersion }!!.get("sensitivitet")
+                ?.asText() shouldBe HIGH.name
         }
 
         database.getChangelog(testIdent).assert {
@@ -199,7 +202,7 @@ internal class SinkTest {
     }
 
     @Test
-    fun `fungerer med gammel versjon av initiatedBy`(){
+    fun `fungerer med gammel versjon av initiatedBy`() {
         val enableMsg = legacyEnabledMessageUtenSikkerhetsnivå(
             ident = "12345678910",
             microfrontendId = "testingtesting",
@@ -211,7 +214,8 @@ internal class SinkTest {
             require(this != null)
             size shouldBe 1
             first().assert {
-                this["microfrontend_id"].asText() shouldBe "testingtesting"}
+                this["microfrontend_id"].asText() shouldBe "testingtesting"
+            }
         }
 
         database.getChangelog("12345678910").assert {
