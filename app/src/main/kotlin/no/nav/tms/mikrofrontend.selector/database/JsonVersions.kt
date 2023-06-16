@@ -18,6 +18,7 @@ abstract class MessageRequirements {
     fun requireCommonKeys(jsonMessage: JsonMessage) = commonKeys.forEach { key -> jsonMessage.requireKey(key) }
     fun interestedInLegacyKeys(jsonMessage: JsonMessage) =
         olderVersionKeys.forEach { key -> jsonMessage.interestedIn(key) }
+
     fun interestedInCurrentVersionKeys(jsonMessage: JsonMessage) =
         currentVersionKeys.forEach { key -> jsonMessage.interestedIn(key) }
 }
@@ -58,19 +59,26 @@ object JsonVersions {
             ?: this["sikkerhetsnivå"].sensitivitetFromSikkerhetsnivå()
             ?: Sensitivitet.HIGH
 
+    val JsonMessage.initiatedBy: String?
+        get() =
+            this["@initiated_by"]
+                .takeIf { !it.isMissingOrNull() }?.asText()
+                ?: this["initiated_by"].asText()
+
     val JsonNode.sensitivitet: Sensitivitet
         get() =
             this["sensitivitet"].senistivitetOrNull()
                 ?: this["sikkerhetsnivå"].sensitivitetFromSikkerhetsnivå()
                 ?: Sensitivitet.HIGH
 
-    private fun JsonNode?.sensitivitetFromSikkerhetsnivå() =
-        this
-            ?.takeIf { !isMissingOrNull() }
-            ?.let { nivå -> Sensitivitet.resolve(nivå.asInt()) }
+    private fun JsonNode?.sensitivitetFromSikkerhetsnivå() = this
+        ?.takeIf { !isMissingOrNull() }
+        ?.let { nivå -> Sensitivitet.resolve(nivå.asInt()) }
 
     private fun JsonNode?.senistivitetOrNull() = this
-        ?.takeIf { !isMissingOrNull() }?.textValue()?.let { name -> Sensitivitet.valueOf(name) }
+        ?.takeIf { !isMissingOrNull() }
+        ?.textValue()
+        ?.let { name -> Sensitivitet.valueOf(name) }
 
     fun JsonNode.applyMigrations(): JsonNode = when {
         isSecondVersion -> currentVersionNode(this["microfrontend_id"].asText(), this.sensitivitet)
@@ -99,9 +107,4 @@ enum class Sensitivitet(private val sikkerhetsnivå: Int) {
     }
 }
 
-val JsonMessage.initiatedBy: String?
-    get() =
-        get("@initiated_by")
-            .takeIf { !it.isMissingOrNull() }?.asText()
-            ?: get("initiated_by").asText()
 

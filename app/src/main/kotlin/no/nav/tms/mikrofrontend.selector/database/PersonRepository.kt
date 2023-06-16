@@ -3,6 +3,7 @@ package no.nav.tms.mikrofrontend.selector.database
 import kotliquery.queryOf
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.tms.mikrofrontend.selector.database.JsonVersions.initiatedBy
 import no.nav.tms.mikrofrontend.selector.ident
 import no.nav.tms.mikrofrontend.selector.metrics.ActionMetricsType
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
