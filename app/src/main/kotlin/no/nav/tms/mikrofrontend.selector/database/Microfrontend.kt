@@ -15,9 +15,7 @@ internal class Microfrontends(initialJson: String? = null) {
     private val originalData: List<JsonNode>? =
         initialJson
             ?.let { microfrontendMapper.readTree(it)["microfrontends"] }
-            ?.map {
-                it.applyMigrations()
-            }
+            ?.map { it.applyMigrations() }
             ?.toList()
 
 

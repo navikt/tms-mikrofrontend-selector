@@ -11,38 +11,39 @@ private val log = KotlinLogging.logger { }
 
 
 abstract class KeyRequirements {
-    abstract val actionString: String
-    abstract val requiredKeys: List<String>
-    abstract val interestedInKeys: List<String>
-
-    fun setRequiredKeys(jsonMessage: JsonMessage) = requiredKeys.forEach { key -> jsonMessage.requireKey(key) }
-    fun setInterestedInKeys(jsonMessage: JsonMessage) =
-        interestedInKeys.forEach { key -> jsonMessage.interestedIn(key) }
-
-    companion object
+    abstract val action: String
+    val commonKeys: List<String> = listOf("microfrontend_id", "ident")
+    abstract val olderVersionKeys: List<String>
+    abstract val currentVersionKeys: List<String>
+    fun requireCommonKeys(jsonMessage: JsonMessage) = commonKeys.forEach { key -> jsonMessage.requireKey(key) }
+    fun interestedInLegacyKeys(jsonMessage: JsonMessage) =
+        olderVersionKeys.forEach { key -> jsonMessage.interestedIn(key) }
+    fun interestedInCurrentVersionKeys(jsonMessage: JsonMessage) =
+        currentVersionKeys.forEach { key -> jsonMessage.interestedIn(key) }
 }
 
 
 object JsonVersions {
+    private val JsonNode.isSecondVersion
+        get() = this["sikkerhetsnivå"] != null
+    private val JsonNode.isFirstVersion
+        get() = isValueNode
 
-    private val requiredKeyBase = listOf("microfrontend_id", "ident")
-
-    object Enabled : KeyRequirements() {
-        override val actionString: String="enable"
-        override val requiredKeys: List<String> = requiredKeyBase
+    object Enable : KeyRequirements() {
+        override val action: String = "enable"
         private val requiredKeysV2 = listOf("sikkerhetsnivå", "initiated_by")
-        val requiredKeysV3 = listOf("sensitivitet", "@initiated_by")
-        override val interestedInKeys: List<String> = (requiredKeysV2 + requiredKeysV3).toSet().toList()
+        override val olderVersionKeys = requiredKeysV2
+        override val currentVersionKeys = listOf("sensitivitet", "@initiated_by")
     }
 
-    object Disabled : KeyRequirements() {
-        override val actionString: String="disable"
-        override val requiredKeys: List<String> = requiredKeyBase
-        override val interestedInKeys: List<String> = listOf("@initiated_by")
+    object Disable : KeyRequirements() {
+        override val action: String = "disable"
+        private val requiredKeysV2 = listOf("initiated_by")
+        override val olderVersionKeys = requiredKeysV2
+        override val currentVersionKeys: List<String> = listOf("@initiated_by")
     }
 
-
-    fun currentVersionNode(id: String, sensitivitet: Sensitivitet) = microfrontendMapper.readTree(
+    private fun currentVersionNode(id: String, sensitivitet: Sensitivitet) = microfrontendMapper.readTree(
         """
          {
             "microfrontend_id": "$id",
@@ -51,25 +52,11 @@ object JsonVersions {
       """.trimMargin()
     )
 
-    //JsonMessage migration
-    fun JsonMessage.applyMigrations() = currentVersionNode(this.microfrontendId, this.sensitivitet)
-
+    fun JsonMessage.applyMigrations(): JsonNode = currentVersionNode(this.microfrontendId, this.sensitivitet)
     val JsonMessage.sensitivitet: Sensitivitet
         get() = this["sensitivitet"].senistivitetOrNull()
             ?: this["sikkerhetsnivå"].sensitivitetFromSikkerhetsnivå()
             ?: Sensitivitet.HIGH
-
-
-    private fun migrateSikkerhetsnivå(jsonNode: JsonNode): JsonNode =
-        currentVersionNode(jsonNode.mikrofrontendId, jsonNode.sensitivitet)
-
-    //JsonNode migration
-    private val JsonNode.isSecondVersion
-        get() = this["sikkerhetsnivå"] != null
-
-    private val JsonNode.isFirstVersion
-        get() = isValueNode
-
 
     val JsonNode.sensitivitet: Sensitivitet
         get() =
@@ -86,14 +73,14 @@ object JsonVersions {
         ?.takeIf { !isMissingOrNull() }?.textValue()?.let { name -> Sensitivitet.valueOf(name) }
 
     fun JsonNode.applyMigrations(): JsonNode = when {
-        isSecondVersion -> migrateSikkerhetsnivå(this)
+        isSecondVersion -> currentVersionNode(this["microfrontend_id"].asText(), this.sensitivitet)
         isFirstVersion -> currentVersionNode(asText(), Sensitivitet.HIGH)
         else -> this
     }
 }
 
 
-enum class Sensitivitet(val sikkerhetsnivå: Int) {
+enum class Sensitivitet(private val sikkerhetsnivå: Int) {
     HIGH(4), SUBSTANTIAL(3);
 
     operator fun compareTo(innloggetnivå: Int): Int =
@@ -111,9 +98,6 @@ enum class Sensitivitet(val sikkerhetsnivå: Int) {
         }
     }
 }
-
-private val JsonNode.mikrofrontendId: String
-    get() = this["microfrontend_id"].asText()
 
 val JsonMessage.initiatedBy: String?
     get() =
