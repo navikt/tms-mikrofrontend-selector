@@ -6,7 +6,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.tms.mikrofrontend.selector.database.JsonVersions.EnableKeys
+import no.nav.tms.mikrofrontend.selector.database.JsonVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 
 class EnableSink(
@@ -19,10 +19,10 @@ class EnableSink(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@action", EnableKeys.action) }
-            validate { message ->  EnableKeys.requireCommonKeys(message) }
-            validate { message -> EnableKeys.interestedInCurrentVersionKeys(message)}
-            validate { message -> EnableKeys.interestedInLegacyKeys(message)}
+            validate { it.demandValue("@action", EnableMessage.action) }
+            validate { message ->  EnableMessage.requireCommonKeys(message) }
+            validate { message -> EnableMessage.interestedInCurrentVersionKeys(message)}
+            validate { message -> EnableMessage.interestedInLegacyKeys(message)}
         }.register(this)
     }
 

@@ -10,7 +10,7 @@ import no.nav.tms.mikrofrontend.selector.microfrontendId
 private val log = KotlinLogging.logger { }
 
 
-abstract class KeyRequirements {
+abstract class MessageRequirements {
     abstract val action: String
     val commonKeys: List<String> = listOf("microfrontend_id", "ident")
     abstract val olderVersionKeys: List<String>
@@ -29,14 +29,14 @@ object JsonVersions {
     private val JsonNode.isFirstVersion
         get() = isValueNode
 
-    object EnableKeys : KeyRequirements() {
+    object EnableMessage : MessageRequirements() {
         override val action: String = "enable"
         private val requiredKeysV2 = listOf("sikkerhetsnivå", "initiated_by")
         override val olderVersionKeys = requiredKeysV2
         override val currentVersionKeys = listOf("sensitivitet", "@initiated_by")
     }
 
-    object DisableKeys : KeyRequirements() {
+    object DisableMessage : MessageRequirements() {
         override val action: String = "disable"
         private val requiredKeysV2 = listOf("initiated_by")
         override val olderVersionKeys = requiredKeysV2

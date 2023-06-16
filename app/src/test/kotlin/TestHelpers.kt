@@ -2,22 +2,22 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.tms.mikrofrontend.selector.database.JsonVersions
-import no.nav.tms.mikrofrontend.selector.database.KeyRequirements
+import no.nav.tms.mikrofrontend.selector.database.MessageRequirements
 import no.nav.tms.mikrofrontend.selector.database.Sensitivitet
 import no.nav.tms.mikrofrontend.selector.database.Sensitivitet.HIGH
 
 object LegacyJsonMessages {
-    fun v1Message(ident: String, microfrontendId: String, keyRequirements: KeyRequirements) =
+    fun v1Message(ident: String, microfrontendId: String, messageRequirements: MessageRequirements) =
         JsonMessage.newMessage(
             mapOf(
-                "@action" to keyRequirements.action,
+                "@action" to messageRequirements.action,
                 "ident" to ident,
                 "microfrontend_id" to microfrontendId
             )
         ).apply {
-            keyRequirements.requireCommonKeys(this)
-            keyRequirements.interestedInLegacyKeys(this)
-            keyRequirements.interestedInCurrentVersionKeys(this)
+            messageRequirements.requireCommonKeys(this)
+            messageRequirements.interestedInLegacyKeys(this)
+            messageRequirements.interestedInCurrentVersionKeys(this)
         }
 
     fun enableV2Message(ident: String, microfrontendId: String, initiatedBy: String = "defaultteam", sikkerhetsnivå: Int = 4) =
@@ -29,9 +29,9 @@ object LegacyJsonMessages {
                 "sikkerhetsnivå" to sikkerhetsnivå
             )
         ).apply {
-            JsonVersions.EnableKeys.requireCommonKeys(this)
-            JsonVersions.EnableKeys.interestedInLegacyKeys(this)
-            JsonVersions.EnableKeys.interestedInCurrentVersionKeys(this)
+            JsonVersions.EnableMessage.requireCommonKeys(this)
+            JsonVersions.EnableMessage.interestedInLegacyKeys(this)
+            JsonVersions.EnableMessage.interestedInCurrentVersionKeys(this)
         }
 
     fun disableV2Message(ident: String, microfrontendId: String, initiatedBy: String) =
@@ -42,9 +42,9 @@ object LegacyJsonMessages {
                 "initiated_by" to initiatedBy
             )
         ).apply {
-            JsonVersions.EnableKeys.requireCommonKeys(this)
-            JsonVersions.EnableKeys.interestedInCurrentVersionKeys(this)
-            JsonVersions.EnableKeys.interestedInLegacyKeys(this)
+            JsonVersions.EnableMessage.requireCommonKeys(this)
+            JsonVersions.EnableMessage.interestedInCurrentVersionKeys(this)
+            JsonVersions.EnableMessage.interestedInLegacyKeys(this)
         }
 }
 
@@ -83,15 +83,15 @@ fun currentVersionMessage(
 ).toJson()
 
 fun currentVersionPacket(
-    keyRequirements: KeyRequirements = JsonVersions.EnableKeys,
+    messageRequirements: MessageRequirements = JsonVersions.EnableMessage,
     microfrontendId: String,
     ident: String,
     sensitivitet: Sensitivitet = HIGH,
     initatedBy: String = "default-team"
 ) =
     JsonMessage.newMessage(
-        currentVersionMap(keyRequirements.action, microfrontendId, ident, sensitivitet, initatedBy)
-    ).also { keyRequirements.addRequiredAndInterestedIn(it) }
+        currentVersionMap(messageRequirements.action, microfrontendId, ident, sensitivitet, initatedBy)
+    ).also { messageRequirements.addRequiredAndInterestedIn(it) }
 
 fun currentVersionMap(
     action: String = "enable",
@@ -118,7 +118,7 @@ internal val objectMapper = jacksonObjectMapper().apply {
     registerModule(JavaTimeModule())
 }
 
-fun KeyRequirements.addRequiredAndInterestedIn(jsonMessage: JsonMessage) {
+fun MessageRequirements.addRequiredAndInterestedIn(jsonMessage: JsonMessage) {
     requireCommonKeys(jsonMessage)
     interestedInLegacyKeys(jsonMessage)
     interestedInCurrentVersionKeys(jsonMessage)

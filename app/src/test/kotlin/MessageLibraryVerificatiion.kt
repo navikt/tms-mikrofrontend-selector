@@ -60,7 +60,7 @@ class MessageLibraryVerificatiion {
             get("@initiated_by").asText() shouldBe "minside"
             get("sensitivitet").asText() shouldBe Sensitivitet.HIGH.name
 
-            val lastVersionKeys = JsonVersions.EnableKeys.commonKeys + JsonVersions.EnableKeys.currentVersionKeys
+            val lastVersionKeys = JsonVersions.EnableMessage.commonKeys + JsonVersions.EnableMessage.currentVersionKeys
             lastVersionKeys.forEach { expectedKey ->
                 withClue("$expectedKey mangler i melding fra messagebuilder"){ get(expectedKey).isMissingOrNull() shouldBe false}
             }
@@ -90,7 +90,7 @@ class MessageLibraryVerificatiion {
         )
 
         coVerify(exactly = 2){personRepository.disableMicrofrontend(any())}
-        val lastVersionKeys = JsonVersions.DisableKeys.commonKeys + JsonVersions.DisableKeys.currentVersionKeys
+        val lastVersionKeys = JsonVersions.DisableMessage.commonKeys + JsonVersions.DisableMessage.currentVersionKeys
         lastVersionKeys.forEach { expectedKey ->
             withClue("$expectedKey mangler i melding fra messagebuilder"){ jsonMessages.first()[expectedKey].isMissingOrNull() shouldBe false}
         }
