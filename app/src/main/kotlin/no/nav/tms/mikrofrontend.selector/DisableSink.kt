@@ -30,6 +30,7 @@ class DisableSink(
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         log.info { "mottok disablemelding for ${packet.microfrontendId}" }
         personRepository.disableMicrofrontend(packet)
+        DisableMessage.countVersion(packet)
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {

@@ -5,41 +5,74 @@ import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends.Companion.microfrontendMapper
+import no.nav.tms.mikrofrontend.selector.metrics.MessageVersionCounter
 import no.nav.tms.mikrofrontend.selector.microfrontendId
 
 private val log = KotlinLogging.logger { }
 
 
-abstract class MessageRequirements {
+abstract class MessageRequirements(private val messageVersionCounter: MessageVersionCounter) {
     abstract val action: String
     val commonKeys: List<String> = listOf("microfrontend_id", "ident")
+    abstract val requiredKeysV2: List<String>
     abstract val olderVersionKeys: List<String>
     abstract val currentVersionKeys: List<String>
+
+    fun countVersion(jsonMessage: JsonMessage) {
+        val keysInMessage =
+            (commonKeys + olderVersionKeys + currentVersionKeys).filter { !jsonMessage["it"].isMissingNode }
+        when {
+            keysInMessage.containsAll(currentVersionKeys) -> messageVersionCounter.countMessageVersion(
+                "3",
+                jsonMessage.microfrontendId,
+                jsonMessage["@initiated_by"].asText()
+            )
+
+            keysInMessage.containsAll(requiredKeysV2) -> messageVersionCounter.countMessageVersion(
+                "2",
+                jsonMessage.microfrontendId,
+                jsonMessage["@initiated_by"].asText()
+            )
+
+            (olderVersionKeys + currentVersionKeys).none { keysInMessage.contains(it) } ->
+                messageVersionCounter.countMessageVersion("1", jsonMessage.microfrontendId)
+
+            else -> {
+                messageVersionCounter.countMessageVersion(microfrontendId = jsonMessage.microfrontendId)
+                log.info { "mottok enablemelding med ukjent kombinasjon av nøkler: ${keysInMessage.joinToString(",")}" }
+            }
+        }
+    }
     fun requireCommonKeys(jsonMessage: JsonMessage) = commonKeys.forEach { key -> jsonMessage.requireKey(key) }
     fun interestedInLegacyKeys(jsonMessage: JsonMessage) =
         olderVersionKeys.forEach { key -> jsonMessage.interestedIn(key) }
 
     fun interestedInCurrentVersionKeys(jsonMessage: JsonMessage) =
         currentVersionKeys.forEach { key -> jsonMessage.interestedIn(key) }
+
 }
 
 
 object JsonVersions {
+    private val messageVersionCounter = MessageVersionCounter()
     private val JsonNode.isSecondVersion
         get() = this["sikkerhetsnivå"] != null
+
     private val JsonNode.isFirstVersion
         get() = isValueNode
 
-    object EnableMessage : MessageRequirements() {
+    object EnableMessage : MessageRequirements(messageVersionCounter) {
         override val action: String = "enable"
-        private val requiredKeysV2 = listOf("sikkerhetsnivå", "initiated_by")
+        override val requiredKeysV2 = listOf("sikkerhetsnivå", "initiated_by")
         override val olderVersionKeys = requiredKeysV2
         override val currentVersionKeys = listOf("sensitivitet", "@initiated_by")
+
+
     }
 
-    object DisableMessage : MessageRequirements() {
+    object DisableMessage : MessageRequirements(messageVersionCounter) {
         override val action: String = "disable"
-        private val requiredKeysV2 = listOf("initiated_by")
+        override val requiredKeysV2 = listOf("initiated_by")
         override val olderVersionKeys = requiredKeysV2
         override val currentVersionKeys: List<String> = listOf("@initiated_by")
     }
@@ -106,5 +139,3 @@ enum class Sensitivitet(private val sikkerhetsnivå: Int) {
         }
     }
 }
-
-
