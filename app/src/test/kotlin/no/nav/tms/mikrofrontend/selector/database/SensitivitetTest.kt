@@ -8,7 +8,7 @@ internal class SensitivitetTest {
 
     @Test
     fun `resolver sikkerhetsnivå riktig`() {
-        Sensitivitet.resolve(null) shouldBe HIGH
+        Sensitivitet.resolve(0) shouldBe HIGH
         Sensitivitet.resolve(3) shouldBe SUBSTANTIAL
         Sensitivitet.resolve(4) shouldBe HIGH
         Sensitivitet.resolve(2) shouldBe HIGH

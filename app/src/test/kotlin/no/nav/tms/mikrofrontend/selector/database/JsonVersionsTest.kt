@@ -16,7 +16,7 @@ internal class JsonVersionsTest {
             """
              {
                 "microfrontend_id": "mfk1",
-                "sensitivitet" : "HIGH"
+                "sensitivitet" : "high"
             }
     """.trimIndent()
         )
@@ -25,7 +25,7 @@ internal class JsonVersionsTest {
             """
              {
                 "microfrontend_id": "mfk1",
-                "sensitivitet" : "SUBSTANTIAL"
+                "sensitivitet" : "substantial"
             }
     """.trimIndent()
         )
@@ -58,24 +58,24 @@ internal class JsonVersionsTest {
 
         @Test
         fun `beholder gjeldende format`() {
-            currentFormatHigh.applyMigrations() shouldBe currentFormatHigh
-            currentFormatSubstantial shouldBe currentFormatSubstantial
+            currentFormatHigh.applyMigrations().toPrettyString() shouldBe currentFormatHigh.toPrettyString()
+            currentFormatSubstantial.applyMigrations().toPrettyString() shouldBe currentFormatSubstantial.toPrettyString()
         }
 
         @Test
         fun `migrerer fra eldre formater`() {
             formatWithSikkerhetsnivå4.applyMigrations().assert {
                 this["microfrontend_id"].asText() shouldBe "mfk1"
-                this["sensitivitet"].asText() shouldBe "HIGH"
+                this["sensitivitet"].asText() shouldBe "high"
             }
             formatWithSikkerhetsnivå3.applyMigrations().assert {
                 this["microfrontend_id"].asText() shouldBe "mfk1"
-                this["sensitivitet"].asText() shouldBe "SUBSTANTIAL"
+                this["sensitivitet"].asText() shouldBe "substantial"
             }
 
             listeFormat.applyMigrations().assert {
                 this["microfrontend_id"].asText() shouldBe "mfk1"
-                this["sensitivitet"].asText() shouldBe "HIGH"
+                this["sensitivitet"].asText() shouldBe "high"
             }
 
         }

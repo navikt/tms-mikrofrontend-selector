@@ -53,11 +53,11 @@ internal class Microfrontends(initialJson: String? = null) {
         { 
            "microfrontends": ${
         newData
-            .filter { Sensitivitet.valueOf(it["sensitivitet"].asText()) <= innloggetnivå }
+            .filter { Sensitivitet.resolve(it["sensitivitet"]) <= innloggetnivå }
             .map { it["microfrontend_id"] }
             .jsonArrayString()
     }, 
-           "offerStepup": ${newData.any { Sensitivitet.valueOf(it["sensitivitet"].asText()) > innloggetnivå }} 
+           "offerStepup": ${newData.any { Sensitivitet.resolve(it["sensitivitet"]) > innloggetnivå }} 
         }
         """.trimIndent()
 

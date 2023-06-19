@@ -89,12 +89,12 @@ internal class SinkTest {
                 microNewVersion
             )
             find { it["microfrontend_id"].asText() == testmicrofeId1 }!!
-                .get("sensitivitet")?.asText() shouldBe HIGH.name
+                .get("sensitivitet")?.asText() shouldBe HIGH.value
             find { it["microfrontend_id"].asText() == testmicrofeId2 }!!
-                .get("sensitivitet")?.asText() shouldBe SUBSTANTIAL.name
-            find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sensitivitet")?.asText() shouldBe HIGH.name
+                .get("sensitivitet")?.asText() shouldBe SUBSTANTIAL.value
+            find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sensitivitet")?.asText() shouldBe HIGH.value
             find { it["microfrontend_id"].asText() == microNewVersion }!!.get("sensitivitet")
-                ?.asText() shouldBe HIGH.name
+                ?.asText() shouldBe HIGH.value
         }
 
         database.getChangelog(testIdent).assert {

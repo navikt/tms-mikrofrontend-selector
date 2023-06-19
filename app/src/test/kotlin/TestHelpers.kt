@@ -100,7 +100,7 @@ fun currentVersionMap(
     "ident" to ident,
     "microfrontend_id" to microfrontendId,
     "@initiated_by" to initiatedBy
-).apply { if (action == "enable") this["sensitivitet"] to sensitivitet }
+).apply { if (action == "enable") this["sensitivitet"] to sensitivitet.value }
 
 
 private fun MessageRequirements.addRequiredAndInterestedIn(jsonMessage: JsonMessage) {

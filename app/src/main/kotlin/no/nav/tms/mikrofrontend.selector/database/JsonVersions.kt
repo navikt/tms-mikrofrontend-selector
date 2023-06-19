@@ -55,10 +55,10 @@ abstract class MessageRequirements(private val messageVersionCounter: MessageVer
 
 object JsonVersions {
     private val messageVersionCounter = MessageVersionCounter()
-    private val JsonNode.isSecondVersion
+    private val JsonNode.isSecondDbVersion
         get() = this["sikkerhetsnivå"] != null
 
-    private val JsonNode.isFirstVersion
+    private val JsonNode.isFirstDbVersion
         get() = isValueNode
 
     object EnableMessage : MessageRequirements(messageVersionCounter) {
@@ -81,7 +81,7 @@ object JsonVersions {
         """
          {
             "microfrontend_id": "$id",
-            "sensitivitet" : "${sensitivitet.name}"
+            "sensitivitet" : "${sensitivitet.value}"
         }
       """.trimMargin()
     )
@@ -111,11 +111,11 @@ object JsonVersions {
     private fun JsonNode?.senistivitetOrNull() = this
         ?.takeIf { !isMissingOrNull() }
         ?.textValue()
-        ?.let { name -> Sensitivitet.valueOf(name) }
+        ?.let { name -> Sensitivitet.resolve(name) }
 
     fun JsonNode.applyMigrations(): JsonNode = when {
-        isSecondVersion -> currentVersionDbNode(this["microfrontend_id"].asText(), this.sensitivitet)
-        isFirstVersion -> currentVersionDbNode(asText(), Sensitivitet.HIGH)
+        isSecondDbVersion -> currentVersionDbNode(this["microfrontend_id"].asText(), this.sensitivitet)
+        isFirstDbVersion -> currentVersionDbNode(asText(), Sensitivitet.HIGH)
         else -> this
     }
 }
@@ -123,7 +123,7 @@ object JsonVersions {
 
 enum class Sensitivitet(private val sikkerhetsnivå: Int) {
     HIGH(4), SUBSTANTIAL(3);
-
+    val value = name.lowercase()
     operator fun compareTo(innloggetnivå: Int): Int =
         sikkerhetsnivå - resolve(innloggetnivå).sikkerhetsnivå
 
@@ -137,5 +137,27 @@ enum class Sensitivitet(private val sikkerhetsnivå: Int) {
                 HIGH
             }
         }
+
+        fun resolve(sensitivitetString: String?) = when (sensitivitetString) {
+            null -> HIGH
+            HIGH.value -> HIGH
+            SUBSTANTIAL.value -> SUBSTANTIAL
+            else -> {
+                log.error { "$sensitivitetString har ingen korresponederende sensitivitetsnviå. Returnerer default-verdi HIGH" }
+                HIGH
+            }
+        }
+
+        fun resolve(jsonNode: JsonNode) = when {
+            jsonNode.isMissingOrNull() -> HIGH
+            jsonNode.asText() == HIGH.value -> HIGH
+            jsonNode.asText() == SUBSTANTIAL.value -> SUBSTANTIAL
+            else -> {
+                log.error { "${jsonNode.asText()} har ingen korresponederende sensitivitetsnviå. Returnerer default-verdi HIGH" }
+                HIGH
+            }
+        }
+
+
     }
 }
