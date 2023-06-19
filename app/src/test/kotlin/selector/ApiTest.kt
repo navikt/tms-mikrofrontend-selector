@@ -4,9 +4,7 @@ import LocalPostgresDatabase
 import assert
 import currentVersionMessage
 import io.kotest.matchers.collections.shouldBeIn
-import io.kotest.matchers.collections.shouldContain
-import legacyMessage
-import io.kotest.matchers.collections.shouldContainExactly
+import legacyMessagev2
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -66,8 +64,8 @@ internal class ApiTest {
         }
 
         //legacy
-        testRapid.sendTestMessage(legacyMessage(microfrontendId = "legacyNivå4mkf", ident = testIdent,))
-        testRapid.sendTestMessage(legacyMessage("nivå3mkf", testIdent, 3,))
+        testRapid.sendTestMessage(legacyMessagev2(microfrontendId = "legacyNivå4mkf", ident = testIdent,))
+        testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testIdent, 3,))
 
         expectedMicrofrontends.addAll(listOf("nivå3mkf","legacyNivå4mkf"))
 
@@ -104,9 +102,9 @@ internal class ApiTest {
         }
 
         nivå4Mikrofrontends.forEach {
-            testRapid.sendTestMessage(legacyMessage(it, testIdent,))
+            testRapid.sendTestMessage(legacyMessagev2(it, testIdent,))
         }
-        testRapid.sendTestMessage(legacyMessage("nivå3mkf", testIdent, 3,))
+        testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testIdent, 3,))
 
 
         client.get("/mikrofrontends").assert {

@@ -19,7 +19,7 @@ abstract class MessageRequirements(private val messageVersionCounter: MessageVer
     abstract val currentVersionKeys: List<String>
 
     fun countVersion(jsonMessage: JsonMessage) {
-        val keysInMessage =
+        /*val keysInMessage =
             (commonKeys + olderVersionKeys + currentVersionKeys).filter { !jsonMessage["it"].isMissingNode }
         when {
             keysInMessage.containsAll(currentVersionKeys) -> messageVersionCounter.countMessageVersion(
@@ -41,7 +41,7 @@ abstract class MessageRequirements(private val messageVersionCounter: MessageVer
                 messageVersionCounter.countMessageVersion(microfrontendId = jsonMessage.microfrontendId)
                 log.info { "mottok enablemelding med ukjent kombinasjon av nøkler: ${keysInMessage.joinToString(",")}" }
             }
-        }
+        }*/
     }
     fun requireCommonKeys(jsonMessage: JsonMessage) = commonKeys.forEach { key -> jsonMessage.requireKey(key) }
     fun interestedInLegacyKeys(jsonMessage: JsonMessage) =
@@ -77,7 +77,7 @@ object JsonVersions {
         override val currentVersionKeys: List<String> = listOf("@initiated_by")
     }
 
-    private fun currentVersionNode(id: String, sensitivitet: Sensitivitet) = microfrontendMapper.readTree(
+    private fun currentVersionDbNode(id: String, sensitivitet: Sensitivitet) = microfrontendMapper.readTree(
         """
          {
             "microfrontend_id": "$id",
@@ -86,7 +86,7 @@ object JsonVersions {
       """.trimMargin()
     )
 
-    fun JsonMessage.applyMigrations(): JsonNode = currentVersionNode(this.microfrontendId, this.sensitivitet)
+    fun JsonMessage.toDbNode(): JsonNode = currentVersionDbNode(this.microfrontendId, this.sensitivitet)
     val JsonMessage.sensitivitet: Sensitivitet
         get() = this["sensitivitet"].senistivitetOrNull()
             ?: this["sikkerhetsnivå"].sensitivitetFromSikkerhetsnivå()
@@ -114,8 +114,8 @@ object JsonVersions {
         ?.let { name -> Sensitivitet.valueOf(name) }
 
     fun JsonNode.applyMigrations(): JsonNode = when {
-        isSecondVersion -> currentVersionNode(this["microfrontend_id"].asText(), this.sensitivitet)
-        isFirstVersion -> currentVersionNode(asText(), Sensitivitet.HIGH)
+        isSecondVersion -> currentVersionDbNode(this["microfrontend_id"].asText(), this.sensitivitet)
+        isFirstVersion -> currentVersionDbNode(asText(), Sensitivitet.HIGH)
         else -> this
     }
 }

@@ -21,7 +21,7 @@ abstract class Action(protected val objectMapper: ObjectMapper) {
             microfrontendId == null -> throw IllegalArgumentException("microfrontend_id kan ikke være null i $action meldinger")
             initiatedBy == "" -> throw IllegalArgumentException("initiated_by kan ikke være null i $action meldinger, bruk navnet til ditt team i gcp")
             else -> mutableMapOf(
-                "version" to currentVersion,
+                "@version" to currentVersion,
                 "@action" to action,
                 "ident" to ident,
                 "microfrontend_id" to microfrontendId,

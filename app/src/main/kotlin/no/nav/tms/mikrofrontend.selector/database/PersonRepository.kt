@@ -35,7 +35,7 @@ class PersonRepository(private val database: Database, private val metricsRegist
         withLogging(ident, jsonMessage.microfrontendId, "enable") {
             if (microfrontends.addMicrofrontend(jsonMessage)) {
                 secureLog.info { "Oppdaterer mikrofrontend fra packet: $jsonMessage" }
-                secureLog.info { "Nytt innhold er ${microfrontends.apiResponse(3)} " }
+                secureLog.info { "Nytt innhold er ${microfrontends.apiResponse(4)} " }
                 updatePersonTable(ident, microfrontends)
                 addChangelogEntry(ident, microfrontends, initiatedBy)
                 metricsRegistry.countMicrofrontendActions(ActionMetricsType.ENABLE, jsonMessage.microfrontendId)

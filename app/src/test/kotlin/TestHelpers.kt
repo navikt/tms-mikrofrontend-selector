@@ -45,7 +45,7 @@ object LegacyJsonMessages {
 }
 
 
-fun legacyMessage(
+fun legacyMessagev2(
     microfrontendId: String,
     ident: String,
     sikkerhetsnivå: Int = 4,
@@ -57,7 +57,7 @@ fun legacyMessage(
       "ident": "$ident",
       "microfrontend_id": "$microfrontendId",
       "sikkerhetsnivå" : $sikkerhetsnivå
-      ${initiatedBy?.let { """ ,"@initiated_by": "$initiatedBy" """ } ?: ""}
+      ${initiatedBy?.let { """ ,"initiated_by": "$initiatedBy" """ } ?: ""}
     }
     """.trimIndent()
 

@@ -4,7 +4,7 @@ import LocalPostgresDatabase
 import assert
 import currentVersionMessage
 import dbv1Format
-import legacyMessage
+import legacyMessagev2
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -62,8 +62,8 @@ internal class SinkTest {
             microfrontendId = testmicrofeId1,
             initiatedBy = "testteam"
         )
-        val enableMsg2 = legacyMessage(microfrontendId = testmicrofeId2, ident = testIdent, initiatedBy = null)
-        val enableMsg3 = legacyMessage(microfrontendId = testmicrofeId2, ident = testIdent, sikkerhetsnivå = 3)
+        val enableMsg2 = legacyMessagev2(microfrontendId = testmicrofeId2, ident = testIdent, initiatedBy = null)
+        val enableMsg3 = legacyMessagev2(microfrontendId = testmicrofeId2, ident = testIdent, sikkerhetsnivå = 3)
 
         testRapid.sendTestMessage(enableMsg1)
         testRapid.sendTestMessage(enableMsg2)
@@ -131,15 +131,15 @@ internal class SinkTest {
         val testmicrofeId2 = "also-new-and-shiny"
 
         testRapid.sendTestMessage(
-            legacyMessage(
+            legacyMessagev2(
                 microfrontendId = testmicrofeId1,
                 ident = testFnr,
                 initiatedBy = "id1team"
             )
         )
-        testRapid.sendTestMessage(legacyMessage(microfrontendId = testmicrofeId1, ident = "9988776655"))
+        testRapid.sendTestMessage(legacyMessagev2(microfrontendId = testmicrofeId1, ident = "9988776655"))
         testRapid.sendTestMessage(
-            legacyMessage(
+            legacyMessagev2(
                 microfrontendId = testmicrofeId2,
                 ident = testFnr,
                 initiatedBy = "id2team"
@@ -184,9 +184,9 @@ internal class SinkTest {
     fun `Skal kunne re-enable mikrofrontend`() {
         val testFnr = "12345678910"
         val testmicrofeId1 = "same-same-but-different"
-        testRapid.sendTestMessage(legacyMessage(microfrontendId = testmicrofeId1, ident = testFnr))
+        testRapid.sendTestMessage(legacyMessagev2(microfrontendId = testmicrofeId1, ident = testFnr))
         testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
-        testRapid.sendTestMessage(legacyMessage(microfrontendId = testmicrofeId1, ident = testFnr))
+        testRapid.sendTestMessage(legacyMessagev2(microfrontendId = testmicrofeId1, ident = testFnr))
 
         database.getMicrofrontends(ident = testFnr).assert {
             require(this != null)

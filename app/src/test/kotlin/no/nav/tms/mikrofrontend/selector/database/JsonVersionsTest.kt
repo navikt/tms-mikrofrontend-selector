@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector.database
 
 import assert
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.kotest.matchers.shouldBe
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.tms.mikrofrontend.selector.database.JsonVersions.applyMigrations

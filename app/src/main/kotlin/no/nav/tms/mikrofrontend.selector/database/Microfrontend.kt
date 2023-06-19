@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.tms.mikrofrontend.selector.database.JsonVersions.applyMigrations
+import no.nav.tms.mikrofrontend.selector.database.JsonVersions.toDbNode
 import no.nav.tms.mikrofrontend.selector.database.JsonVersions.sensitivitet
 import no.nav.tms.mikrofrontend.selector.microfrontendId
 import org.postgresql.util.PGobject
@@ -37,10 +38,10 @@ internal class Microfrontends(initialJson: String? = null) {
                 } else {
                     log.info { "Endring av sikkerhetsnivå for ${packet.microfrontendId} fra $originalSensitivitet til ${packet.sensitivitet}" }
                     removeMicrofrontend(packet.microfrontendId)
-                    newData.add(packet.applyMigrations())
+                    newData.add(packet.toDbNode())
                 }
             }
-            ?: newData.add(packet.applyMigrations())
+            ?: newData.add(packet.toDbNode())
                 .also { "Legger til ny mikrofrontend med id ${packet.microfrontendId} med sensitivitet ${packet.sensitivitet}" }
 
     fun removeMicrofrontend(microfrontendId: String) =
