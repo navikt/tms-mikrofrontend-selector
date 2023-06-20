@@ -15,7 +15,7 @@ object DatabaseJsonVersions {
     private val JsonNode.isFirstDbVersion
         get() = isValueNode
 
-    fun currentVersionNode(id: String, sensitivitet: Sensitivitet) = microfrontendMapper.readTree(
+    fun currentVersionNode(id: String, sensitivitet: Sensitivitet): JsonNode = microfrontendMapper.readTree(
         """
          {
             "microfrontend_id": "$id",
