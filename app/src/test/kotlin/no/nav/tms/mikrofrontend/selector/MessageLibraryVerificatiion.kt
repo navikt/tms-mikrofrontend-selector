@@ -1,4 +1,5 @@
-
+package no.nav.tms.mikrofrontend.selector
+import assert
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
@@ -9,10 +10,7 @@ import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.microfrontend.MessageBuilder
 import no.nav.tms.microfrontend.Sensitivitet
-import no.nav.tms.mikrofrontend.selector.DisableSink
-import no.nav.tms.mikrofrontend.selector.EnableSink
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
-import no.nav.tms.mikrofrontend.selector.microfrontendId
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import org.junit.jupiter.api.BeforeAll

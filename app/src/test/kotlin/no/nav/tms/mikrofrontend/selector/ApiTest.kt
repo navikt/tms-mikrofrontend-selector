@@ -1,10 +1,8 @@
-package selector
+package no.nav.tms.mikrofrontend.selector
 
 import LocalPostgresDatabase
 import assert
-import currentVersionMessage
 import io.kotest.matchers.collections.shouldBeIn
-import legacyMessagev2
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -12,14 +10,10 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.tms.mikrofrontend.selector.DisableSink
-import no.nav.tms.mikrofrontend.selector.EnableSink
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
-import no.nav.tms.mikrofrontend.selector.selectorApi
 import no.nav.tms.token.support.authentication.installer.mock.installMockedAuthenticators
 import no.nav.tms.token.support.tokenx.validation.mock.SecurityLevel
-import objectMapper
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance

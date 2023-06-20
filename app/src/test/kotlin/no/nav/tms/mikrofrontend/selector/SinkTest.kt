@@ -1,23 +1,17 @@
-package selector
+package no.nav.tms.mikrofrontend.selector
 
 import LocalPostgresDatabase
 import assert
-import currentVersionMessage
 import dbv1Format
-import legacyMessagev2
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.prometheus.client.CollectorRegistry
 import kotliquery.queryOf
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.tms.mikrofrontend.selector.DisableSink
-import no.nav.tms.mikrofrontend.selector.EnableSink
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
-import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
-import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.SUBSTANTIAL
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
-import objectMapper
+import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -74,7 +68,7 @@ internal class SinkTest {
                 action = "enable",
                 microfrontendId = microNewVersion,
                 ident = testIdent,
-                sensitivitet = HIGH,
+                sensitivitet = Sensitivitet.HIGH,
                 initiatedBy = "test-team"
             )
         )
@@ -89,12 +83,12 @@ internal class SinkTest {
                 microNewVersion
             )
             find { it["microfrontend_id"].asText() == testmicrofeId1 }!!
-                .get("sensitivitet")?.asText() shouldBe HIGH.value
+                .get("sensitivitet")?.asText() shouldBe Sensitivitet.HIGH.value
             find { it["microfrontend_id"].asText() == testmicrofeId2 }!!
-                .get("sensitivitet")?.asText() shouldBe SUBSTANTIAL.value
-            find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sensitivitet")?.asText() shouldBe HIGH.value
+                .get("sensitivitet")?.asText() shouldBe Sensitivitet.SUBSTANTIAL.value
+            find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sensitivitet")?.asText() shouldBe Sensitivitet.HIGH.value
             find { it["microfrontend_id"].asText() == microNewVersion }!!.get("sensitivitet")
-                ?.asText() shouldBe HIGH.value
+                ?.asText() shouldBe Sensitivitet.HIGH.value
         }
 
         database.getChangelog(testIdent).assert {

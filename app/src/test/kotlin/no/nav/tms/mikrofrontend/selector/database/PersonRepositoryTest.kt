@@ -1,11 +1,7 @@
 package no.nav.tms.mikrofrontend.selector.database
 
-import LegacyJsonMessages.disableV2Message
-import LegacyJsonMessages.enableV2Message
-import LegacyJsonMessages.v1Message
 import LocalPostgresDatabase
 import assert
-import currentVersionPacket
 import dbv1Format
 import dbv2Format
 import io.kotest.assertions.withClue
@@ -14,6 +10,10 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
+import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages.disableV2Message
+import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages.enableV2Message
+import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages.v1Message
+import no.nav.tms.mikrofrontend.selector.currentVersionPacket
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.SUBSTANTIAL
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter

@@ -3,9 +3,9 @@ package no.nav.tms.mikrofrontend.selector.versions
 import assert
 import io.kotest.matchers.shouldBe
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.tms.mikrofrontend.selector.objectMapper
 import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.applyMigrations
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.sensitivitet
-import objectMapper
 import org.junit.jupiter.api.Test
 
 internal class JsonVersionsTest {

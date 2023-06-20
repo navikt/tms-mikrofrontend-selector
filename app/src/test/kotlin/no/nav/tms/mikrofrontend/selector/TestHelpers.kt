@@ -1,3 +1,5 @@
+package no.nav.tms.mikrofrontend.selector
+
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.rapids_rivers.JsonMessage

@@ -3,6 +3,7 @@ import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
 import no.nav.tms.mikrofrontend.selector.database.Database
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
+import no.nav.tms.mikrofrontend.selector.objectMapper
 import org.flywaydb.core.Flyway
 import org.postgresql.util.PGobject
 import org.testcontainers.containers.PostgreSQLContainer
@@ -16,7 +17,7 @@ class LocalPostgresDatabase private constructor() : Database {
     companion object {
         private val instance by lazy {
             LocalPostgresDatabase().also {
-                it.migrate(3)
+                it.migrate() shouldBe 3
             }
         }
 
@@ -45,16 +46,13 @@ class LocalPostgresDatabase private constructor() : Database {
         }
     }
 
-    private fun migrate(expectedMigrations: Int) {
+    private fun migrate(): Int =
         Flyway.configure()
-            .connectRetries(3)
-            .dataSource(dataSource)
-            .load()
-            .migrate()
-            .also {
-                it.migrationsExecuted shouldBe expectedMigrations
-            }
-    }
+        .connectRetries(3)
+        .dataSource(dataSource)
+        .load()
+        .migrate().migrationsExecuted
+
 
     fun getChangelog(ident: String) = list {
         queryOf("SELECT * FROM changelog where ident=:ident", mapOf("ident" to ident))
@@ -157,7 +155,7 @@ data class ChangelogEntry(
     val initiatedBy: String?
 )
 
-internal inline fun <T> T.assert(block: T.() -> Unit): T =
+inline fun <T> T.assert(block: T.() -> Unit): T =
     apply {
         block()
     }
