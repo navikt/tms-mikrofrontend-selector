@@ -6,8 +6,8 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.tms.mikrofrontend.selector.database.JsonVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 
 class EnableSink(
     rapidsConnection: RapidsConnection,

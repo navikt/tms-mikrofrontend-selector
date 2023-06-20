@@ -1,10 +1,10 @@
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.tms.mikrofrontend.selector.database.JsonVersions
-import no.nav.tms.mikrofrontend.selector.database.MessageRequirements
-import no.nav.tms.mikrofrontend.selector.database.Sensitivitet
-import no.nav.tms.mikrofrontend.selector.database.Sensitivitet.HIGH
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions
+import no.nav.tms.mikrofrontend.selector.versions.MessageRequirements
+import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
+import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
 
 internal val objectMapper = jacksonObjectMapper().apply {
     registerModule(JavaTimeModule())
@@ -30,18 +30,18 @@ object LegacyJsonMessages {
         sikkerhetsnivå: Int = 4
     ) =
         JsonMessage.newMessage(
-            v1Map(ident,microfrontendId,JsonVersions.EnableMessage) +
+            v1Map(ident,microfrontendId, JsonMessageVersions.EnableMessage) +
             mapOf(
                 "initiated_by" to initiatedBy,
                 "sikkerhetsnivå" to sikkerhetsnivå
             )
-        ).apply { JsonVersions.EnableMessage.addRequiredAndInterestedIn(this) }
+        ).apply { JsonMessageVersions.EnableMessage.addRequiredAndInterestedIn(this) }
 
     fun disableV2Message(ident: String, microfrontendId: String, initiatedBy: String) =
         JsonMessage.newMessage(
-            v1Map(ident,microfrontendId,JsonVersions.DisableMessage) +
+            v1Map(ident,microfrontendId, JsonMessageVersions.DisableMessage) +
             mapOf("initiated_by" to initiatedBy)
-        ).apply { JsonVersions.DisableMessage.addRequiredAndInterestedIn(this) }
+        ).apply { JsonMessageVersions.DisableMessage.addRequiredAndInterestedIn(this) }
 }
 
 
@@ -79,7 +79,7 @@ fun currentVersionMessage(
 ).toJson()
 
 fun currentVersionPacket(
-    messageRequirements: MessageRequirements = JsonVersions.EnableMessage,
+    messageRequirements: MessageRequirements = JsonMessageVersions.EnableMessage,
     microfrontendId: String,
     ident: String,
     sensitivitet: Sensitivitet = HIGH,

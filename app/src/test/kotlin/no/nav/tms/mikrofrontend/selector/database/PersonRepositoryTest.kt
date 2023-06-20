@@ -14,9 +14,11 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
-import no.nav.tms.mikrofrontend.selector.database.Sensitivitet.HIGH
-import no.nav.tms.mikrofrontend.selector.database.Sensitivitet.SUBSTANTIAL
+import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
+import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.SUBSTANTIAL
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -37,7 +39,7 @@ internal class PersonRepositoryTest {
                 initiatedBy = "test-team-1"
             )
         )
-        repository.enableMicrofrontend(v1Message(personIdent, "mkf3", JsonVersions.EnableMessage))
+        repository.enableMicrofrontend(v1Message(personIdent, "mkf3", EnableMessage))
         repository.enableMicrofrontend(enableV2Message(personIdent, "mkf3"))
         repository.enableMicrofrontend(
             enableV2Message(
@@ -118,7 +120,7 @@ internal class PersonRepositoryTest {
 
         repository.disableMicrofrontend(
             currentVersionPacket(
-                messageRequirements = JsonVersions.DisableMessage,
+                messageRequirements = DisableMessage,
                 ident = testIdent,
                 microfrontendId = "mkf3",
                 initatedBy = "test-team5"
@@ -128,7 +130,7 @@ internal class PersonRepositoryTest {
 
         repository.disableMicrofrontend(
             currentVersionPacket(
-                messageRequirements = JsonVersions.DisableMessage,
+                messageRequirements = DisableMessage,
                 ident = testIdent,
                 microfrontendId = "mkf4",
                 initatedBy = "test-team-4"
@@ -169,7 +171,7 @@ internal class PersonRepositoryTest {
 
         testDb.insertLegacyFormat(ident = testId2, format = ::dbv1Format, "m1", "m2", "m3")
         repository.disableMicrofrontend(
-            currentVersionPacket(JsonVersions.DisableMessage, "mkk", testId2, SUBSTANTIAL, "init-team")
+            currentVersionPacket(DisableMessage, "mkk", testId2, SUBSTANTIAL, "init-team")
         )
 
         testDb.getMicrofrontends(testId1).assert {
@@ -180,7 +182,7 @@ internal class PersonRepositoryTest {
 
         testDb.insertLegacyFormat(ident = testId3, format = ::dbv2Format, "m1", "m2", "m3")
         repository.disableMicrofrontend(
-            currentVersionPacket(JsonVersions.DisableMessage, "mkk", testId3, SUBSTANTIAL, "init-team")
+            currentVersionPacket(DisableMessage, "mkk", testId3, SUBSTANTIAL, "init-team")
         )
 
         testDb.getMicrofrontends(testId1).assert {

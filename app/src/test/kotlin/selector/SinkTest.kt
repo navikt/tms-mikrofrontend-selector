@@ -14,8 +14,8 @@ import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.DisableSink
 import no.nav.tms.mikrofrontend.selector.EnableSink
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
-import no.nav.tms.mikrofrontend.selector.database.Sensitivitet.HIGH
-import no.nav.tms.mikrofrontend.selector.database.Sensitivitet.SUBSTANTIAL
+import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
+import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.SUBSTANTIAL
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import objectMapper
 import org.junit.jupiter.api.AfterEach
@@ -107,7 +107,7 @@ internal class SinkTest {
             get(1).assert { originalData }.assert {
                 originalData.microfrontendids().size shouldBe 2
                 newData.microfrontendids().size shouldBe 3
-                initiatedBy shouldBe ""
+                initiatedBy shouldBe null
             }
             get(2).assert { originalData }.assert {
                 originalData.microfrontendids().size shouldBe 3

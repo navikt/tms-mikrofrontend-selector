@@ -11,9 +11,10 @@ import no.nav.tms.microfrontend.MessageBuilder
 import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.tms.mikrofrontend.selector.DisableSink
 import no.nav.tms.mikrofrontend.selector.EnableSink
-import no.nav.tms.mikrofrontend.selector.database.JsonVersions
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.microfrontendId
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
@@ -60,7 +61,7 @@ class MessageLibraryVerificatiion {
             get("@initiated_by").asText() shouldBe "minside"
             get("sensitivitet").asText() shouldBe Sensitivitet.HIGH.name
 
-            val lastVersionKeys = JsonVersions.EnableMessage.commonKeys + JsonVersions.EnableMessage.currentVersionKeys
+            val lastVersionKeys = EnableMessage.commonKeys + EnableMessage.currentVersionKeys
             lastVersionKeys.forEach { expectedKey ->
                 withClue("$expectedKey mangler i melding fra messagebuilder"){ get(expectedKey).isMissingOrNull() shouldBe false}
             }
@@ -90,7 +91,7 @@ class MessageLibraryVerificatiion {
         )
 
         coVerify(exactly = 2){personRepository.disableMicrofrontend(any())}
-        val lastVersionKeys = JsonVersions.DisableMessage.commonKeys + JsonVersions.DisableMessage.currentVersionKeys
+        val lastVersionKeys = DisableMessage.commonKeys + DisableMessage.currentVersionKeys
         lastVersionKeys.forEach { expectedKey ->
             withClue("$expectedKey mangler i melding fra messagebuilder"){ jsonMessages.first()[expectedKey].isMissingOrNull() shouldBe false}
         }

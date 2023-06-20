@@ -1,18 +1,19 @@
 package no.nav.tms.mikrofrontend.selector.database
 
 import io.kotest.matchers.shouldBe
-import no.nav.tms.mikrofrontend.selector.database.Sensitivitet.*
+import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
+import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.*
 import org.junit.jupiter.api.Test
 
 internal class SensitivitetTest {
 
     @Test
     fun `resolver sikkerhetsnivå riktig`() {
-        Sensitivitet.resolve(0) shouldBe HIGH
-        Sensitivitet.resolve(3) shouldBe SUBSTANTIAL
-        Sensitivitet.resolve(4) shouldBe HIGH
-        Sensitivitet.resolve(2) shouldBe HIGH
-        Sensitivitet.resolve(8) shouldBe HIGH
+        Sensitivitet.fromSikkerhetsnivå(0) shouldBe HIGH
+        Sensitivitet.fromSikkerhetsnivå(3) shouldBe SUBSTANTIAL
+        Sensitivitet.fromSikkerhetsnivå(4) shouldBe HIGH
+        Sensitivitet.fromSikkerhetsnivå(2) shouldBe HIGH
+        Sensitivitet.fromSikkerhetsnivå(8) shouldBe HIGH
     }
 
     @Test
