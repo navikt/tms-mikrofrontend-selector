@@ -19,7 +19,7 @@ object DatabaseJsonVersions {
         """
          {
             "microfrontend_id": "$id",
-            "sensitivitet" : "${sensitivitet.value}"
+            "sensitivitet" : "${sensitivitet.stringValue}"
         }
       """.trimMargin()
     )
@@ -40,7 +40,7 @@ object DatabaseJsonVersions {
 enum class Sensitivitet(private val sikkerhetsnivå: Int) {
     HIGH(4), SUBSTANTIAL(3);
 
-    val value = name.lowercase()
+    val stringValue = name.lowercase()
     operator fun compareTo(innloggetnivå: Int): Int =
         sikkerhetsnivå - fromSikkerhetsnivå(innloggetnivå).sikkerhetsnivå
 
@@ -57,8 +57,8 @@ enum class Sensitivitet(private val sikkerhetsnivå: Int) {
 
         fun fromString(sensitivitetString: String?) = when (sensitivitetString) {
             null -> HIGH
-            HIGH.value -> HIGH
-            SUBSTANTIAL.value -> SUBSTANTIAL
+            HIGH.stringValue -> HIGH
+            SUBSTANTIAL.stringValue -> SUBSTANTIAL
             else -> {
                 log.error { "$sensitivitetString har ingen korresponederende sensitivitetsnviå. Returnerer default-verdi HIGH" }
                 HIGH
@@ -67,8 +67,8 @@ enum class Sensitivitet(private val sikkerhetsnivå: Int) {
 
         fun fromJsonNode(jsonNode: JsonNode) = when {
             jsonNode.isMissingOrNull() -> HIGH
-            jsonNode.asText() == HIGH.value -> HIGH
-            jsonNode.asText() == SUBSTANTIAL.value -> SUBSTANTIAL
+            jsonNode.asText() == HIGH.stringValue -> HIGH
+            jsonNode.asText() == SUBSTANTIAL.stringValue -> SUBSTANTIAL
             else -> {
                 log.error { "${jsonNode.asText()} har ingen korresponederende sensitivitetsnviå. Returnerer default-verdi HIGH" }
                 HIGH

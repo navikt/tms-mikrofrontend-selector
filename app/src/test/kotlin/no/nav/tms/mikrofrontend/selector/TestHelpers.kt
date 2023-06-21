@@ -107,7 +107,7 @@ fun currentVersionMap(
     "@initiated_by" to initiatedBy
 ).apply {
     if (messageRequirements == EnableMessage)
-        this["sensitivitet"] = sensitivitet.value
+        this["sensitivitet"] = sensitivitet.stringValue
     println(this)
 }
 

@@ -95,14 +95,14 @@ internal class MessageBuilderTest {
         }.apply {
             map().assert {
                 this["@action"] shouldBe "enable"
-                this["sensitivitet"] shouldBe Sensitivitet.HIGH.name
+                this["sensitivitet"] shouldBe Sensitivitet.HIGH.stringValue
             }
             jsonNode().assert {
                 this["@action"].asText() shouldBe "enable"
-                this["sensitivitet"].asText() shouldBe Sensitivitet.HIGH.name
+                this["sensitivitet"].asText() shouldBe Sensitivitet.HIGH.stringValue
                 assertCommonJsonFields(jsonNode())
             }
-            assertEnableText(text(), Sensitivitet.HIGH.name)
+            assertEnableText(text(), Sensitivitet.HIGH.stringValue)
         }
 
         MessageBuilder.enable {
@@ -112,14 +112,14 @@ internal class MessageBuilderTest {
         }.apply {
             map().assert {
                 this["@action"] shouldBe "enable"
-                this["sensitivitet"] shouldBe Sensitivitet.HIGH.name
+                this["sensitivitet"] shouldBe Sensitivitet.HIGH.stringValue
             }
             jsonNode().assert {
                 this["@action"].asText() shouldBe "enable"
-                this["sensitivitet"].asText() shouldBe Sensitivitet.HIGH.name
+                this["sensitivitet"].asText() shouldBe Sensitivitet.HIGH.stringValue
                 assertCommonJsonFields(jsonNode())
             }
-            assertEnableText(text(), "HIGH")
+            assertEnableText(text(), "high")
         }
 
         MessageBuilder.enable {
@@ -130,14 +130,14 @@ internal class MessageBuilderTest {
         }.apply {
             map().assert {
                 this["@action"] shouldBe "enable"
-                this["sensitivitet"] shouldBe Sensitivitet.SUBSTANTIAL.name
+                this["sensitivitet"] shouldBe Sensitivitet.SUBSTANTIAL.stringValue
             }
             jsonNode().assert {
                 this["@action"].asText() shouldBe "enable"
-                this["sensitivitet"].asText() shouldBe Sensitivitet.SUBSTANTIAL.name
+                this["sensitivitet"].asText() shouldBe Sensitivitet.SUBSTANTIAL.stringValue
                 assertCommonJsonFields(jsonNode())
             }
-            assertEnableText(text(), "SUBSTANTIAL")
+            assertEnableText(text(), "substantial")
         }
 
 

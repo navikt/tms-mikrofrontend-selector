@@ -11,7 +11,6 @@ import kotliquery.queryOf
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
-import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
 import org.junit.jupiter.api.AfterEach
@@ -85,12 +84,12 @@ internal class SinkTest {
                 microNewVersion
             )
             find { it["microfrontend_id"].asText() == testmicrofeId1 }!!
-                .get("sensitivitet")?.asText() shouldBe Sensitivitet.HIGH.value
+                .get("sensitivitet")?.asText() shouldBe Sensitivitet.HIGH.stringValue
             find { it["microfrontend_id"].asText() == testmicrofeId2 }!!
-                .get("sensitivitet")?.asText() shouldBe Sensitivitet.SUBSTANTIAL.value
-            find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sensitivitet")?.asText() shouldBe Sensitivitet.HIGH.value
+                .get("sensitivitet")?.asText() shouldBe Sensitivitet.SUBSTANTIAL.stringValue
+            find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sensitivitet")?.asText() shouldBe Sensitivitet.HIGH.stringValue
             find { it["microfrontend_id"].asText() == microNewVersion }!!.get("sensitivitet")
-                ?.asText() shouldBe Sensitivitet.HIGH.value
+                ?.asText() shouldBe Sensitivitet.HIGH.stringValue
         }
 
         database.getChangelog(testIdent).assert {

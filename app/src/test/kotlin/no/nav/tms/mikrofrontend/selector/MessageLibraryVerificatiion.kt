@@ -9,10 +9,11 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.microfrontend.MessageBuilder
-import no.nav.tms.microfrontend.Sensitivitet
+import no.nav.tms.microfrontend.Sensitivitet as BuilderSensitivitet
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
+import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
@@ -39,7 +40,7 @@ class MessageLibraryVerificatiion {
                 ident = "12345678920",
                 microfrontendId = "microf4",
                 initiatedBy = "minside",
-                sensitivitet = Sensitivitet.HIGH
+                sensitivitet = BuilderSensitivitet.HIGH
             ).text()
         )
 
@@ -48,7 +49,7 @@ class MessageLibraryVerificatiion {
                 ident = "12345678920"
                 microfrontendId= "microf9"
                 initiatedBy = "minside"
-                sensitivitet = Sensitivitet.HIGH
+                sensitivitet = BuilderSensitivitet.HIGH
             }.text()
         )
 
@@ -57,7 +58,7 @@ class MessageLibraryVerificatiion {
         jsonMessages.first { it.microfrontendId == "microf4" }.assert {
             get("ident").asText() shouldBe "12345678920"
             get("@initiated_by").asText() shouldBe "minside"
-            get("sensitivitet").asText() shouldBe Sensitivitet.HIGH.name
+            get("sensitivitet").asText() shouldBe Sensitivitet.HIGH.stringValue
 
             val lastVersionKeys = EnableMessage.commonKeys + EnableMessage.currentVersionKeys
             lastVersionKeys.forEach { expectedKey ->

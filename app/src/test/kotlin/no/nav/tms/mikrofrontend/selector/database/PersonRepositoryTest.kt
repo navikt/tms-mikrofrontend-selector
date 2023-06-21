@@ -62,11 +62,11 @@ internal class PersonRepositoryTest {
             size shouldBe 4
             find { it["microfrontend_id"].asText() == "mkf4" }.assert {
                 require(this != null)
-                withClue("Feil i sikkerhetsnivå for mfk4") { get("sensitivitet")?.asText() shouldBe SUBSTANTIAL.value }
+                withClue("Feil i sikkerhetsnivå for mfk4") { get("sensitivitet")?.asText() shouldBe SUBSTANTIAL.stringValue }
             }
             find { it["microfrontend_id"].asText() == "mkf1" }.assert {
                 require(this != null)
-                withClue("Feil i sikkerhetsnivå for mkf1") { get("sensitivitet")?.asText() shouldBe HIGH.value }
+                withClue("Feil i sikkerhetsnivå for mkf1") { get("sensitivitet")?.asText() shouldBe HIGH.stringValue }
             }
         }
         testDb.getChangelog(personIdent).assert {
@@ -94,8 +94,8 @@ internal class PersonRepositoryTest {
                 id shouldBeIn listOf("m1", "m2", "m3", "mkf4", "mfk6")
                 this.size shouldBe 5
                 find { it["microfrontend_id"].asText() == "mkf4" }?.get("sensitivitet")
-                    ?.asText() shouldBe SUBSTANTIAL.value
-                find { it["microfrontend_id"].asText() == "m1" }?.get("sensitivitet")?.asText() shouldBe HIGH.value
+                    ?.asText() shouldBe SUBSTANTIAL.stringValue
+                find { it["microfrontend_id"].asText() == "m1" }?.get("sensitivitet")?.asText() shouldBe HIGH.stringValue
             }
 
         }
