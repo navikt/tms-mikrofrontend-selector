@@ -11,6 +11,8 @@ import kotliquery.queryOf
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
@@ -65,7 +67,7 @@ internal class SinkTest {
 
         testRapid.sendTestMessage(
             currentVersionMessage(
-                action = "enable",
+                messageRequirements = EnableMessage,
                 microfrontendId = microNewVersion,
                 ident = testIdent,
                 sensitivitet = Sensitivitet.HIGH,

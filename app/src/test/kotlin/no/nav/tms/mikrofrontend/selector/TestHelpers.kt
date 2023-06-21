@@ -4,6 +4,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.MessageRequirements
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
@@ -22,7 +23,7 @@ object LegacyJsonMessages {
 
     fun v1Message(ident: String, microfrontendId: String, messageRequirements: MessageRequirements) =
         JsonMessage.newMessage(
-            v1Map(ident,microfrontendId,messageRequirements)
+            v1Map(ident, microfrontendId, messageRequirements)
         ).apply { messageRequirements.addRequiredAndInterestedIn(this) }
 
     fun enableV2Message(
@@ -32,17 +33,17 @@ object LegacyJsonMessages {
         sikkerhetsnivå: Int = 4
     ) =
         JsonMessage.newMessage(
-            v1Map(ident,microfrontendId, JsonMessageVersions.EnableMessage) +
-            mapOf(
-                "initiated_by" to initiatedBy,
-                "sikkerhetsnivå" to sikkerhetsnivå
-            )
-        ).apply { JsonMessageVersions.EnableMessage.addRequiredAndInterestedIn(this) }
+            v1Map(ident, microfrontendId, EnableMessage) +
+                    mapOf(
+                        "initiated_by" to initiatedBy,
+                        "sikkerhetsnivå" to sikkerhetsnivå
+                    )
+        ).apply { EnableMessage.addRequiredAndInterestedIn(this) }
 
     fun disableV2Message(ident: String, microfrontendId: String, initiatedBy: String) =
         JsonMessage.newMessage(
-            v1Map(ident,microfrontendId, JsonMessageVersions.DisableMessage) +
-            mapOf("initiated_by" to initiatedBy)
+            v1Map(ident, microfrontendId, JsonMessageVersions.DisableMessage) +
+                    mapOf("initiated_by" to initiatedBy)
         ).apply { JsonMessageVersions.DisableMessage.addRequiredAndInterestedIn(this) }
 }
 
@@ -65,14 +66,14 @@ fun legacyMessagev2(
 
 
 fun currentVersionMessage(
-    action: String = "enabled",
+    messageRequirements: MessageRequirements = EnableMessage,
     microfrontendId: String,
     ident: String,
     sensitivitet: Sensitivitet = HIGH,
     initiatedBy: String = "default-team"
 ) = JsonMessage.newMessage(
     currentVersionMap(
-        action = action,
+        messageRequirements = messageRequirements,
         microfrontendId = microfrontendId,
         ident = ident,
         sensitivitet = sensitivitet,
@@ -81,28 +82,34 @@ fun currentVersionMessage(
 ).toJson()
 
 fun currentVersionPacket(
-    messageRequirements: MessageRequirements = JsonMessageVersions.EnableMessage,
+    messageRequirements: MessageRequirements = EnableMessage,
     microfrontendId: String,
     ident: String,
     sensitivitet: Sensitivitet = HIGH,
     initatedBy: String = "default-team"
 ) =
     JsonMessage.newMessage(
-        currentVersionMap(messageRequirements.action, microfrontendId, ident, sensitivitet, initatedBy)
-    ).apply { messageRequirements.addRequiredAndInterestedIn(this) }
+        currentVersionMap(messageRequirements, microfrontendId, ident, sensitivitet, initatedBy)
+    ).apply {
+        messageRequirements.addRequiredAndInterestedIn(this)
+    }
 
 fun currentVersionMap(
-    action: String = "enable",
+    messageRequirements: MessageRequirements,
     microfrontendId: String,
     ident: String,
     sensitivitet: Sensitivitet = HIGH,
     initiatedBy: String = "default-team"
 ) = mutableMapOf(
-    "@action" to action,
+    "@action" to messageRequirements.action,
     "ident" to ident,
     "microfrontend_id" to microfrontendId,
     "@initiated_by" to initiatedBy
-).apply { if (action == "enable") this["sensitivitet"] to sensitivitet.value }
+).apply {
+    if (messageRequirements == EnableMessage)
+        this["sensitivitet"] = sensitivitet.value
+    println(this)
+}
 
 
 private fun MessageRequirements.addRequiredAndInterestedIn(jsonMessage: JsonMessage) {

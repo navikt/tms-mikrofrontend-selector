@@ -12,6 +12,7 @@ import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.token.support.authentication.installer.mock.installMockedAuthenticators
 import no.nav.tms.token.support.tokenx.validation.mock.SecurityLevel
 import org.junit.jupiter.api.BeforeAll
@@ -54,7 +55,7 @@ internal class ApiTest {
         }
 
         expectedMicrofrontends.forEach {
-            testRapid.sendTestMessage(currentVersionMessage(action = "enable", ident = testIdent, microfrontendId = it))
+            testRapid.sendTestMessage(currentVersionMessage(messageRequirements = EnableMessage, ident = testIdent, microfrontendId = it))
         }
 
         //legacy

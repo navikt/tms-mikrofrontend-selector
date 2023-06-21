@@ -1,12 +1,15 @@
 package no.nav.tms.mikrofrontend.selector.versions
 
 import com.fasterxml.jackson.databind.JsonNode
+import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.tms.mikrofrontend.selector.metrics.MessageVersionCounter
 import no.nav.tms.mikrofrontend.selector.microfrontendId
 
 abstract class MessageRequirements(private val messageVersionCounter: MessageVersionCounter) {
+
+    private val log = KotlinLogging.logger { }
     abstract val action: String
     val commonKeys: List<String> = listOf("microfrontend_id", "ident")
     abstract val requiredKeysV2: List<String>
@@ -14,29 +17,31 @@ abstract class MessageRequirements(private val messageVersionCounter: MessageVer
     abstract val currentVersionKeys: List<String>
 
     fun countVersion(jsonMessage: JsonMessage) {
-        /*val keysInMessage =
-            (commonKeys + olderVersionKeys + currentVersionKeys).filter { !jsonMessage["it"].isMissingNode }
+        val keysInMessage =
+            (commonKeys + olderVersionKeys + currentVersionKeys).filter { key ->
+                !jsonMessage[key].isMissingNode
+            }
         when {
             keysInMessage.containsAll(currentVersionKeys) -> messageVersionCounter.countMessageVersion(
-                "3",
+                "V3",
                 jsonMessage.microfrontendId,
                 jsonMessage["@initiated_by"].asText()
             )
 
             keysInMessage.containsAll(requiredKeysV2) -> messageVersionCounter.countMessageVersion(
-                "2",
+                "V2",
                 jsonMessage.microfrontendId,
-                jsonMessage["@initiated_by"].asText()
+                jsonMessage["initiated_by"].asText()
             )
 
             (olderVersionKeys + currentVersionKeys).none { keysInMessage.contains(it) } ->
-                messageVersionCounter.countMessageVersion("1", jsonMessage.microfrontendId)
+                messageVersionCounter.countMessageVersion("V1", jsonMessage.microfrontendId)
 
             else -> {
                 messageVersionCounter.countMessageVersion(microfrontendId = jsonMessage.microfrontendId)
                 log.info { "mottok enablemelding med ukjent kombinasjon av nøkler: ${keysInMessage.joinToString(",")}" }
             }
-        }*/
+        }
     }
 
     fun requireCommonKeys(jsonMessage: JsonMessage) = commonKeys.forEach { key -> jsonMessage.requireKey(key) }
@@ -49,7 +54,7 @@ abstract class MessageRequirements(private val messageVersionCounter: MessageVer
 }
 
 object JsonMessageVersions {
-    private val messageVersionCounter = MessageVersionCounter()
+    val messageVersionCounter = MessageVersionCounter()
 
     object EnableMessage : MessageRequirements(messageVersionCounter) {
         override val action: String = "enable"

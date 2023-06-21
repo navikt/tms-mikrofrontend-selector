@@ -28,7 +28,7 @@ class MessageVersionCounter {
         .labelNames("version", "microfrontendId", "team")
         .register()
 
-    fun countMessageVersion(version: String="NAN", microfrontendId: String, team: String="NAN") {
+    fun countMessageVersion(version: String="NA", microfrontendId: String, team: String="NA") {
         counter
             .labels(version, microfrontendId, team)
             .inc()
