@@ -23,7 +23,7 @@ microfrontend-topicet.
       "ident": <ident for bruker, vanligvis fnr>,
       "microfrontend_id": <microfrontendId>,
       "sensitivitet" : <nivå som kreves for å se innholdet i mikrofrontenden, gyldige verdier: SUBSTANTIAL og HIGH>,
-      "initiated_by":<ditt-team>
+      "@initiated_by":<ditt-team>
    }
    ```
 2. Disable-melding når bruker ikke skal se mikrofrontenden lenger

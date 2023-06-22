@@ -8,7 +8,7 @@ import io.mockk.mockk
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.tms.microfrontend.MessageBuilder
+import no.nav.tms.microfrontend.MicrofrontendMessageBuilder
 import no.nav.tms.microfrontend.Sensitivitet as BuilderSensitivitet
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
@@ -36,7 +36,7 @@ class MessageLibraryVerificatiion {
         coEvery { personRepository.enableMicrofrontend(capture(jsonMessages)) } answers { }
 
         testRapid.sendTestMessage(
-            MessageBuilder.enable(
+            MicrofrontendMessageBuilder.enable(
                 ident = "12345678920",
                 microfrontendId = "microf4",
                 initiatedBy = "minside",
@@ -45,7 +45,7 @@ class MessageLibraryVerificatiion {
         )
 
         testRapid.sendTestMessage(
-            MessageBuilder.enable {
+            MicrofrontendMessageBuilder.enable {
                 ident = "12345678920"
                 microfrontendId= "microf9"
                 initiatedBy = "minside"
@@ -74,7 +74,7 @@ class MessageLibraryVerificatiion {
         coEvery { personRepository.disableMicrofrontend(capture(jsonMessages)) } answers { }
 
         testRapid.sendTestMessage(
-            MessageBuilder.disable(
+            MicrofrontendMessageBuilder.disable(
                ident = "12345678910",
                microfrontenId = "jjggk",
                initiatedBy = "sdhjkshdfksfh"
@@ -82,7 +82,7 @@ class MessageLibraryVerificatiion {
         )
 
         testRapid.sendTestMessage(
-            MessageBuilder.disable {
+            MicrofrontendMessageBuilder.disable {
                 ident = "12345678920"
                 microfrontendId= "microf9"
                 initiatedBy = "minside"
