@@ -27,9 +27,14 @@ class EnableSink(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        log.info { "mottok enablemelding for ${packet.microfrontendId}" }
-        EnableMessage.countVersion(packet)
-        personRepository.enableMicrofrontend(packet)
+        try {
+            log.info { "mottok enablemelding for ${packet.microfrontendId}" }
+            EnableMessage.countVersion(packet)
+            personRepository.enableMicrofrontend(packet)
+        } catch (e:Exception){
+            log.error { "Feil i behandling av enablemelding ${packet["id"].asText("ukjent")}" }
+            log.error { e }
+        }
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
