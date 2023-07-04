@@ -7,6 +7,7 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
 
 class DisableSink(
     rapidsConnection: RapidsConnection,
@@ -18,16 +19,18 @@ class DisableSink(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@action", "disable") }
-            validate { it.requireKey("ident", "microfrontend_id") }
-            validate {it.interestedIn("initiated_by")}
+            validate { it.demandValue("@action", DisableMessage.action) }
+            validate { DisableMessage.requireCommonKeys(it) }
+            validate { DisableMessage.interestedInCurrentVersionKeys(it) }
+            validate { DisableMessage.interestedInLegacyKeys(it) }
 
         }.register(this)
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         log.info { "mottok disablemelding for ${packet.microfrontendId}" }
-        personRepository.disableMicrofrontend(packet.ident, packet.microfrontendId, packet.initiatedBy)
+        personRepository.disableMicrofrontend(packet)
+        DisableMessage.countVersion(packet)
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {

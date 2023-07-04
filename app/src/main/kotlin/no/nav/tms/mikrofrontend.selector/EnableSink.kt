@@ -7,6 +7,7 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 
 class EnableSink(
     rapidsConnection: RapidsConnection,
@@ -18,15 +19,22 @@ class EnableSink(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@action", "enable") }
-            validate { it.requireKey("ident", "microfrontend_id") }
-            validate {it.interestedIn("sikkerhetsnivå","initiated_by")}
+            validate { it.demandValue("@action", EnableMessage.action) }
+            validate { message ->  EnableMessage.requireCommonKeys(message) }
+            validate { message -> EnableMessage.interestedInCurrentVersionKeys(message)}
+            validate { message -> EnableMessage.interestedInLegacyKeys(message)}
         }.register(this)
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        log.info { "mottok enablemelding for ${packet.microfrontendId}" }
-        personRepository.enableMicrofrontend(packet)
+        try {
+            log.info { "mottok enablemelding for ${packet.microfrontendId}" }
+            EnableMessage.countVersion(packet)
+            personRepository.enableMicrofrontend(packet)
+        } catch (e:Exception){
+            log.error { "Feil i behandling av enablemelding ${packet["id"].asText("ukjent")}" }
+            log.error { e }
+        }
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {

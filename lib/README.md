@@ -13,14 +13,15 @@ MessageBuilder.enable {
     ident = "12345678910" // ident til bruker som skal ha mikrofrontent: req 11 siffer
     initiatedBy = "ditt-team"
     microfrontendId = "din-mikrofrontend-id"
-    sikkerhetsnivå = Sikkerhetsnivå.NIVÅ_3  //Valgfritt, default er NIVÅ_4. Se dokumentasjonen for mer info
+    sensitivitet = SENSITIVITET.SUBSTANTIAL  //Valgfritt, default er HIGH. Se dokumentasjonen for mer info
 }
 
 MessageBuilder.enable(
     ident = expectedIdent, //11 siffer
     initiatedBy = expectedInitiatedBy,
     microfrontendId = expectedMicrofrontendId,
-    sikkerhetsnivå = Sikkerhetsnivå.NIVÅ_3 //Valgfritt, default er NIVÅ_4
+    sensitivitet = SENSITIVITET.SUBSTANTIAL  //Valgfritt, default er HIGH. Se dokumentasjonen for mer info
+
 )
 ```
 

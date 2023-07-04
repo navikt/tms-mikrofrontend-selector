@@ -3,6 +3,7 @@ import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
 import no.nav.tms.mikrofrontend.selector.database.Database
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
+import no.nav.tms.mikrofrontend.selector.objectMapper
 import org.flywaydb.core.Flyway
 import org.postgresql.util.PGobject
 import org.testcontainers.containers.PostgreSQLContainer
@@ -16,7 +17,7 @@ class LocalPostgresDatabase private constructor() : Database {
     companion object {
         private val instance by lazy {
             LocalPostgresDatabase().also {
-                it.migrate(2)
+                it.migrate() shouldBe 3
             }
         }
 
@@ -45,16 +46,13 @@ class LocalPostgresDatabase private constructor() : Database {
         }
     }
 
-    private fun migrate(expectedMigrations: Int) {
+    private fun migrate(): Int =
         Flyway.configure()
-            .connectRetries(3)
-            .dataSource(dataSource)
-            .load()
-            .migrate()
-            .also {
-                it.migrationsExecuted shouldBe expectedMigrations
-            }
-    }
+        .connectRetries(3)
+        .dataSource(dataSource)
+        .load()
+        .migrate().migrationsExecuted
+
 
     fun getChangelog(ident: String) = list {
         queryOf("SELECT * FROM changelog where ident=:ident", mapOf("ident" to ident))
@@ -77,33 +75,78 @@ class LocalPostgresDatabase private constructor() : Database {
             .toList()
     }
 
-    fun insertWithLegacyFormat(ident: String, vararg microfrontends: String) = update {
+    fun insertLegacyFormat(
+        ident: String,
+        format: (String) -> String,
+        vararg microfrontends: String,
+    ) = update {
         queryOf(
             """INSERT INTO person (ident, microfrontends,created) VALUES (:ident, :newData, :now) 
                     |ON CONFLICT(ident) DO UPDATE SET microfrontends=:newData, last_changed=:now
                 """.trimMargin(),
             mapOf(
                 "ident" to ident,
-                "newData" to microfrontends.toJson(),
+                "newData" to microfrontends.legacyDbObject(format),
                 "now" to PersonRepository.LocalDateTimeHelper.nowAtUtc()
             )
         )
     }
-
-    private fun Array<out String>.toJson() = """
-        {
-        "microfrontends": ${joinToString(separator = ",", prefix = "[", postfix = "]", transform = { """"$it"""" })}
-        }
-    """.trimIndent().let {
-        PGobject().apply {
-            type = "jsonb"
-            value = it
-        }
-    }
-
-
 }
 
+fun dbV1(vararg microfrontends: String) = """
+        {
+        "microfrontends": ${
+    microfrontends.joinToString(
+        separator = ",",
+        prefix = "[",
+        postfix = "]",
+        transform = { """"$it"""" })
+}
+        }
+    """.trimIndent().let {
+    PGobject().apply {
+        type = "jsonb"
+        value = it
+    }
+}
+
+private fun Array<out String>.legacyDbObject(transform: (String) -> String) = """
+        {
+        "microfrontends": ${
+    joinToString(
+        separator = ",",
+        prefix = "[",
+        postfix = "]",
+        transform = transform
+    )
+}
+        }
+    """.trimIndent().let {
+    PGobject().apply {
+        type = "jsonb"
+        value = it
+    }
+}
+
+fun dbv1Format(value: String) = """"$value""""
+fun dbv2Format(value: String) = """ {"microfrontend_id":"$value", "sikkerhetsnivå":4}""".trimIndent()
+
+fun dbV2(vararg microfrontends: String) = """
+        {
+            "microfrontends": ${
+    microfrontends.joinToString(
+        separator = ",",
+        prefix = "[",
+        postfix = "]"
+    )
+    { """ {"microfrontend_id":"$it", "sikkerhetsnivå":4}""".trimIndent() }
+}
+        }""".trimIndent().let {
+    PGobject().apply {
+        type = "jsonb"
+        value = it
+    }
+}
 
 data class ChangelogEntry(
     val originalData: String?,
@@ -112,7 +155,7 @@ data class ChangelogEntry(
     val initiatedBy: String?
 )
 
-internal inline fun <T> T.assert(block: T.() -> Unit): T =
+inline fun <T> T.assert(block: T.() -> Unit): T =
     apply {
         block()
     }

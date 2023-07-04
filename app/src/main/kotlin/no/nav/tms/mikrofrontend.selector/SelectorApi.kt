@@ -25,6 +25,7 @@ internal fun Application.selectorApi(
     installAuthenticatorsFunction: Application.() -> Unit = installAuth(),
 ) {
     val secureLog = KotlinLogging.logger("secureLog")
+    val log = KotlinLogging.logger {}
 
     installAuthenticatorsFunction()
 
@@ -41,6 +42,7 @@ internal fun Application.selectorApi(
                 call.respond(HttpStatusCode.InternalServerError)
 
             } else {
+                log.error { "Ukjent feil ved henting av microfrontends" }
                 call.respond(HttpStatusCode.InternalServerError)
             }
 
@@ -51,7 +53,7 @@ internal fun Application.selectorApi(
             route("mikrofrontends") {
                 get() {
                     val user = TokenXUserFactory.createTokenXUser(call)
-                    call.respond(personRepository.getEnabledMicrofrontends(user.ident,user.loginLevel))
+                    call.respond(personRepository.getEnabledMicrofrontends(user.ident, user.loginLevel))
                 }
             }
         }

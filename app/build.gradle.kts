@@ -41,7 +41,7 @@ dependencies {
     implementation(TmsKtorTokenSupport.tokenXValidation)
     implementation(TmsKtorTokenSupport.authenticationInstaller)
     implementation(Postgresql.postgresql)
-    implementation(RapidsAndRivers.rapidsAndRivers)
+    implementation(RapidsAndRiversClassCast.rapidsAndRivers)
     implementation(KotliQuery.kotliquery)
     implementation(Logback.classic)
     implementation(KotlinLogging.logging)
@@ -55,6 +55,7 @@ dependencies {
     testImplementation(TmsKtorTokenSupport.authenticationInstallerMock)
     testImplementation(TmsKtorTokenSupport.tokenXValidationMock)
     testImplementation(Mockk.mockk)
+
     testImplementation(project(":lib"))
 
 }

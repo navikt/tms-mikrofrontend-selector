@@ -4,10 +4,10 @@ import kotliquery.queryOf
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.tms.mikrofrontend.selector.ident
-import no.nav.tms.mikrofrontend.selector.initiatedBy
 import no.nav.tms.mikrofrontend.selector.metrics.ActionMetricsType
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.microfrontendId
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.initiatedBy
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -19,37 +19,38 @@ class PersonRepository(private val database: Database, private val metricsRegist
         fun nowAtUtc(): LocalDateTime = LocalDateTime.now(ZoneId.of("UTC"))
     }
 
-    fun getEnabledMicrofrontends(ident: String, innloggetnivå:Int): String = withCustomException(ident) {
+    fun getEnabledMicrofrontends(ident: String, innloggetnivå: Int): String = withCustomException(ident) {
         database.query {
             queryOf("select microfrontends from person where ident=:ident", mapOf("ident" to ident)).map { row ->
                 row.string("microfrontends")
             }.asSingle
         }?.let { Microfrontends(it).apiResponse(innloggetnivå) }
-        ?: Microfrontends.emptyApiResponse()
+            ?: Microfrontends.emptyApiResponse()
     }
 
-    fun enableMicrofrontend(microfrontendData: JsonMessage) {
-        val ident = microfrontendData.ident
-        val initiatedBy = microfrontendData.initiatedBy
+    fun enableMicrofrontend(jsonMessage: JsonMessage) {
+        val ident = jsonMessage.ident
+        val initiatedBy = jsonMessage.initiatedBy
         val microfrontends = getMicrofrontends(ident)
-        withLogging(ident, microfrontendData.microfrontendId, "enable") {
-            if (microfrontends.addMicrofrontend(microfrontendData)) {
-                secureLog.info { "Oppdaterer mikrofrontend fra packet: $microfrontendData" }
-                secureLog.info { "Nytt innhold er ${microfrontends.apiResponse(4)} " }
+        withLogging(ident, jsonMessage.microfrontendId, "enable") {
+            if (microfrontends.addMicrofrontend(jsonMessage)) {
+                log.info { "Oppdaterer/enabler mikrofrontend med id ${jsonMessage.microfrontendId} initiert av ${jsonMessage.initiatedBy?:"ukjent produsent"}" }
+                secureLog.info { "Nytt innhold for $ident er ${microfrontends.apiResponse(4)} " }
                 updatePersonTable(ident, microfrontends)
                 addChangelogEntry(ident, microfrontends, initiatedBy)
-                metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.ENABLE, microfrontendData.microfrontendId)
+                metricsRegistry.countMicrofrontendActions(ActionMetricsType.ENABLE, jsonMessage.microfrontendId)
             }
         }
     }
 
-    fun disableMicrofrontend(ident: String, microfrontendId: String, initiatedBy: String?) {
-        val microfrontends = getMicrofrontends(ident)
-        withLogging(ident, microfrontendId, "disable") {
-            if (microfrontends.removeMicrofrontend(microfrontendId)) {
-                updatePersonTable(ident, microfrontends)
-                addChangelogEntry(ident, microfrontends, initiatedBy)
-                metricsRegistry.countMicrofrontendEnabled(ActionMetricsType.DISABLE, microfrontendId)
+    fun disableMicrofrontend(jsonMessage: JsonMessage) {
+        val microfrontends = getMicrofrontends(jsonMessage.ident)
+        withLogging(jsonMessage.ident, jsonMessage.microfrontendId, "disable") {
+            if (microfrontends.removeMicrofrontend(jsonMessage.microfrontendId)) {
+                log.info { "Disabler mikrofrontend med id ${jsonMessage.microfrontendId} initiert av ${jsonMessage.initiatedBy?:"ukjent produsent"}" }
+                updatePersonTable(jsonMessage.ident, microfrontends)
+                addChangelogEntry(jsonMessage.ident, microfrontends, jsonMessage.initiatedBy)
+                metricsRegistry.countMicrofrontendActions(ActionMetricsType.DISABLE, jsonMessage.microfrontendId)
             }
         }
     }
@@ -102,6 +103,7 @@ class PersonRepository(private val database: Database, private val metricsRegist
             }
         }
     }
+
     private fun <T> withCustomException(ident: String, function: () -> T) =
         try {
             function()
