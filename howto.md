@@ -22,7 +22,7 @@ microfrontend-topicet.
       "@action": "enable",
       "ident": <ident for bruker, vanligvis fnr>,
       "microfrontend_id": <microfrontendId>,
-      "sensitivitet" : <nivå som kreves for å se innholdet i mikrofrontenden, gyldige verdier: SUBSTANTIAL og HIGH>,
+      "sensitivitet" : <nivå som kreves for å se innholdet i mikrofrontenden, gyldige verdier: substantial og high>,
       "@initiated_by":<ditt-team>
    }
    ```
@@ -71,8 +71,8 @@ Videre anbefaler vi å følge [taksonominen](https://github.com/navikt/analytics
 ### Hva er egentlig sensitivitet?
 Feltet `sensitivitet` i enablemeldingen  korresponderer direkte til de [nye acr-veridene](https://docs.digdir.no/docs/idporten/oidc/oidc_protocol_id_token#acr-values) i IDporten token. 
 Altså; hvis det ligger informasjon i mikrofrontenden som kun personer som har logget inn med `idporten-loa-high` skal kunne se, skal `sensitivitet` settes til `HIGH` Om informasjonen
-kan vises uavhengig av innloggingsnivå skal sensitivitet være `SUBSTANTIAL`.
-Om sensitivitet ikke er spesifisert i kafka-meldingen settes det alltid til `HIGH` hos oss.
+kan vises uavhengig av innloggingsnivå skal sensitivitet være `substantial`.
+Om sensitivitet ikke er spesifisert i kafka-meldingen settes det alltid til `high` hos oss.
 Om en person logger inn med `idporten-loa-substantial` og det finnes mikrofrontender som personen kan se på `idporten-loa-high` vil bruker få beskjed om dette og link til en "steup"
 login. Se også [NAIS docs](https://docs.nais.io/security/auth/idporten/#security-levels) for mer info om acr-verdiene
 
