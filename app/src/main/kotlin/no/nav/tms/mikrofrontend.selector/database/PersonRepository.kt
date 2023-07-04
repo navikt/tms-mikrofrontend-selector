@@ -34,7 +34,7 @@ class PersonRepository(private val database: Database, private val metricsRegist
         val microfrontends = getMicrofrontends(ident)
         withLogging(ident, jsonMessage.microfrontendId, "enable") {
             if (microfrontends.addMicrofrontend(jsonMessage)) {
-                log.info { "Oppdaterer/enabler mikrofrontend med id ${jsonMessage.microfrontendId} initiert av ${jsonMessage.initiatedBy}" }
+                log.info { "Oppdaterer/enabler mikrofrontend med id ${jsonMessage.microfrontendId} initiert av ${jsonMessage.initiatedBy?:"ukjent produsent"}" }
                 secureLog.info { "Nytt innhold for $ident er ${microfrontends.apiResponse(4)} " }
                 updatePersonTable(ident, microfrontends)
                 addChangelogEntry(ident, microfrontends, initiatedBy)
@@ -47,7 +47,7 @@ class PersonRepository(private val database: Database, private val metricsRegist
         val microfrontends = getMicrofrontends(jsonMessage.ident)
         withLogging(jsonMessage.ident, jsonMessage.microfrontendId, "disable") {
             if (microfrontends.removeMicrofrontend(jsonMessage.microfrontendId)) {
-                log.info { "Disabler mikrofrontend med id ${jsonMessage.microfrontendId} initiert av ${jsonMessage.initiatedBy}" }
+                log.info { "Disabler mikrofrontend med id ${jsonMessage.microfrontendId} initiert av ${jsonMessage.initiatedBy?:"ukjent produsent"}" }
                 updatePersonTable(jsonMessage.ident, microfrontends)
                 addChangelogEntry(jsonMessage.ident, microfrontends, jsonMessage.initiatedBy)
                 metricsRegistry.countMicrofrontendActions(ActionMetricsType.DISABLE, jsonMessage.microfrontendId)
@@ -58,10 +58,7 @@ class PersonRepository(private val database: Database, private val metricsRegist
     private fun getMicrofrontends(ident: String) = database.query {
         queryOf("select microfrontends from person where ident=:ident", mapOf("ident" to ident)).map { row ->
             Microfrontends(row.string("microfrontends"))
-        }.asSingle.also {
-            log.info { "sjekk at vanlig logg funker" }
-            secureLog.info { "sjekk at securelog funker" }
-        }
+        }.asSingle
     } ?: Microfrontends()
 
     private fun addChangelogEntry(ident: String, microfrontends: Microfrontends, initiatedBy: String?) {
