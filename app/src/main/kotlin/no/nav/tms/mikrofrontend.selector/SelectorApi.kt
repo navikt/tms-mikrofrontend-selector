@@ -52,7 +52,6 @@ internal fun Application.selectorApi(
         authenticate {
             route("mikrofrontends") {
                 get() {
-                    log.info { "Debug logg som er borte" }
                     val user = TokenXUserFactory.createTokenXUser(call)
                     call.respond(personRepository.getEnabledMicrofrontends(user.ident, user.loginLevel))
                 }
