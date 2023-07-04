@@ -32,7 +32,7 @@ microfrontend-topicet.
       "@action":  "disable",
       "ident": <ident for bruker, vanligvis fnr>,
       "microfrontend_id": <microfrontendId>,
-      "initiated_by":<ditt-team>
+      "@initiated_by":<ditt-team>
    }
    ```
 
