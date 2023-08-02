@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm").version(Kotlin.version)
     kotlin("plugin.allopen").version(Kotlin.version)
 
-    id(Flyway.pluginId) version (Flyway.version)
+    id(Flyway9.pluginId) version (Flyway.version)
     id(Shadow.pluginId) version (Shadow.version)
 
     // Apply the application plugin to add support for building a CLI application.
@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
     implementation(DittNAVCommonLib.utils)
-    implementation(Flyway.core)
+    implementation(Flyway9.core)
     implementation(Hikari.cp)
     implementation(Influxdb.java)
     implementation(KotlinLogging.logging)
