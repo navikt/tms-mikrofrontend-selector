@@ -1,6 +1,6 @@
 package no.nav.tms.mikrofrontend.selector
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
@@ -38,7 +38,7 @@ class EnableSink(
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
-        log.info(problems.toString())
+        log.info { problems.toString() }
     }
 }
 

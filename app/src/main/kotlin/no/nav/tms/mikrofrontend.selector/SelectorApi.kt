@@ -1,6 +1,7 @@
 package no.nav.tms.mikrofrontend.selector
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
@@ -13,7 +14,6 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
-import mu.KotlinLogging
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.token.support.authentication.installer.installAuthenticators

@@ -1,7 +1,7 @@
 package no.nav.tms.mikrofrontend.selector.versions
 
 import com.fasterxml.jackson.databind.JsonNode
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.tms.mikrofrontend.selector.metrics.MessageVersionCounter
