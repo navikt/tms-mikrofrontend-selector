@@ -2,7 +2,7 @@ package no.nav.tms.mikrofrontend.selector.database
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.applyMigrations
 import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.sensitivitet

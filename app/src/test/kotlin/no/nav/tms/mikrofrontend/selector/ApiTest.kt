@@ -14,7 +14,8 @@ import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.token.support.authentication.installer.mock.installMockedAuthenticators
-import no.nav.tms.token.support.tokenx.validation.mock.SecurityLevel
+import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance
+import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -48,7 +49,7 @@ internal class ApiTest {
                         alwaysAuthenticated = true
                         setAsDefault = true
                         staticUserPid = testIdent
-                        staticSecurityLevel = SecurityLevel.LEVEL_4
+                        staticLevelOfAssurance = LEVEL_4
                     }
                 }
             }
@@ -90,7 +91,7 @@ internal class ApiTest {
                         alwaysAuthenticated = true
                         setAsDefault = true
                         staticUserPid = testIdent
-                        staticSecurityLevel = SecurityLevel.LEVEL_3
+                        staticLevelOfAssurance = LEVEL_3
                     }
                 }
             }
@@ -125,7 +126,7 @@ internal class ApiTest {
                         alwaysAuthenticated = true
                         setAsDefault = true
                         staticUserPid = testident2
-                        staticSecurityLevel = SecurityLevel.LEVEL_4
+                        staticLevelOfAssurance = LEVEL_4
                     }
                 }
             }

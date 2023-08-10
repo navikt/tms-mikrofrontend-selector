@@ -1,7 +1,7 @@
 package no.nav.tms.mikrofrontend.selector.database
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.queryOf
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.tms.mikrofrontend.selector.ident
 import no.nav.tms.mikrofrontend.selector.metrics.ActionMetricsType
