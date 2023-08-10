@@ -24,7 +24,7 @@ internal class SinkTest {
     private val database = LocalPostgresDatabase.cleanDb()
     private val personRepository = PersonRepository(
         database = database,
-        metricsRegistry = MicrofrontendCounter()
+        counter = MicrofrontendCounter()
     )
     private val testRapid = TestRapid()
 

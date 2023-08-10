@@ -14,7 +14,6 @@ import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.token.support.authentication.installer.mock.installMockedAuthenticators
-import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance
 import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -27,7 +26,7 @@ internal class ApiTest {
     private val counter = MicrofrontendCounter()
     private val personRepository = PersonRepository(
         database = LocalPostgresDatabase.cleanDb(),
-        metricsRegistry = counter
+        counter = counter
     )
 
     @BeforeAll
