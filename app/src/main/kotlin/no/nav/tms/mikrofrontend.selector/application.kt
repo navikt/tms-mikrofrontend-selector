@@ -1,6 +1,5 @@
 package no.nav.tms.mikrofrontend.selector
 
-import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidApplication.RapidApplicationConfig.Companion.fromEnv
@@ -23,7 +22,7 @@ private fun startRapid(
 ) {
     val personRepository = PersonRepository(
         database = PostgresDatabase(environment),
-        metricsRegistry = MicrofrontendCounter()
+        counter = MicrofrontendCounter()
     )
     RapidApplication.Builder(fromEnv(environment.rapidConfig()))
         .withKtorModule { selectorApi(personRepository) }

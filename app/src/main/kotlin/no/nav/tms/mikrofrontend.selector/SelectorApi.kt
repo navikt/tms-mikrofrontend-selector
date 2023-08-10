@@ -14,6 +14,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
+import nav.no.tms.common.metrics.installTmsApiMetrics
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.token.support.authentication.installer.installAuthenticators
@@ -48,6 +49,11 @@ internal fun Application.selectorApi(
 
         }
     }
+
+    installTmsApiMetrics {
+        setupMetricsRoute = false
+    }
+
     routing {
         authenticate {
             route("mikrofrontends") {

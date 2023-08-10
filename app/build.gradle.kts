@@ -43,6 +43,7 @@ dependencies {
     implementation(RapidsAndRiversClassCast.rapidsAndRivers)
     implementation(KotliQuery.kotliquery)
     implementation(KotlinLogging.logging)
+    implementation(TmsCommonLib.commonLib)
 
     testImplementation(Junit.api)
     testImplementation(Junit.engine)

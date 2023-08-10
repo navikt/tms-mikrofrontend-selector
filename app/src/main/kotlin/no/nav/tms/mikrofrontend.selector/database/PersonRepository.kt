@@ -11,7 +11,7 @@ import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.initiatedB
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-class PersonRepository(private val database: Database, private val metricsRegistry: MicrofrontendCounter) {
+class PersonRepository(private val database: Database, private val counter: MicrofrontendCounter) {
     private val secureLog = KotlinLogging.logger("secureLog")
     private val log = KotlinLogging.logger { }
 
@@ -38,7 +38,7 @@ class PersonRepository(private val database: Database, private val metricsRegist
                 secureLog.info { "Nytt innhold for $ident er ${microfrontends.apiResponse(4)} " }
                 updatePersonTable(ident, microfrontends)
                 addChangelogEntry(ident, microfrontends, initiatedBy)
-                metricsRegistry.countMicrofrontendActions(ActionMetricsType.ENABLE, jsonMessage.microfrontendId)
+                counter.countMicrofrontendActions(ActionMetricsType.ENABLE, jsonMessage.microfrontendId)
             }
         }
     }
@@ -50,7 +50,7 @@ class PersonRepository(private val database: Database, private val metricsRegist
                 log.info { "Disabler mikrofrontend med id ${jsonMessage.microfrontendId} initiert av ${jsonMessage.initiatedBy?:"ukjent produsent"}" }
                 updatePersonTable(jsonMessage.ident, microfrontends)
                 addChangelogEntry(jsonMessage.ident, microfrontends, jsonMessage.initiatedBy)
-                metricsRegistry.countMicrofrontendActions(ActionMetricsType.DISABLE, jsonMessage.microfrontendId)
+                counter.countMicrofrontendActions(ActionMetricsType.DISABLE, jsonMessage.microfrontendId)
             }
         }
     }
