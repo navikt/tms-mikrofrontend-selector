@@ -17,7 +17,7 @@ on:
 jobs:
   update-dev-manifest:
     runs-on: ubuntu-latest
-    if: cluster == 'dev-gcp'
+    if: ${{ inputs.cluster}} == 'dev-gcp'
     steps:
       - name: 'Setup gcloud'
         uses: google-github-actions/setup-gcloud@master
