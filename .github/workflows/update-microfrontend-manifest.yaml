@@ -19,6 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ inputs.cluster}} == 'dev-gcp'
     steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - id: 'auth'
         uses: 'google-github-actions/auth@v1'
         with:
@@ -27,12 +31,12 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v1'
       - name: 'Use gcloud CLI'
         run: 'gcloud info'
-      - name: 'Lag testfil'
-        run: echo 'Testing testing' > testing.txt
+      - name: 'Henter manifestfil'
+        run:  gcloud gs://microfrontend-manifest-dev/manifest.json manifest.json
+      - name : 'oppdater fil'
+        run:  python3 update-manifests.py {{ inputs.id }} {{ inputs.url }}
       - name: 'Last opp til bucket'
-        run: gcloud storage cp testing.txt gs://microfrontend-manifest-dev
-      - name : 'Les fil'
-        run: gcloud storage cp gs://microfrontend-manifest-dev/testing.txt testing2.txt && cat testing2.txt
+        run: gcloud storage cp manifest.json gs://microfrontend-manifest-dev
 
                
 

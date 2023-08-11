@@ -12,7 +12,7 @@ jobs:
   trigger_doc_build:
     runs-on: ubuntu-latest
     steps:
-      - run: |
+      - run: |    
           curl --request POST \
           --url 'https://api.github.com/repos/navikt/tms-dokumentasjon/dispatches' \
           -u "${{ secrets.DOC_TRIGGER_TOKEN }}:" \

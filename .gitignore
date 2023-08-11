@@ -32,3 +32,4 @@ buildSrc/.gradle
 # Ignore Gradle build output directory
 build
 out
+manifests.json

@@ -8,6 +8,7 @@ on:
       - lib/**
       - .github/workflows/**
       - howto.md
+      - update-manifests.py
 
 jobs:
   build:

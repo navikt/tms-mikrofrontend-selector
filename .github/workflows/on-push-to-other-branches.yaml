@@ -6,6 +6,7 @@ on:
       - master
       - main
       - tms-dependency-admin_*
+      - update-manifests.py
 
 jobs:
   build-branch:
