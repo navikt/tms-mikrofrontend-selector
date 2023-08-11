@@ -34,7 +34,7 @@ jobs:
       - name: 'Henter manifestfil'
         run:  gcloud storage cp gs://microfrontend-manifest-dev/manifests.json manifests.json
       - name : 'oppdater fil'
-        run:  python3 update-manifests.py {{ inputs.id }} {{ inputs.url }}
+        run:  python3 update-manifests.py ${{ inputs.id }} ${{ inputs.url }}
       - name: 'Last opp til bucket'
         run: gcloud storage cp manifests.json gs://microfrontend-manifest-dev
 
