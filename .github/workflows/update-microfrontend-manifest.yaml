@@ -19,11 +19,14 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ inputs.cluster}} == 'dev-gcp'
     steps:
-      - name: 'Setup gcloud'
-        uses: google-github-actions/setup-gcloud@master
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v1'
         with:
-          service_account_key: ${{ secrets.GCS_SA_KEY_DEV }}
-          export_default_credentials: true
+          credentials_json: '${{ secrets.GCS_SA_KEY_DEV }}'
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
       - name: 'Lag testfil'
         run: echo 'Testing testing' > testing.txt
       - name: 'Last opp til bucket'
