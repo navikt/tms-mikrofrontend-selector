@@ -32,11 +32,11 @@ jobs:
       - name: 'Use gcloud CLI'
         run: 'gcloud info'
       - name: 'Henter manifestfil'
-        run:  gcloud gs://microfrontend-manifest-dev/manifest.json manifest.json
+        run:  gcloud storage cp gs://microfrontend-manifest-dev/manifests.json manifests.json
       - name : 'oppdater fil'
         run:  python3 update-manifests.py {{ inputs.id }} {{ inputs.url }}
       - name: 'Last opp til bucket'
-        run: gcloud storage cp manifest.json gs://microfrontend-manifest-dev
+        run: gcloud storage cp manifests.json gs://microfrontend-manifest-dev
 
                
 
