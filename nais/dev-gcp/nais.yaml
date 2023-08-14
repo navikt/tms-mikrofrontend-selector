@@ -49,6 +49,8 @@ spec:
           day: 1
           hour: 4
         cascadingDelete: false
+    buckets:
+      - name: microfrontend-manifest-dev
   resources:
     limits:
       cpu: "1"
