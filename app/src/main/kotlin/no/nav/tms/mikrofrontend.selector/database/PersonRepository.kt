@@ -19,13 +19,12 @@ class PersonRepository(private val database: Database, private val counter: Micr
         fun nowAtUtc(): LocalDateTime = LocalDateTime.now(ZoneId.of("UTC"))
     }
 
-    fun getEnabledMicrofrontends(ident: String, innloggetnivå: Int): String = withCustomException(ident) {
+    internal fun getEnabledMicrofrontends(ident: String): Microfrontends? = withCustomException(ident) {
         database.query {
             queryOf("select microfrontends from person where ident=:ident", mapOf("ident" to ident)).map { row ->
                 row.string("microfrontends")
             }.asSingle
-        }?.let { Microfrontends(it).apiResponse(innloggetnivå) }
-            ?: Microfrontends.emptyApiResponse()
+        }?.let { Microfrontends(it) }
     }
 
     fun enableMicrofrontend(jsonMessage: JsonMessage) {
@@ -35,7 +34,7 @@ class PersonRepository(private val database: Database, private val counter: Micr
         withLogging(ident, jsonMessage.microfrontendId, "enable") {
             if (microfrontends.addMicrofrontend(jsonMessage)) {
                 log.info { "Oppdaterer/enabler mikrofrontend med id ${jsonMessage.microfrontendId} initiert av ${jsonMessage.initiatedBy?:"ukjent produsent"}" }
-                secureLog.info { "Nytt innhold for $ident er ${microfrontends.apiResponse(4)} " }
+                secureLog.info { "Nytt innhold for $ident er ${microfrontends.apiResponseV1(4)} " }
                 updatePersonTable(ident, microfrontends)
                 addChangelogEntry(ident, microfrontends, initiatedBy)
                 counter.countMicrofrontendActions(ActionMetricsType.ENABLE, jsonMessage.microfrontendId)

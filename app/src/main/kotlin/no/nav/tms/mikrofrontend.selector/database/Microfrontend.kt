@@ -13,8 +13,10 @@ import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
 import org.postgresql.util.PGobject
 
 private val log = KotlinLogging.logger { }
+private val objectMapper = jacksonObjectMapper()
 
 internal class Microfrontends(initialJson: String? = null) {
+
     private val originalData: List<JsonNode>? =
         initialJson
             ?.let { microfrontendMapper.readTree(it)["microfrontends"] }
@@ -46,7 +48,7 @@ internal class Microfrontends(initialJson: String? = null) {
             node["microfrontend_id"].asText() == microfrontendId
         }
 
-    fun apiResponse(innloggetnivå: Int): String = """
+    fun apiResponseV1(innloggetnivå: Int): String = """
         { 
            "microfrontends": ${
         newData
@@ -58,11 +60,36 @@ internal class Microfrontends(initialJson: String? = null) {
         }
         """.trimIndent()
 
+    fun apiResponseV2(innloggetnivå: Int, manifestMap: Map<String, String>): String = """
+        { 
+           "microfrontends": ${
+        newData
+            .filter { Sensitivitet.fromJsonNode(it["sensitivitet"]) <= innloggetnivå }
+            .map {
+                mapOf(
+                    "microfrontend_id" to it["microfrontend_id"],
+                    "url" to manifestMap[""]
+                ).let { contentMap ->
+                    objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contentMap)
+                }
+
+            }.jsonArrayString()
+    }, 
+           "offerStepup": ${newData.any { Sensitivitet.fromJsonNode(it["sensitivitet"]) > innloggetnivå }} 
+        }
+        """.trimIndent()
+
     fun newDataJsonB(): PGobject = """{ "microfrontends": ${newData.jsonArrayString()}}""".trimMargin().jsonB()
     fun originalDataJsonB(): PGobject? =
         originalData?.let { """{ "microfrontends": ${it.jsonArrayString()}}""".trimMargin() }?.jsonB()
 
     private fun Collection<JsonNode>.jsonArrayString(): String = joinToString(
+        prefix = "[",
+        postfix = "]",
+        separator = ",",
+    )
+
+    private fun List<String>.jsonArrayString(): String = joinToString(
         prefix = "[",
         postfix = "]",
         separator = ",",
