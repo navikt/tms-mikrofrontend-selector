@@ -65,14 +65,20 @@ internal class Microfrontends(initialJson: String? = null) {
            "microfrontends": ${
         newData
             .filter { Sensitivitet.fromJsonNode(it["sensitivitet"]) <= innloggetnivå }
-            .map {
-                mapOf(
-                    "microfrontend_id" to it["microfrontend_id"],
-                    "url" to manifestMap[""]
-                ).let { contentMap ->
-                    objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contentMap)
+            .mapNotNull {
+                val id = it["microfrontend_id"].asText()
+                val url = manifestMap[id]
+                if (url == null) {
+                    log.error { "Fant ikke manifest for microfrontend med id $id" }
+                    null
+                } else {
+                    mapOf(
+                        "microfrontend_id" to id,
+                        "url" to manifestMap[id]
+                    ).let { contentMap ->
+                        objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contentMap)
+                    }
                 }
-
             }.jsonArrayString()
     }, 
            "offerStepup": ${newData.any { Sensitivitet.fromJsonNode(it["sensitivitet"]) > innloggetnivå }} 

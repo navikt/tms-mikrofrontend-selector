@@ -22,8 +22,7 @@ class LocalPostgresDatabase private constructor() : Database {
         }
 
         fun cleanDb(): LocalPostgresDatabase {
-            instance.update { queryOf("delete from changelog") }
-            instance.update { queryOf("delete from person") }
+            instance.deleteAll()
             return instance
         }
     }
@@ -35,6 +34,11 @@ class LocalPostgresDatabase private constructor() : Database {
 
     override val dataSource: HikariDataSource
         get() = memDataSource
+
+    fun deleteAll() {
+        update { queryOf("delete from changelog") }
+        update { queryOf("delete from person") }
+    }
 
     private fun createDataSource(): HikariDataSource {
         return HikariDataSource().apply {
@@ -90,23 +94,6 @@ class LocalPostgresDatabase private constructor() : Database {
                 "now" to PersonRepository.LocalDateTimeHelper.nowAtUtc()
             )
         )
-    }
-}
-
-fun dbV1(vararg microfrontends: String) = """
-        {
-        "microfrontends": ${
-    microfrontends.joinToString(
-        separator = ",",
-        prefix = "[",
-        postfix = "]",
-        transform = { """"$it"""" })
-}
-        }
-    """.trimIndent().let {
-    PGobject().apply {
-        type = "jsonb"
-        value = it
     }
 }
 

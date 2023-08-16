@@ -8,24 +8,27 @@ import no.nav.tms.mikrofrontend.selector.database.Flyway
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.database.PostgresDatabase
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
+import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 
 fun main() {
     val environment = Environment()
 
     startRapid(
         environment = environment,
+        manifestStorage = ManifestsStorage(environment.initGcpStorage(), environment.storageBucketName)
     )
 }
 
 private fun startRapid(
     environment: Environment,
+    manifestStorage: ManifestsStorage
 ) {
     val personRepository = PersonRepository(
         database = PostgresDatabase(environment),
         counter = MicrofrontendCounter()
     )
     RapidApplication.Builder(fromEnv(environment.rapidConfig()))
-        .withKtorModule { selectorApi(personRepository) }
+        .withKtorModule { selectorApi(personRepository, manifestStorage) }
         .build().apply {
             DisableSink(this, personRepository)
             EnableSink(this, personRepository)

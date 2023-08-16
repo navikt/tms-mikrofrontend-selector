@@ -1,5 +1,6 @@
 package no.nav.tms.mikrofrontend.selector
 
+import com.google.cloud.storage.Storage
 import no.nav.personbruker.dittnav.common.util.config.StringEnvVar.getEnvVar
 
 data class Environment(
@@ -16,7 +17,10 @@ data class Environment(
     val aivenSchemaRegistry: String = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
     val securityVars: SecurityVars = SecurityVars(),
     val rapidTopic: String = getEnvVar("RAPID_TOPIC"),
+    val storageBucketName: String = getEnvVar("STORAGE_BUKET_NAME")
     ) {
+    val projectId: String = ""
+
     fun rapidConfig(): Map<String, String> = mapOf(
         "KAFKA_BROKERS" to aivenBrokers,
         "KAFKA_CONSUMER_GROUP_ID" to groupId,
@@ -29,6 +33,10 @@ data class Environment(
         "NAIS_NAMESPACE" to namespace,
         "NAIS_CLUSTER_NAME" to  clusterName
     )
+
+    fun initGcpStorage(): Storage {
+        TODO("Not yet implemented")
+    }
 }
 
 data class SecurityVars(
