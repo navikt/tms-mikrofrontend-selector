@@ -1,6 +1,8 @@
 package no.nav.tms.mikrofrontend.selector
 
+import com.google.cloud.NoCredentials
 import com.google.cloud.storage.Storage
+import com.google.cloud.storage.StorageOptions
 import no.nav.personbruker.dittnav.common.util.config.StringEnvVar.getEnvVar
 
 data class Environment(
@@ -34,9 +36,11 @@ data class Environment(
         "NAIS_CLUSTER_NAME" to  clusterName
     )
 
-    fun initGcpStorage(): Storage {
-        TODO("Not yet implemented")
-    }
+    fun initGcpStorage(): Storage = StorageOptions
+            .newBuilder()
+            .setProjectId(getEnvVar("GCP_TEAM_PROJECT_ID"))
+            .build()
+            .service
 }
 
 data class SecurityVars(
