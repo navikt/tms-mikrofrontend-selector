@@ -1,7 +1,6 @@
 # mikrofrontender på min side
 
-Mikrofrontends gir teamene mulighet til å presentere den viktigste informasjonen til brukerne sine på Min side. Kan ses
-på som et butikkvindu inn til teamenes egne løsninger. Dette gjøres gjennom at mikrofrontenden blir bygget til ESM og 
+Mikrofrontends gir teamene mulighet til å presentere den viktigste informasjonen til brukerne sine på Min side, som ett lite butikkvindu inn til teamenes egne løsninger. Dette gjøres gjennom at mikrofrontenden blir bygget til ESM og 
 deretter hentes inn som en remote ES-Modul.
 
 ## Nice! Hvordan kan mitt team få en mikrofrontend på min side?
@@ -9,9 +8,15 @@ deretter hentes inn som en remote ES-Modul.
 1. Lag en mikrofrontend! Om du vil bruke ett template finnes
    det [ett for typescript](https://github.com/navikt/tms-mikrofrontend-template-vitets) og ett for
    [ett for javascrip](https://github.com/navikt/tms-mikrofrontend-template-vitejs)
+2. Sett opp automatisk oppdatering av manifest-url i workflows-mappa til prosjektet, se eksempel i [worfklows-mappa til tms-mikrofrontend-selector](https://github.com/navikt/tms-mikrofrontend-selector/tree/main/.github/workflows/manifest-triggere)
+
 2. Opprett ett issue i [tms-min-side repoet](https://github.com/navikt/tms-min-side), be om å få lagt inn
    mikrofrontenden i kode og avtal en `<microfrontendId>`
 3. Koble på [min-side-microfrontend-topicet](https://github.com/navikt/min-side-microfrontend-topic-iac)
+
+
+
+## Enable/disable 
 
 Om en mikrofrontend vises avhenger av om den er enablet for en gitt bruker. Dette setter du ved å sende en melding på
 microfrontend-topicet.
@@ -36,7 +41,8 @@ microfrontend-topicet.
    }
    ```
 
-Finnes det ett meldingsbygger bibliotek? Ofc gjør det det! Det er tilgjengelig på [jitpack](https://jitpack.io/#navikt/tms-mikrofrontend-selector) og [github packages](https://github.com/navikt/tms-mikrofrontend-selector/packages/1875650)
+### Finnes det ett meldingsbygger bibliotek? 
+Ofc gjør det det! Det er tilgjengelig på [jitpack](https://jitpack.io/#navikt/tms-mikrofrontend-selector) og [github packages](https://github.com/navikt/tms-mikrofrontend-selector/packages/1875650)
 
 
 ## Språk

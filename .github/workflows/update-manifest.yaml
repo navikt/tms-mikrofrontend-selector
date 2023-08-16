@@ -1,0 +1,58 @@
+name: Repo update microfrontend-manifest
+
+on:
+  repository_dispatch:
+    types: "update_microfrontend_manifest"
+
+jobs:
+  update-dev-manifest:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.client_payload.cluster}} == 'dev-gcp'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCS_SA_KEY_DEV }}'
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
+      - name: 'Henter manifestfil'
+        run:  gcloud storage cp gs://microfrontend-manifest-dev/manifests.json manifests.json
+      - name : 'oppdater fil'
+        run:  python3 update-manifests.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }}
+      - name: 'Last opp til bucket'
+        run: gcloud storage cp manifests.json gs://microfrontend-manifest-dev
+
+
+
+
+  update-prod-manifest:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.client_payload.cluster}} == 'dev-gcp'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCS_SA_KEY_DEV }}'
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
+      - name: 'Henter manifestfil'
+        run: gcloud storage cp gs://microfrontend-manifest-prod/manifests.json manifests.json
+      - name: 'oppdater fil'
+        run: python3 update-manifests.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }}
+      - name: 'Last opp til bucket'
+        run: gcloud storage cp manifests.json gs://microfrontend-manifest-dev
+
+
+

@@ -1,0 +1,24 @@
+name: Rebuild docs
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  trigger_manifest_update:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |    
+          curl --request POST \
+          --url 'https://api.github.com/repos/navikt/tms-dokumentasjon/dispatches' \
+          -u "${{ secrets.DOC_TRIGGER_TOKEN }}:" \
+          --data '{
+            "event_type": "update_microfrontend_manifest"
+                "client_payload": {
+                   "id":"<din_microfrontend_id>",
+                   "url":"<url til prod-manifest>" 
+                   "cluster":"prod-gcp" 
+                }
+          }'
+
+
