@@ -63,5 +63,5 @@ spec:
       value: tms-mikrofrontend-selector-01
     - name: RAPID_TOPIC
       value: min-side.aapen-microfrontend-v1
-    - name: STORAGE_BUKET_NAME
+    - name: STORAGE_BUCKET_NAME
       value: microfrontend-manifest-prod

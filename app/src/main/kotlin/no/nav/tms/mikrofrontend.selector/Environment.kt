@@ -19,9 +19,8 @@ data class Environment(
     val aivenSchemaRegistry: String = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
     val securityVars: SecurityVars = SecurityVars(),
     val rapidTopic: String = getEnvVar("RAPID_TOPIC"),
-    val storageBucketName: String = getEnvVar("STORAGE_BUKET_NAME")
+    val storageBucketName: String = getEnvVar("STORAGE_BUCKET_NAME")
     ) {
-    val projectId: String = ""
 
     fun rapidConfig(): Map<String, String> = mapOf(
         "KAFKA_BROKERS" to aivenBrokers,
