@@ -28,9 +28,6 @@ jobs:
       - name: 'Last opp til bucket'
         run: gcloud storage cp manifests.json gs://microfrontend-manifest-dev
 
-
-
-
   update-prod-manifest:
     runs-on: ubuntu-latest
     if: ${{ github.event.client_payload.cluster}} == 'dev-gcp'
