@@ -1,3 +1,6 @@
+# Forutsetter at min-side-repo-authenticator er installert i repoet
+# og at PRIVATE_KEY og APP_ID (disse får du fra min-side)  ligger som action-secrets i repoet
+
 name: Update microfrontend-manifest
 on: <push til ønsket branch / evt dispatch om en vil trigge manuelt>
 
@@ -19,6 +22,6 @@ jobs:
                "client_payload": {
                      "id":"<microfrontendId>",
                      "url":"<url til manifest>", 
-                     "cluster":"dev-gcp",
+                     "cluster":"<cluster>",
                      "initiator": "${{ github.actor }}"
                   }}'
