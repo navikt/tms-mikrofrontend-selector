@@ -32,7 +32,7 @@ jobs:
 
   update-prod-manifest:
     runs-on: ubuntu-latest
-    if: ${{ github.event.client_payload.cluster}} == 'dev-gcp'
+    if: ${{ github.event.client_payload.cluster}} == 'prod-gcp'
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
