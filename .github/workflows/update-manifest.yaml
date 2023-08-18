@@ -27,6 +27,8 @@ jobs:
         run:  python3 update-manifests.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }}
       - name: 'Last opp til bucket'
         run: gcloud storage cp manifests.json gs://microfrontend-manifest-dev
+      - name: 'info'
+        run: echo '${{ github.event.client_payload.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload. }}'
 
   update-prod-manifest:
     runs-on: ubuntu-latest
@@ -39,7 +41,7 @@ jobs:
       - id: 'auth'
         uses: 'google-github-actions/auth@v1'
         with:
-          credentials_json: '${{ secrets.GCS_SA_KEY_DEV }}'
+          credentials_json: '${{ secrets.GCS_SA_KEY_PROD }}'
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
       - name: 'Use gcloud CLI'
@@ -50,6 +52,9 @@ jobs:
         run: python3 update-manifests.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }}
       - name: 'Last opp til bucket'
         run: gcloud storage cp manifests.json gs://microfrontend-manifest-dev
+      - name: 'info'
+        run: echo '${{ github.event.client_payload.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload. }}'
+
 
 
 
