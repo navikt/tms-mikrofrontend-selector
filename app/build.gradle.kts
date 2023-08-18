@@ -44,6 +44,8 @@ dependencies {
     implementation(KotliQuery.kotliquery)
     implementation(KotlinLogging.logging)
     implementation(TmsCommonLib.commonLib)
+    implementation("com.google.cloud:google-cloud-storage:2.26.0")
+
 
     testImplementation(Junit.api)
     testImplementation(Junit.engine)

@@ -16,13 +16,16 @@ import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import nav.no.tms.common.metrics.installTmsApiMetrics
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
+import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
+import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.authentication.installer.installAuthenticators
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
 import java.text.DateFormat
 
 internal fun Application.selectorApi(
     personRepository: PersonRepository,
+    manifestsStorage: ManifestsStorage,
     installAuthenticatorsFunction: Application.() -> Unit = installAuth(),
 ) {
     val secureLog = KotlinLogging.logger("secureLog")
@@ -59,7 +62,20 @@ internal fun Application.selectorApi(
             route("mikrofrontends") {
                 get() {
                     val user = TokenXUserFactory.createTokenXUser(call)
-                    call.respond(personRepository.getEnabledMicrofrontends(user.ident, user.loginLevel))
+                    call.respond(
+                        personRepository.getEnabledMicrofrontends(user.ident)?.apiResponseV1(user.loginLevel)
+                            ?: Microfrontends.emptyApiResponse()
+                    )
+                }
+            }
+
+            route("microfrontends") {
+                get() {
+                    val user = TokenXUserFactory.createTokenXUser(call)
+                    call.respond(
+                        personRepository.getEnabledMicrofrontends(user.ident)?.apiResponseV2(user.loginLevel, manifestsStorage.getManifestBucketContent())
+                            ?: Microfrontends.emptyApiResponse()
+                    )
                 }
             }
         }
