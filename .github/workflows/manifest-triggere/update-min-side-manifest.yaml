@@ -2,26 +2,13 @@
 # og at PRIVATE_KEY og APP_ID (disse får du fra min-side)  ligger som action-secrets i repoet
 
 name: Update microfrontend-manifest
-on: <push til ønsket branch / evt dispatch om en vil trigge manuelt>
+on: <ønsket hook>
 
 jobs:
   trigger_manifest_update:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: navikt/github-app-token-generator@v1
-        id: get-token
-        with:
-          private-key: ${{ secrets.PRIVATE_KEY }}
-          app-id: ${{ secrets.APP_ID }}
-      - run: |
-          curl --request POST \
-          --url 'https://api.github.com/repos/navikt/tms-mikrofrontend-selector/dispatches' \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ steps.get-token.outputs.token }}" \
-          --data '{"event_type": "update_microfrontend_manifest",
-               "client_payload": {
-                     "id":"<microfrontendId>",
-                     "url":"<url til manifest>", 
-                     "cluster":"<cluster>",
-                     "initiator": "${{ github.actor }}"
-                  }}'
+    uses: navikt/tms-deploy/.github/workflows/oppdater-mikrofrontend-manifest.yaml@main
+    with:
+      cluster: "<cluster: dev-gcp eller prod-gcp>"
+      id: "<mikrofrontend-is>"
+      url: "<url til nytt manifest>"
+    secrets: inherit
