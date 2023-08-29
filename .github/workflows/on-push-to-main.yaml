@@ -3,12 +3,10 @@ name: Bygg og publiser docker-image for main
 on:
   push:
     branches:
+      - master
       - main
     paths-ignore:
-      - lib/**
       - .github/workflows/**
-      - howto.md
-      - update-manifests.py
 
 jobs:
   build:
