@@ -9,7 +9,7 @@ deretter hentes inn som en remote ES-Modul.
 1. Lag en mikrofrontend! Om du vil bruke ett template finnes
    det [ett for typescript](https://github.com/navikt/tms-mikrofrontend-template-vitets) og ett for
    [ett for javascrip](https://github.com/navikt/tms-mikrofrontend-template-vitejs)
-2. Sett opp automatisk oppdatering av manifest-url. 
+2. Sett opp automatisk oppdatering av cdn-url. 
    1. Be om å få installert min-side-repo-authenticator
    2. Legg inn action-secrets PRIVATE_KEY og APP_ID (disse får du fra min-side teamet)
    3. Legg inn oppdateringsworkflow i github workflows mappa til prosjektet
@@ -22,12 +22,13 @@ jobs:
     uses: navikt/tms-deploy/.github/workflows/oppdater-mikrofrontend-manifest.yaml@main
     with:
       cluster: "<cluster: dev-gcp eller prod-gcp>"
-      id: "<mikrofrontend-is>"
-      url: "<url til nytt manifest>"
+      id: "<mikrofrontend-id>"
+      url: "<url til js-kode i cdn>"
     secrets: inherit
  ```
 Eksempel finnes i
 i [worfklows-mappa til tms-mikrofrontend-selector](https://github.com/navikt/tms-mikrofrontend-selector/tree/main/.github/workflows/manifest-triggere)
+NB: Urlen skal ikke være til den faktiske js-koden, ikke json-manifest.
 
   3. Opprett ett issue i [tms-min-side repoet](https://github.com/navikt/tms-min-side), be om å få lagt inn
   mikrofrontenden i kode og avtal en `<microfrontendId>`
@@ -116,5 +117,13 @@ på `idporten-loa-high` vil bruker få beskjed om dette og link til en "steup"
 login. Se også [NAIS docs](https://docs.nais.io/security/auth/idporten/#security-levels) for mer info om acr-verdiene
 
 
+### Hvordan vet jeg hva cdn-urlen er?
+Om du bruker `navikt/frontend/actions/cdn-upload/v1@main`:
 
-
+1. Hent path fra cdn-upload outpus(`${{ <steps/jobs>.<id til cdn-upload step eller job>.outputs.uploaded }}`)
+2. Legg til host (`https://cdn.nav.no`)
+```bash
+files="${{ <steps/jobs>.<id til cdn-upload step eller job>.outputs.uploaded }}"
+cdn_path=$(echo $files|cut -d "," -f <index til js-url i liste>)
+cdn_url="https://cdn.nav.no/$cdn_path"
+```
