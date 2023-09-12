@@ -5,22 +5,32 @@ name: Update microfrontend-manifest
 on: <ønsket hook>
 
 jobs:
-  #legg inn etter build-steps
-  cdn_upload_and_update:
-    - name: cdn-upload
-      uses: navikt/frontend/actions/cdn-upload/v1@main
-      with:
-        cdn-team-name: <team-navn>
-        source: ./dist/
-        destination: <dest for ditt team>
-    - name: export-cdn-url
-      run: |
-        paths="${{ steps.cdn-upload.outputs.uploaded }}"
-        cdn_js_path=$(echo $paths | cut -d',' -f1)
-        echo "url=https://cdn.nav.no/$cdn_js_path" >> $GITHUB_OUTPUT
-    - name: "update min-side-dev-manifest"
-      uses: "navikt/tms-deploy/.github/workflows/oppdater-mikrofrontend-manifest.yaml@main"
-      with:
-        cluster: <dev-gcp eller prod-gcp>
-        id: <mikrofrontend-id>
-        url: ${{ steps.export-cdn-url.outputs.url }}
+  secrets: inherit
+  trigger_manifest_update:
+    uses: navikt/tms-deploy/.github/workflows/oppdater-mikrofrontend-manifest.yaml@main
+    with:
+      cluster: "<cluster: dev-gcp eller prod-gcp>"
+      id: "<mikrofrontend-id>"
+      url: "<url til js-fil>"
+
+
+    cdn_upload_and_update:
+      #legg inn etter build-steps
+      - steps:
+          - name: cdn-upload
+            uses: navikt/frontend/actions/cdn-upload/v1@main
+            with:
+              cdn-team-name: <team-navn>
+              source: ./dist/
+              destination: <dest for ditt team>
+          - name: export-cdn-url
+            run: |
+              paths="${{ steps.cdn-upload.outputs.uploaded }}"
+              cdn_js_path=$(echo $paths | cut -d',' -f1)
+              echo "url=https://cdn.nav.no/$cdn_js_path" >> $GITHUB_OUTPUT
+          - name: "update min-side-dev-manifest"
+            uses: "navikt/tms-deploy/.github/workflows/oppdater-mikrofrontend-manifest.yaml@main"
+            with:
+              cluster: <dev-gcp eller prod-gcp>
+              id: <mikrofrontend-id>
+              url: ${{ steps.export-cdn-url.outputs.url }}
