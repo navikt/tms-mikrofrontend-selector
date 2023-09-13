@@ -9,18 +9,18 @@ Dokumentasjon om microfrontends finner du på [våre dokumentasjonsider](https:/
 ```kotlin
 
 
-MessageBuilder.enable {
+MicrofrontendMessageBuilder.enable {
     ident = "12345678910" // ident til bruker som skal ha mikrofrontent: req 11 siffer
     initiatedBy = "ditt-team"
     microfrontendId = "din-mikrofrontend-id"
-    sensitivitet = SENSITIVITET.SUBSTANTIAL  //Valgfritt, default er HIGH. Se dokumentasjonen for mer info
+    sensitivitet = Sensitivitet.SUBSTANTIAL  //Valgfritt, default er HIGH. Se dokumentasjonen for mer info
 }
 
-MessageBuilder.enable(
+MicrofrontendMessageBuilder.enable(
     ident = expectedIdent, //11 siffer
     initiatedBy = expectedInitiatedBy,
     microfrontendId = expectedMicrofrontendId,
-    sensitivitet = SENSITIVITET.SUBSTANTIAL  //Valgfritt, default er HIGH. Se dokumentasjonen for mer info
+    sensitivitet = Sensitivitet.SUBSTANTIAL  //Valgfritt, default er HIGH. Se dokumentasjonen for mer info
 
 )
 ```
@@ -28,13 +28,13 @@ MessageBuilder.enable(
 ## Disable meldinger
 
 ```
-MessageBuilder.disable {
+MicrofrontendMessageBuilder.disable {
     ident = expectedIdent
     initiatedBy = expectedInitiatedBy
     microfrontendId = expectedMicrofrontendId
 }
 
-MessageBuilder.disable(
+MicrofrontendMessageBuilder.disable(
     ident = expectedIdent,
     microfrontenId = expectedMicrofrontendId,
     initiatedBy = expectedInitiatedBy
