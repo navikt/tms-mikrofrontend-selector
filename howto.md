@@ -28,7 +28,7 @@ jobs:
  ```
 Eksempel finnes i
 i [worfklows-mappa til tms-mikrofrontend-selector](https://github.com/navikt/tms-mikrofrontend-selector/tree/main/.github/workflows/manifest-triggere)
-NB: Urlen skal ikke være til den faktiske js-koden, ikke json-manifest.
+NB: Urlen skal være til **js-koden**, ikke json-manifest.
 
   3. Opprett ett issue i [tms-min-side repoet](https://github.com/navikt/tms-min-side), be om å få lagt inn
   mikrofrontenden i kode og avtal en `<microfrontendId>`
