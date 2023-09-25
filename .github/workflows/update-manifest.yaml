@@ -6,6 +6,7 @@ on:
 
 jobs:
   update-dev-manifest:
+    concurrency: dev-manifest
     runs-on: ubuntu-latest
     if: ${{ github.event.client_payload.cluster == 'dev-gcp' }}
     steps:
@@ -31,6 +32,7 @@ jobs:
         run: echo '${{ github.event.client_payload.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload.url }}'
 
   update-prod-manifest:
+    concurrency: prod-manifest
     runs-on: ubuntu-latest
     if: ${{ github.event.client_payload.cluster == 'prod-gcp' }}
     steps:
