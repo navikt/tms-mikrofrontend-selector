@@ -10,7 +10,7 @@ deretter hentes inn som en remote ES-Modul.
    Om du vil bruke et template finnes det [ett for typescript](https://github.com/navikt/tms-mikrofrontend-template-vitets) og 
    [ett for javascript](https://github.com/navikt/tms-mikrofrontend-template-vitejs)
 
-### 2.Sett opp oppdatering av url til den gjeldene javascript-koden
+### 2. Sett opp oppdatering av url til den gjeldene javascript-koden
    1. Be om å få installert min-side-repo-authenticator
    2. Legg inn action-secrets PRIVATE_KEY og APP_ID (disse får du fra min-side teamet)
    3. Legg inn oppdateringsworkflow i github workflows mappa til prosjektet
@@ -55,26 +55,26 @@ NB: Urlen skal være til **js-koden**, ikke json-manifest.
   Om en mikrofrontend vises avhenger av om den er enablet for en gitt bruker. Dette setter du ved å sende en melding på
   microfrontend-topicet.
 
-  1. Enable-melding når en bruker skal se mikrofrontenden
-  ```json
-  {
+  ### Enable-melding når en bruker skal se mikrofrontenden
+```json
+{
     "@action": "enable",
     "ident": <ident for bruker, vanligvis fnr>,
     "microfrontend_id": <microfrontendId>,
     "sensitivitet": <nivå som kreves for å se innholdet i mikrofrontenden, gyldige verdier: substantial og high>,
     "@initiated_by": <ditt-team>
-  }
-   ```
+}
+```
+ ### Disable-melding når bruker ikke skal se mikrofrontenden lenger
 
-2. Disable-melding når bruker ikke skal se mikrofrontenden lenger
-   ```json
-   {
-      "@action":  "disable",
-      "ident": <ident for bruker, vanligvis fnr>,
-      "microfrontend_id": <microfrontendId>,
-      "@initiated_by":<ditt-team>
-   }
-   ```
+```json
+{
+    "@action":  "disable",
+    "ident": <ident for bruker, vanligvis fnr>,
+    "microfrontend_id": <microfrontendId>,
+    "@initiated_by":<ditt-team>
+}
+```
 
 ### Meldingsbygger-bibliotek
 
