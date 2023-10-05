@@ -38,13 +38,12 @@ dependencies {
     implementation(Ktor.Server.statusPages)
     implementation(Ktor.Serialization.jackson)
     implementation(TmsKtorTokenSupport.tokenXValidation)
-    implementation(TmsKtorTokenSupport.authenticationInstaller)
     implementation(Postgresql.postgresql)
     implementation(RapidsAndRiversClassCast.rapidsAndRivers)
     implementation(KotliQuery.kotliquery)
     implementation(KotlinLogging.logging)
     implementation(TmsCommonLib.commonLib)
-    implementation("com.google.cloud:google-cloud-storage:2.26.0")
+    implementation(GoogleCloud.storage)
 
 
     testImplementation(Junit.api)
@@ -53,7 +52,6 @@ dependencies {
     testImplementation(Kotest.runnerJunit5)
     testImplementation(Kotest.assertionsCore)
     testImplementation(Ktor.Test.serverTestHost)
-    testImplementation(TmsKtorTokenSupport.authenticationInstallerMock)
     testImplementation(TmsKtorTokenSupport.tokenXValidationMock)
     testImplementation(Mockk.mockk)
 
