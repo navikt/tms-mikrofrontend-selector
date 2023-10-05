@@ -70,7 +70,7 @@ NB: Urlen skal være til **js-koden**, ikke json-manifest.
 ```json
 {
     "@action":  "disable",
-    "ident": <ident for bruker, vanligvis fnr>,
+    "ident": <ident for bruker: fnr/dnr>,
     "microfrontend_id": <microfrontendId>,
     "@initiated_by":<ditt-team>
 }
