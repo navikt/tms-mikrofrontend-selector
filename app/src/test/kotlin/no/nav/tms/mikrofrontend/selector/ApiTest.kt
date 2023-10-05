@@ -7,6 +7,7 @@ import io.kotest.matchers.shouldBe
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.server.auth.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
@@ -15,8 +16,8 @@ import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
-import no.nav.tms.token.support.authentication.installer.mock.installMockedAuthenticators
 import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.*
+import no.nav.tms.token.support.tokenx.validation.mock.tokenXMock
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -54,8 +55,8 @@ internal class ApiTest {
 
         application {
             selectorApi(personRepository, mockk()) {
-                installMockedAuthenticators {
-                    installTokenXAuthMock {
+                authentication {
+                    tokenXMock {
                         alwaysAuthenticated = true
                         setAsDefault = true
                         staticUserPid = testIdent
@@ -107,8 +108,8 @@ internal class ApiTest {
 
         application {
             selectorApi(personRepository, ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName)) {
-                installMockedAuthenticators {
-                    installTokenXAuthMock {
+                authentication {
+                    tokenXMock {
                         alwaysAuthenticated = true
                         setAsDefault = true
                         staticUserPid = testIdent
@@ -160,8 +161,8 @@ internal class ApiTest {
 
         application {
             selectorApi(personRepository, mockk()) {
-                installMockedAuthenticators {
-                    installTokenXAuthMock {
+                authentication {
+                    tokenXMock {
                         alwaysAuthenticated = true
                         setAsDefault = true
                         staticUserPid = testIdent
@@ -200,8 +201,8 @@ internal class ApiTest {
 
         application {
             selectorApi(personRepository, ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName)) {
-                installMockedAuthenticators {
-                    installTokenXAuthMock {
+                authentication {
+                    tokenXMock {
                         alwaysAuthenticated = true
                         setAsDefault = true
                         staticUserPid = testIdent
@@ -244,8 +245,8 @@ internal class ApiTest {
 
         application {
             selectorApi(personRepository, mockk()) {
-                installMockedAuthenticators {
-                    installTokenXAuthMock {
+                authentication {
+                    tokenXMock {
                         alwaysAuthenticated = true
                         setAsDefault = true
                         staticUserPid = testident2

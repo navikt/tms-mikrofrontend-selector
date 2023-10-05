@@ -7,7 +7,7 @@ import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
 import io.ktor.server.application.install
-import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.*
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
@@ -19,7 +19,7 @@ import no.nav.tms.mikrofrontend.selector.database.DatabaseException
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
-import no.nav.tms.token.support.authentication.installer.installAuthenticators
+import no.nav.tms.token.support.tokenx.validation.tokenX
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
 import java.text.DateFormat
 
@@ -83,8 +83,8 @@ internal fun Application.selectorApi(
 }
 
 private fun installAuth(): Application.() -> Unit = {
-    installAuthenticators {
-        installTokenXAuth {
+    authentication {
+        tokenX {
             setAsDefault = true
         }
     }
