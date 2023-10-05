@@ -59,7 +59,7 @@ NB: Urlen skal være til **js-koden**, ikke json-manifest.
 ```json
 {
     "@action": "enable",
-    "ident": <ident for bruker, vanligvis fnr>,
+    "ident": <ident for bruker: fnr/dnr>,
     "microfrontend_id": <microfrontendId>,
     "sensitivitet": <nivå som kreves for å se innholdet i mikrofrontenden, gyldige verdier: substantial og high>,
     "@initiated_by": <ditt-team>
