@@ -83,4 +83,6 @@ object JsonMessageVersions {
     val JsonMessage.initiatedBy: String?
         get() = this["@initiated_by"].takeIf { !it.isMissingOrNull() }?.asText()
             ?: this["initiated_by"].takeIf { !it.isMissingOrNull() }?.asText()
+
+    fun JsonMessage.traceInfo(sink:String) = mapOf("initiated_by" to (this.initiatedBy ?: ""),"sink" to sink)
 }

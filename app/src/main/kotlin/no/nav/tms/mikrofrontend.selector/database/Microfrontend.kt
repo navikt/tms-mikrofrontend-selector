@@ -60,6 +60,8 @@ internal class Microfrontends(initialJson: String? = null) {
         }
         """.trimIndent()
 
+    fun contentLogMessage() = newData.joinToString(prefix = "[", postfix = "]", separator = ",") { it["microfrontend_id"].asText() }
+
     fun apiResponseV2(innloggetnivå: Int, manifestMap: Map<String, String>): String = """
         { 
            "microfrontends": ${
