@@ -37,12 +37,6 @@ class DisableSink(
         }
     }
 
-    override fun onSevere(error: MessageProblems.MessageException, context: MessageContext) {
-        withMDC(mapOf("contenttype" to Contenttype.microfrontend.name, "sink" to "disable")) {
-            log.info { error.problems }
-        }
-    }
-
     override fun onError(problems: MessageProblems, context: MessageContext) {
         log.info { problems.toString() }
     }
