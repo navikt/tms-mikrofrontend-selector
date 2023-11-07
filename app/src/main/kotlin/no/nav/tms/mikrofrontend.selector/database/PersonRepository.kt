@@ -32,11 +32,11 @@ class PersonRepository(private val database: Database, private val counter: Micr
         val microfrontends = getMicrofrontends(ident)
         if (microfrontends.addMicrofrontend(jsonMessage)) {
             log.info { "Oppdaterer/enabler mikrofrontend" }
+            secureLog.info { "Nytt innhold for $ident er ${microfrontends.contentLogMessage()} " }
+            updatePersonTable(ident, microfrontends)
+            addChangelogEntry(ident, microfrontends, jsonMessage.initiatedBy)
+            counter.countMicrofrontendActions(ActionMetricsType.ENABLE, jsonMessage.microfrontendId)
         }
-        secureLog.info { "Nytt innhold for $ident er ${microfrontends.contentLogMessage()} " }
-        updatePersonTable(ident, microfrontends)
-        addChangelogEntry(ident, microfrontends, jsonMessage.initiatedBy)
-        counter.countMicrofrontendActions(ActionMetricsType.ENABLE, jsonMessage.microfrontendId)
     }
 
 

@@ -1,4 +1,5 @@
 import com.zaxxer.hikari.HikariDataSource
+import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
 import no.nav.tms.mikrofrontend.selector.database.Database
@@ -52,10 +53,10 @@ class LocalPostgresDatabase private constructor() : Database {
 
     private fun migrate(): Int =
         Flyway.configure()
-        .connectRetries(3)
-        .dataSource(dataSource)
-        .load()
-        .migrate().migrationsExecuted
+            .connectRetries(3)
+            .dataSource(dataSource)
+            .load()
+            .migrate().migrationsExecuted
 
 
     fun getChangelog(ident: String) = list {
@@ -145,4 +146,18 @@ data class ChangelogEntry(
 inline fun <T> T.assert(block: T.() -> Unit): T =
     apply {
         block()
+    }
+
+inline fun <T> T.assertContent(block: T.() -> Unit): T =
+    apply {
+        withClue("content") {
+            block()
+        }
+    }
+
+inline fun <T> T.assertChangelog(block: T.() -> Unit): T =
+    apply {
+        withClue("changelog") {
+            block()
+        }
     }
