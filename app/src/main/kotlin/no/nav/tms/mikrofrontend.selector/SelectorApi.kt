@@ -21,6 +21,7 @@ import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.tokenx.validation.tokenX
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
+import observability.ApiMdc
 import java.text.DateFormat
 
 internal fun Application.selectorApi(
@@ -56,6 +57,7 @@ internal fun Application.selectorApi(
     installTmsApiMetrics {
         setupMetricsRoute = false
     }
+    install(ApiMdc)
 
     routing {
         authenticate {

@@ -12,3 +12,10 @@ object GoogleCloud: default.DependencyGroup {
 
     val storage = dependency("google-cloud-storage")
 }
+
+object TmsCommobLibBeta: default.DependencyGroup{
+    override val groupId get() = "com.github.navikt"
+    override val version get() = "1.7.2"
+
+    val commonLib get() = dependency("tms-common-lib")
+}
