@@ -63,22 +63,12 @@ internal fun Application.selectorApi(
 
     routing {
         authenticate {
-            route("mikrofrontends") {
-                get() {
-                    val user = TokenXUserFactory.createTokenXUser(call)
-                    call.respond(
-                        personRepository.getEnabledMicrofrontends(user.ident)?.apiResponseV1(user.loginLevel)
-                            ?: Microfrontends.emptyApiResponse()
-                    )
-                }
-            }
-
             route("microfrontends") {
                 get() {
                     val user = TokenXUserFactory.createTokenXUser(call)
                     call.respond(
                         personRepository.getEnabledMicrofrontends(user.ident)
-                            ?.apiResponseV2(user.loginLevel, manifestsStorage.getManifestBucketContent())
+                            ?.apiResponse(user.loginLevel, manifestsStorage.getManifestBucketContent())
                             ?: Microfrontends.emptyApiResponse()
                     )
                 }

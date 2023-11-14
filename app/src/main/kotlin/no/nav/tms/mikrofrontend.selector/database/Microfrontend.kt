@@ -48,21 +48,9 @@ internal class Microfrontends(initialJson: String? = null) {
             node["microfrontend_id"].asText() == microfrontendId
         }
 
-    fun apiResponseV1(innloggetnivå: Int): String = """
-        { 
-           "microfrontends": ${
-        newData
-            .filter { Sensitivitet.fromJsonNode(it["sensitivitet"]) <= innloggetnivå }
-            .map { it["microfrontend_id"] }
-            .jsonArrayString()
-    }, 
-           "offerStepup": ${newData.any { Sensitivitet.fromJsonNode(it["sensitivitet"]) > innloggetnivå }} 
-        }
-        """.trimIndent()
-
     fun contentLogMessage() = newData.joinToString(prefix = "[", postfix = "]", separator = ",") { it["microfrontend_id"].asText() }
 
-    fun apiResponseV2(innloggetnivå: Int, manifestMap: Map<String, String>): String = """
+    fun apiResponse(innloggetnivå: Int, manifestMap: Map<String, String>): String = """
         { 
            "microfrontends": ${
         newData
