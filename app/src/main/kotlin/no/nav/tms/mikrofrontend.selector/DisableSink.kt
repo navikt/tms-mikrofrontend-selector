@@ -4,6 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.helse.rapids_rivers.*
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.initiatedBy
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.traceInfo
 import observability.Contenttype
 import observability.traceMicrofrontend
@@ -17,7 +18,6 @@ class DisableSink(
     private val log = KotlinLogging.logger {}
     private val secureLog = KotlinLogging.logger("secureLog")
 
-
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("@action", DisableMessage.action) }
@@ -30,10 +30,19 @@ class DisableSink(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         traceMicrofrontend(id = packet.microfrontendId, extra = packet.traceInfo("disable")) {
-            log.info { "disablemelding mottat" }
-            secureLog.info { "${packet.ident} -> disablemelding" }
-            personRepository.disableMicrofrontend(packet)
-            DisableMessage.countVersion(packet)
+            try {
+                log.info { "disablemelding mottat fra ${packet.initiatedBy}" }
+                personRepository.disableMicrofrontend(packet)
+                DisableMessage.countVersion(packet)
+            } catch (e: Exception) {
+                log.error { "Feil i behandling av enablemelding" }
+                secureLog.error { """
+                    Feil i behandling av enablemelding for person med ident ${packet.ident}
+                    ${e.stackTrace}
+                    """.trimIndent() }
+                log.error { e.message }
+            }
+
         }
     }
 

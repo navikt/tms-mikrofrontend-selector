@@ -32,7 +32,6 @@ class PersonRepository(private val database: Database, private val counter: Micr
         val microfrontends = getMicrofrontends(ident)
         if (microfrontends.addMicrofrontend(jsonMessage)) {
             log.info { "Oppdaterer/enabler mikrofrontend" }
-            secureLog.info { "Nytt innhold for $ident er ${microfrontends.contentLogMessage()} " }
             updatePersonTable(ident, microfrontends)
             addChangelogEntry(ident, microfrontends, jsonMessage.initiatedBy)
             counter.countMicrofrontendActions(ActionMetricsType.ENABLE, jsonMessage.microfrontendId)
@@ -42,13 +41,11 @@ class PersonRepository(private val database: Database, private val counter: Micr
 
     fun disableMicrofrontend(jsonMessage: JsonMessage) {
         val microfrontends = getMicrofrontends(jsonMessage.ident)
-        withLogging(jsonMessage.ident, "disable") {
-            if (microfrontends.removeMicrofrontend(jsonMessage.microfrontendId)) {
-                log.info { "Disabler mikrofrontend }" }
-                updatePersonTable(jsonMessage.ident, microfrontends)
-                addChangelogEntry(jsonMessage.ident, microfrontends, jsonMessage.initiatedBy)
-                counter.countMicrofrontendActions(ActionMetricsType.DISABLE, jsonMessage.microfrontendId)
-            }
+        if (microfrontends.removeMicrofrontend(jsonMessage.microfrontendId)) {
+            log.info { "Disabler mikrofrontend }" }
+            updatePersonTable(jsonMessage.ident, microfrontends)
+            addChangelogEntry(jsonMessage.ident, microfrontends, jsonMessage.initiatedBy)
+            counter.countMicrofrontendActions(ActionMetricsType.DISABLE, jsonMessage.microfrontendId)
         }
     }
 
@@ -87,17 +84,6 @@ class PersonRepository(private val database: Database, private val counter: Micr
                     "now" to LocalDateTimeHelper.nowAtUtc()
                 )
             )
-        }
-    }
-
-    private fun withLogging(ident: String, operation: String, function: () -> Unit) {
-        try {
-            function()
-        } catch (e: Exception) {
-            log.error { "Feil ved $operation for mikrofrontendId \n${e.message}" }
-            secureLog.error {
-                "Feil ved $operation for ident $ident\n ${e.stackTraceToString()}"
-            }
         }
     }
 

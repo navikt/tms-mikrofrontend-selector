@@ -56,3 +56,4 @@ fun getDbUrl(host: String, port: String, name: String): String {
         "jdbc:postgresql://${host}:${port}/${name}"
     }
 }
+

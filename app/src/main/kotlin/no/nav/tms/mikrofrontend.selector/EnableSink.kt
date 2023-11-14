@@ -31,13 +31,14 @@ class EnableSink(
         traceMicrofrontend(id = packet.microfrontendId, extra = packet.traceInfo("enable")) {
             try {
                 log.info { "Enablemelding motatt" }
-                //TODO
-                secureLog.info { "Enablet for person med ident ${packet.ident}" }
                 EnableMessage.countVersion(packet)
                 personRepository.enableMicrofrontend(packet)
             } catch (e: Exception) {
                 log.error { "Feil i behandling av enablemelding" }
-                secureLog.error { "Feil i behandling av enablemelding for person med ident ${packet.ident}" }
+                secureLog.error { """
+                    Feil i behandling av enablemelding for person med ident ${packet.ident}
+                    ${e.stackTrace}
+                    """.trimIndent() }
                 log.error { e.message }
             }
         }

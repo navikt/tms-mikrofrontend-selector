@@ -43,11 +43,13 @@ internal fun Application.selectorApi(
     install(StatusPages) {
         exception<Throwable> { call, cause ->
             if (cause is DatabaseException) {
-                secureLog.warn { "Feil i henting av microfrontends for ${cause.ident}\n ${cause.originalException.stackTrace}" }
+                log.warn { "Feil i henting av microfrontends" }
+                secureLog.warn { """Feil i henting av microfrontends for ${cause.ident}\n ${cause.originalException.stackTrace}""" }
                 call.respond(HttpStatusCode.InternalServerError)
 
             } else {
                 log.error { "Ukjent feil ved henting av microfrontends" }
+                secureLog.error { "Ukjent feil ved henting av microfrontends ${cause.stackTraceToString()}" }
                 call.respond(HttpStatusCode.InternalServerError)
             }
 
@@ -75,7 +77,8 @@ internal fun Application.selectorApi(
                 get() {
                     val user = TokenXUserFactory.createTokenXUser(call)
                     call.respond(
-                        personRepository.getEnabledMicrofrontends(user.ident)?.apiResponseV2(user.loginLevel, manifestsStorage.getManifestBucketContent())
+                        personRepository.getEnabledMicrofrontends(user.ident)
+                            ?.apiResponseV2(user.loginLevel, manifestsStorage.getManifestBucketContent())
                             ?: Microfrontends.emptyApiResponse()
                     )
                 }
