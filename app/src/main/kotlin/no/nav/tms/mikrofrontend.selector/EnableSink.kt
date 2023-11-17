@@ -35,9 +35,8 @@ class EnableSink(
                 personRepository.enableMicrofrontend(packet)
             } catch (e: Exception) {
                 log.error { "Feil i behandling av enablemelding" }
-                secureLog.error { """
+                secureLog.error(e) { """
                     Feil i behandling av enablemelding for person med ident ${packet.ident}
-                    ${e.stackTrace}
                     """.trimIndent() }
                 log.error { e.message }
             }

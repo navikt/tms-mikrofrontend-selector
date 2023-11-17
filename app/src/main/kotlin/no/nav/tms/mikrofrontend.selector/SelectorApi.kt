@@ -44,12 +44,12 @@ internal fun Application.selectorApi(
         exception<Throwable> { call, cause ->
             if (cause is DatabaseException) {
                 log.warn { "Feil i henting av microfrontends" }
-                secureLog.warn { """Feil i henting av microfrontends for ${cause.ident}\n ${cause.originalException.stackTrace}""" }
+                secureLog.warn(cause.originalException) { """Feil i henting av microfrontends for ${cause.ident}}""".trimMargin() }
                 call.respond(HttpStatusCode.InternalServerError)
 
             } else {
                 log.error { "Ukjent feil ved henting av microfrontends" }
-                secureLog.error { "Ukjent feil ved henting av microfrontends ${cause.stackTraceToString()}" }
+                secureLog.error(cause) { "Ukjent feil ved henting av microfrontends" }
                 call.respond(HttpStatusCode.InternalServerError)
             }
 
