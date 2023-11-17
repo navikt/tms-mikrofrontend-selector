@@ -21,6 +21,7 @@ import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.tokenx.validation.tokenX
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
+import observability.ApiMdc
 import java.text.DateFormat
 
 internal fun Application.selectorApi(
@@ -42,11 +43,13 @@ internal fun Application.selectorApi(
     install(StatusPages) {
         exception<Throwable> { call, cause ->
             if (cause is DatabaseException) {
-                secureLog.warn { "Feil i henting av microfrontends for ${cause.ident}\n ${cause.originalException.stackTrace}" }
+                log.warn { "Feil i henting av microfrontends" }
+                secureLog.warn(cause.originalException) { """Feil i henting av microfrontends for ${cause.ident}}""".trimMargin() }
                 call.respond(HttpStatusCode.InternalServerError)
 
             } else {
                 log.error { "Ukjent feil ved henting av microfrontends" }
+                secureLog.error(cause) { "Ukjent feil ved henting av microfrontends" }
                 call.respond(HttpStatusCode.InternalServerError)
             }
 
@@ -56,24 +59,16 @@ internal fun Application.selectorApi(
     installTmsApiMetrics {
         setupMetricsRoute = false
     }
+    install(ApiMdc)
 
     routing {
         authenticate {
-            route("mikrofrontends") {
-                get() {
-                    val user = TokenXUserFactory.createTokenXUser(call)
-                    call.respond(
-                        personRepository.getEnabledMicrofrontends(user.ident)?.apiResponseV1(user.loginLevel)
-                            ?: Microfrontends.emptyApiResponse()
-                    )
-                }
-            }
-
             route("microfrontends") {
                 get() {
                     val user = TokenXUserFactory.createTokenXUser(call)
                     call.respond(
-                        personRepository.getEnabledMicrofrontends(user.ident)?.apiResponseV2(user.loginLevel, manifestsStorage.getManifestBucketContent())
+                        personRepository.getEnabledMicrofrontends(user.ident)
+                            ?.apiResponse(user.loginLevel, manifestsStorage.getManifestBucketContent())
                             ?: Microfrontends.emptyApiResponse()
                     )
                 }

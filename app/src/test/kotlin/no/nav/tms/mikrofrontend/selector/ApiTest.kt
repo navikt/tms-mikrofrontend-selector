@@ -47,56 +47,6 @@ internal class ApiTest {
         database.deleteAll()
     }
 
-
-    @Test
-    fun `Skal svare med liste over mikrofrontends med nivå 4`() = testApplication {
-        val testIdent = "12345678910"
-        val expectedMicrofrontends = mutableListOf("mk-1", "mk2", "mk3")
-
-        application {
-            selectorApi(personRepository, mockk()) {
-                authentication {
-                    tokenXMock {
-                        alwaysAuthenticated = true
-                        setAsDefault = true
-                        staticUserPid = testIdent
-                        staticLevelOfAssurance = LEVEL_4
-                    }
-                }
-            }
-        }
-
-        expectedMicrofrontends.forEach {
-            testRapid.sendTestMessage(
-                currentVersionMessage(
-                    messageRequirements = EnableMessage,
-                    ident = testIdent,
-                    microfrontendId = it
-                )
-            )
-        }
-
-        //legacy
-        testRapid.sendTestMessage(legacyMessagev2(microfrontendId = "legacyNivå4mkf", ident = testIdent))
-        testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testIdent, 3))
-
-        expectedMicrofrontends.addAll(listOf("nivå3mkf", "legacyNivå4mkf"))
-
-
-        client.get("/mikrofrontends").assert {
-            status shouldBe HttpStatusCode.OK
-            objectMapper.readTree(bodyAsText()).assert {
-                this["microfrontends"].toList().assert {
-                    size shouldBe expectedMicrofrontends.size
-                    forEach {
-                        it.asText() shouldBeIn expectedMicrofrontends
-                    }
-                }
-                this["offerStepup"].asBoolean() shouldBe false
-            }
-        }
-    }
-
     @Test
     fun `Skal svare med liste over mikrofrontends og manifest med nivå 4`() = testApplication {
         val testIdent = "12345678910"
@@ -150,42 +100,6 @@ internal class ApiTest {
                     }
                 }
                 this["offerStepup"].asBoolean() shouldBe false
-            }
-        }
-    }
-
-    @Test
-    fun `Skal svare med liste over mikrofrontends for ident med innloggingsnivå 3`() = testApplication {
-        val testIdent = "12345678910"
-        val nivå4Mikrofrontends = mutableListOf("mk-1", "mk2", "mk3")
-
-        application {
-            selectorApi(personRepository, mockk()) {
-                authentication {
-                    tokenXMock {
-                        alwaysAuthenticated = true
-                        setAsDefault = true
-                        staticUserPid = testIdent
-                        staticLevelOfAssurance = LEVEL_3
-                    }
-                }
-            }
-        }
-
-        nivå4Mikrofrontends.forEach {
-            testRapid.sendTestMessage(legacyMessagev2(it, testIdent))
-        }
-        testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testIdent, 3))
-
-
-        client.get("/mikrofrontends").assert {
-            status shouldBe HttpStatusCode.OK
-            objectMapper.readTree(bodyAsText()).assert {
-                this["microfrontends"].toList().assert {
-                    size shouldBe 1
-                    first().asText() shouldBe "nivå3mkf"
-                }
-                this["offerStepup"].asBoolean() shouldBe true
             }
         }
     }
@@ -256,7 +170,7 @@ internal class ApiTest {
             }
         }
 
-        client.get("/mikrofrontends").assert {
+        client.get("/microfrontends").assert {
             status shouldBe HttpStatusCode.OK
             objectMapper.readTree(bodyAsText()).assert {
                 this["microfrontends"].size() shouldBe 0

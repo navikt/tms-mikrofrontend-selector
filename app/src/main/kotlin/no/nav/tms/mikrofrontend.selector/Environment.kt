@@ -1,6 +1,5 @@
 package no.nav.tms.mikrofrontend.selector
 
-import com.google.cloud.NoCredentials
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
 import no.nav.personbruker.dittnav.common.util.config.StringEnvVar.getEnvVar
@@ -57,3 +56,4 @@ fun getDbUrl(host: String, port: String, name: String): String {
         "jdbc:postgresql://${host}:${port}/${name}"
     }
 }
+

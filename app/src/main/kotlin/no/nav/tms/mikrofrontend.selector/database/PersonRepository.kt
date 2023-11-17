@@ -29,28 +29,23 @@ class PersonRepository(private val database: Database, private val counter: Micr
 
     fun enableMicrofrontend(jsonMessage: JsonMessage) {
         val ident = jsonMessage.ident
-        val initiatedBy = jsonMessage.initiatedBy
         val microfrontends = getMicrofrontends(ident)
-        withLogging(ident, jsonMessage.microfrontendId, "enable") {
-            if (microfrontends.addMicrofrontend(jsonMessage)) {
-                log.info { "Oppdaterer/enabler mikrofrontend med id ${jsonMessage.microfrontendId} initiert av ${jsonMessage.initiatedBy?:"ukjent produsent"}" }
-                secureLog.info { "Nytt innhold for $ident er ${microfrontends.apiResponseV1(4)} " }
-                updatePersonTable(ident, microfrontends)
-                addChangelogEntry(ident, microfrontends, initiatedBy)
-                counter.countMicrofrontendActions(ActionMetricsType.ENABLE, jsonMessage.microfrontendId)
-            }
+        if (microfrontends.addMicrofrontend(jsonMessage)) {
+            log.info { "Oppdaterer/enabler mikrofrontend" }
+            updatePersonTable(ident, microfrontends)
+            addChangelogEntry(ident, microfrontends, jsonMessage.initiatedBy)
+            counter.countMicrofrontendActions(ActionMetricsType.ENABLE, jsonMessage.microfrontendId)
         }
     }
 
+
     fun disableMicrofrontend(jsonMessage: JsonMessage) {
         val microfrontends = getMicrofrontends(jsonMessage.ident)
-        withLogging(jsonMessage.ident, jsonMessage.microfrontendId, "disable") {
-            if (microfrontends.removeMicrofrontend(jsonMessage.microfrontendId)) {
-                log.info { "Disabler mikrofrontend med id ${jsonMessage.microfrontendId} initiert av ${jsonMessage.initiatedBy?:"ukjent produsent"}" }
-                updatePersonTable(jsonMessage.ident, microfrontends)
-                addChangelogEntry(jsonMessage.ident, microfrontends, jsonMessage.initiatedBy)
-                counter.countMicrofrontendActions(ActionMetricsType.DISABLE, jsonMessage.microfrontendId)
-            }
+        if (microfrontends.removeMicrofrontend(jsonMessage.microfrontendId)) {
+            log.info { "Disabler mikrofrontend }" }
+            updatePersonTable(jsonMessage.ident, microfrontends)
+            addChangelogEntry(jsonMessage.ident, microfrontends, jsonMessage.initiatedBy)
+            counter.countMicrofrontendActions(ActionMetricsType.DISABLE, jsonMessage.microfrontendId)
         }
     }
 
@@ -89,17 +84,6 @@ class PersonRepository(private val database: Database, private val counter: Micr
                     "now" to LocalDateTimeHelper.nowAtUtc()
                 )
             )
-        }
-    }
-
-    private fun withLogging(ident: String, microfrontendId: String, operation: String, function: () -> Unit) {
-        try {
-            function()
-        } catch (e: Exception) {
-            log.error { "Feil ved $operation for mikrofrontendId med id $microfrontendId\n ${e.message}" }
-            secureLog.error {
-                "Feil ved $operation for mikrofrontendId med id $microfrontendId for ident $ident\n ${e.stackTraceToString()}"
-            }
         }
     }
 

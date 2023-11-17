@@ -11,6 +11,8 @@ import kotliquery.queryOf
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
+
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
 import org.junit.jupiter.api.AfterEach
@@ -41,6 +43,26 @@ internal class SinkTest {
         database.update { queryOf("delete from changelog") }
         database.update { queryOf("delete from person") }
     }
+
+    @Test
+     fun `skal håndtere gjeldene jsonversjon`(){
+         val enableMsg = currentVersionMessage(EnableMessage, "tadda-mc", "2456789")
+         val disableMsg = currentVersionMessage(DisableMessage, "tadda-mc", "2456789")
+
+        testRapid.sendTestMessage(enableMsg)
+        database.getMicrofrontends(ident = "2456789").assert {
+            require(this != null)
+            size shouldBe 1
+        }
+
+        testRapid.sendTestMessage(disableMsg)
+        database.getMicrofrontends(ident = "2456789").assert {
+            require(this != null)
+            size shouldBe 0
+        }
+
+
+     }
 
     @Test
     fun `Skal enable+oppdatere mikrofrontends og opprette historikk`() {

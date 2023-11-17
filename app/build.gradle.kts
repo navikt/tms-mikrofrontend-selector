@@ -42,7 +42,7 @@ dependencies {
     implementation(RapidsAndRiversClassCast.rapidsAndRivers)
     implementation(KotliQuery.kotliquery)
     implementation(KotlinLogging.logging)
-    implementation(TmsCommonLib.commonLib)
+    implementation(TmsCommonLibBeta.commonLib)
     implementation(GoogleCloud.storage)
 
 
