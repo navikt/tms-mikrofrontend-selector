@@ -132,3 +132,7 @@ på `idporten-loa-high` vil bruker få beskjed om dette og link til en "stepup"
 login. Se også [NAIS docs](https://docs.nais.io/security/auth/idporten/#security-levels) for mer info om acr-verdiene
 
 
+## Observability
+Hendelser blir logget til kibana med customfelter for filtrering \
+Alle microfrontends: `x_contenttype:"microfrontend` \
+Spesifik microfrontend: `x_minside_id :"<microfrontendid>"` 
