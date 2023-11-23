@@ -78,8 +78,7 @@ NB: Urlen skal være til **js-koden**, ikke json-manifest.
 
 ### Meldingsbygger-bibliotek
 
-Det er tilgjengelig på [jitpack](https://jitpack.io/#navikt/tms-mikrofrontend-selector)
-og [github packages](https://github.com/navikt/tms-mikrofrontend-selector/packages/1875650)
+Det er tilgjengelig på [github packages](https://github.com/navikt/tms-mikrofrontend-selector/packages/1875650)
 
 ## Språk
 
