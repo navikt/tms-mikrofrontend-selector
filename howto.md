@@ -78,8 +78,7 @@ NB: Urlen skal være til **js-koden**, ikke json-manifest.
 
 ### Meldingsbygger-bibliotek
 
-Det er tilgjengelig på [jitpack](https://jitpack.io/#navikt/tms-mikrofrontend-selector)
-og [github packages](https://github.com/navikt/tms-mikrofrontend-selector/packages/1875650)
+Det er tilgjengelig på [github packages](https://github.com/navikt/tms-mikrofrontend-selector/packages/1875650)
 
 ## Språk
 
@@ -132,3 +131,7 @@ på `idporten-loa-high` vil bruker få beskjed om dette og link til en "stepup"
 login. Se også [NAIS docs](https://docs.nais.io/security/auth/idporten/#security-levels) for mer info om acr-verdiene
 
 
+## Observability
+Hendelser blir logget til kibana med customfelter for filtrering \
+Alle microfrontends: `x_contenttype:"microfrontend` \
+Spesifik microfrontend: `x_minside_id :"<microfrontendid>"` 

@@ -18,15 +18,18 @@ tasks.withType<KotlinCompile> {
 }
 
 repositories {
-    maven("https://jitpack.io")
     mavenCentral()
-    maven("https://packages.confluent.io/maven")
-    maven ( "https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven" )
+    maven("https://maven.pkg.github.com/navikt/*") {
+        credentials {
+            username = System.getenv("GITHUB_ACTOR")?: "x-access-token"
+            password = System.getenv("GITHUB_TOKEN")?: project.findProperty("githubPassword") as String
+        }
+    }
     mavenLocal()
 }
 
 dependencies {
-    implementation(DittNAVCommonLib.utils)
+    implementation(TmsCommonLib.utils)
     implementation(Flyway9.core)
     implementation(Hikari.cp)
     implementation(KotlinLogging.logging)
@@ -39,10 +42,11 @@ dependencies {
     implementation(Ktor.Serialization.jackson)
     implementation(TmsKtorTokenSupport.tokenXValidation)
     implementation(Postgresql.postgresql)
-    implementation(RapidsAndRiversClassCast.rapidsAndRivers)
+    implementation(RapidsAndRivers.rapidsAndRivers)
     implementation(KotliQuery.kotliquery)
     implementation(KotlinLogging.logging)
-    implementation(TmsCommonLibBeta.commonLib)
+    implementation(TmsCommonLib.metrics)
+    implementation(TmsCommonLib.observability)
     implementation(GoogleCloud.storage)
 
 

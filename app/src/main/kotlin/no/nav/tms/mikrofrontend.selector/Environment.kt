@@ -2,7 +2,7 @@ package no.nav.tms.mikrofrontend.selector
 
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
-import no.nav.personbruker.dittnav.common.util.config.StringEnvVar.getEnvVar
+import no.nav.tms.common.util.config.StringEnvVar.getEnvVar
 
 data class Environment(
     val groupId: String = getEnvVar("GROUP_ID"),
