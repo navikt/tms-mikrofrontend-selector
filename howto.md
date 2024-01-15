@@ -1,10 +1,10 @@
-# Mikrofrontender på min side
+# Microfrontender på min side
 
-Mikrofrontendene brukt på min side kommer i form av små bokser med forskjellig funksjonalitet og innhold teamene ønsker å presentere til en spesifikk gruppe brukere. Vi stiller visse [designkrav](https://aksel.nav.no/god-praksis/artikler/retningslinjer-for-design-av-mikrofrontends) til utformingen av mikrofrontendene, for å ivareta en god helhetlig brukeropplevelse. Det overordnede konseptet er at bruker skal finne igjen mye av sitt mest relevante innhold og av innganger gruppert og løftet på min side.
+Microfrontendene brukt på min side kommer i form av små bokser med forskjellig funksjonalitet og innhold teamene ønsker å presentere til en spesifikk gruppe brukere. Vi stiller visse [designkrav](https://aksel.nav.no/god-praksis/artikler/retningslinjer-for-design-av-mikrofrontends) til utformingen av microfrontendene, for å ivareta en god helhetlig brukeropplevelse. Det overordnede konseptet er at bruker skal finne igjen mye av sitt mest relevante innhold og av innganger gruppert og løftet på min side.
 
-Vår mikrofrontendrigg består av tre deler. Mikrofrontenden som lastes opp til frontend-plattform sin CDN, min side som viser mikrofrontendene, og Kafka-backenden for å aktivere og deaktivere mikrofrontends for spesifikke brukere. Selve mikrofrontenden blir bygget til ESM, lastet opp til CDN og hentes deretter inn som en remote ES-Modul.
+Vår microfrontendrigg består av tre deler. Mikrofrontenden som lastes opp til frontend-plattform sin CDN, min side som viser microfrontendene, og Kafka-backenden for å aktivere og deaktivere mikrofrontends for spesifikke brukere. Selve mikrofrontenden blir bygget til ESM, lastet opp til CDN og hentes deretter inn som en remote ES-Modul.
 
-## Hvordan kan mitt team få en mikrofrontend på min side?
+## Hvordan kan mitt team få en microfrontend på min side?
 
 Oppsett med bruk av template:
 
@@ -57,12 +57,12 @@ NB: Urlen skal være til **js-koden**, ikke json-manifest.
    2. Koble på [min-side-microfrontend-topicet](https://github.com/navikt/min-side-microfrontend-topic-iac)
    3. Du kan nå sende oss Enable/Disable meldinger via Kafka for å skru av og på microfrontenden for spesifikke brukere
 
-  ## Enable/disable 
+## Enable/disable 
 
-  Om en mikrofrontend vises avhenger av om den er enablet for en gitt bruker. Dette setter du ved å sende en melding på
+  Om en microfrontend vises avhenger av om den er enablet for en gitt bruker. Dette setter du ved å sende en melding på
   microfrontend-topicet.
 
-  ### Enable-melding når en bruker skal se mikrofrontenden
+### Enable-melding når en bruker skal se mikrofrontenden
 ```json
 {
     "@action": "enable",
@@ -72,7 +72,7 @@ NB: Urlen skal være til **js-koden**, ikke json-manifest.
     "@initiated_by": <ditt-team>
 }
 ```
- ### Disable-melding når bruker ikke skal se mikrofrontenden lenger
+### Disable-melding når bruker ikke skal se mikrofrontenden lenger
 
 ```json
 {
