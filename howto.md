@@ -105,7 +105,7 @@ ligger [her](https://github.com/navikt/tms-min-side/blob/main/index.html).
 ### Hvordan bruke amplitude i mikrofrontenden?
 
 Amplitude fungerer som vanlig (se [AAP sin mikrofrontend](https://github.com/navikt/aap-min-side-microfrontend/blob/main/src/utils/amplitude.ts)). Dere kan fritt logge de eventene dere vil, men for at vi skal kunne foreta målinger for Min side som helhet er det påkrevd at trykk på mikrofrontenden sender et navigere event med feltet 
-```json komponent: <microfrontendId>``` 
+```komponent: <microfrontendId>``` 
 Videre anbefaler vi å følge [taksonominen](https://github.com/navikt/analytics-taxonomy) i NAV.
 
 ### Hva er sensitivitet?
