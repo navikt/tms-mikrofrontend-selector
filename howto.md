@@ -8,11 +8,11 @@ Vår microfrontendrigg består av tre deler. Mikrofrontenden som lastes opp til 
 
 Oppsett med bruk av template:
 
-### 1. Klon repo:
+## 1. Klon repo:
 
 Her finner du vårt template for [typescript](https://github.com/navikt/tms-mikrofrontend-template-vitets). Vi har laget en walktrough av hvordan en utfyller template under. Ønsker du å gjøre det på egen måte er [dette] listen med ting som må være på plass.
 
-### 2. Sett opp oppdatering av url til den gjeldene javascript-koden
+## 2. Sett opp oppdatering av url til den gjeldene javascript-koden
 
 Opplasting til CDN og uthenting av adressen hvor ES-modulen hentes fra gjøres gjennom vår workflow. For å få tilgang til å kjøre workflowen, kontakt Min side teamet på #minside-microfrontends og be oss om følgende:
 
@@ -51,13 +51,13 @@ Eksempel finnes i
 [workflows-mappa til tms-mikrofrontend-selector](https://github.com/navikt/tms-mikrofrontend-selector/tree/main/.github/workflows/manifest-triggere)
 NB: Urlen skal være til **js-koden**, ikke json-manifest.
 
-### 3. Koble til løsningen
+## 3. Koble til løsningen
 
    1. <microfrontendId> skal samsvare med navnet på frontendrepoet
    2. Koble på [min-side-microfrontend-topicet](https://github.com/navikt/min-side-microfrontend-topic-iac)
    3. Du kan nå sende oss Enable/Disable meldinger via Kafka for å skru av og på microfrontenden for spesifikke brukere
 
-## Enable/disable 
+### Enable/disable 
 
   Om en microfrontend vises avhenger av om den er enablet for en gitt bruker. Dette setter du ved å sende en melding på
   microfrontend-topicet.
@@ -87,13 +87,13 @@ NB: Urlen skal være til **js-koden**, ikke json-manifest.
 
 Det er tilgjengelig på [github packages](https://github.com/navikt/tms-mikrofrontend-selector/packages/1875650)
 
-## Språk
+### Språk
 
 Vi bruker språkvelgeren i Dekoratøren. For å vite hvilket språk man skal vise så sender vi et event via session storage.
 Man kan enkelt sette opp en provider som vi har
 gjort [her](https://github.com/navikt/tms-utkast-mikrofrontend/blob/main/src/provider/LanguageProvider.tsx).
 
-## Shared dependencies
+### Shared dependencies
 
 For å unngå å ha for store bundles så deler vi noen dependencies på tvers av apper. Disse hentes ned en gang ved første
 page load fra en CDN og caches i browseren. Foreløpig ligger react, react-dom og ds-css i CDNen.
