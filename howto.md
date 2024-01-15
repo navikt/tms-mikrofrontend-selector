@@ -1,18 +1,26 @@
 # Mikrofrontender på min side
 
-Mikrofrontends gir teamene mulighet til å presentere den viktigste informasjonen til brukerne sine på Min side, som et
-lite butikkvindu inn til teamenes egne løsninger. Dette gjøres gjennom at mikrofrontenden blir bygget til ESM og
-deretter hentes inn som en remote ES-Modul.
+Mikrofrontendene brukt på min side kommer i form av små bokser med forskjellig funksjonalitet og innhold teamene ønsker å presentere til en spesifikk gruppe brukere. Vi stiller visse [designkrav](https://aksel.nav.no/god-praksis/artikler/retningslinjer-for-design-av-mikrofrontends) til utformingen av mikrofrontendene, for å ivareta en god helhetlig brukeropplevelse. Det overordnede konseptet er at bruker skal finne igjen mye av sitt mest relevante innhold og av innganger gruppert og løftet på min side.
 
-## Nice! Hvordan kan mitt team få en mikrofrontend på min side?
+Vår mikrofrontendrigg består av tre deler. Mikrofrontenden som lastes opp til frontend-plattform sin CDN, min side som viser mikrofrontendene, og Kafka-backenden for å aktivere og deaktivere mikrofrontends for spesifikke brukere. Selve mikrofrontenden blir bygget til ESM, lastet opp til CDN og hentes deretter inn som en remote ES-Modul.
 
-### 1. Lag en mikrofrontend!
-   Om du vil bruke et template finnes det [ett for typescript](https://github.com/navikt/tms-mikrofrontend-template-vitets) og 
-   [ett for javascript](https://github.com/navikt/tms-mikrofrontend-template-vitejs)
+## Hvordan kan mitt team få en mikrofrontend på min side?
+
+Oppsett med bruk av template:
+
+### 1. Klon repo:
+
+Her finner du vårt template for [typescript](https://github.com/navikt/tms-mikrofrontend-template-vitets). Vi har laget en walktrough av hvordan en utfyller template under. Ønsker du å gjøre det på egen måte er [dette] listen med ting som må være på plass.
 
 ### 2. Sett opp oppdatering av url til den gjeldene javascript-koden
-   1. Be om å få installert min-side-repo-authenticator
-   2. Legg inn action-secrets PRIVATE_KEY og APP_ID (disse får du fra min-side teamet)
+
+Opplasting til CDN og uthenting av adressen hvor ES-modulen hentes fra gjøres gjennom vår workflow. For å få tilgang til å kjøre workflowen, kontakt Min side teamet på #minside-microfrontends og be oss om følgende:
+
+   1. Be om å få installert min-side-repo-authenticator i repoet
+   2. Få utdelt PRIVATE_KEY og APP_ID som legges inn som action-secrets i repoet
+
+Når dette er lagt inn har repoet nå tilgang til å kjøre workflowen
+
    3. Legg inn oppdateringsworkflow i github workflows mappa til prosjektet
 ```yaml
 name: Update microfrontend-manifest
@@ -44,11 +52,10 @@ Eksempel finnes i
 NB: Urlen skal være til **js-koden**, ikke json-manifest.
 
 ### 3. Koble til løsningen
-1. Opprett et issue i [tms-min-side repoet](https://github.com/navikt/tms-min-side), be om å få lagt inn
-  mikrofrontenden i kode og avtal en `<microfrontendId>`
-2. Koble på [min-side-microfrontend-topicet](https://github.com/navikt/min-side-microfrontend-topic-iac)
 
-
+   1. <microfrontendId> skal samsvare med navnet på frontendrepoet
+   2. Koble på [min-side-microfrontend-topicet](https://github.com/navikt/min-side-microfrontend-topic-iac)
+   3. Du kan nå sende oss Enable/Disable meldinger via Kafka for å skru av og på microfrontenden for spesifikke brukere
 
   ## Enable/disable 
 
@@ -95,27 +102,9 @@ CSSen fra designsystemet hentes i skallet til Min side. Denne skal deles på tve
 Vi bør ligge på samme major versjon, veilendende versjon
 ligger [her](https://github.com/navikt/tms-min-side/blob/main/index.html).
 
-## FAQ
+### Hvordan bruke amplitude i mikrofrontenden?
 
-### Hva bør jeg velge som mikrofrontend-id?
-
-`<område>.<tjenste>` er et bra utgangspunkt, prøv å holde det så generelt som mulig, men gjenkjenbart.
-
-### Hvordan skal mikrofrontenden se ut?
-
-Vi bruker en modifisert versjon av designsystemet. Ta kontakt med oss for å se hvordan en ny mikrofrontend kan passe inn
-i Min side.
-
-### Hvordan fungerer amplitude?
-
-Amplitude fungerer som vanlig (
-se [AAP sin mikrofrontend](https://github.com/navikt/aap-min-side-microfrontend/blob/main/src/utils/amplitude.ts)).
-Dere kan fritt logge de eventene dere vil, men for å sette opp målinger på tvers i Amplitude har vi disse føringene
-på [navigasjonseventer](https://github.com/navikt/analytics-taxonomy/tree/main/events/navigere):
-
-- komponent: tekstlig representasjon av komponenten det ble trykket på.
-
-Videre anbefaler vi å følge [taksonominen](https://github.com/navikt/analytics-taxonomy) i NAV.
+Amplitude fungerer som vanlig (se [AAP sin mikrofrontend](https://github.com/navikt/aap-min-side-microfrontend/blob/main/src/utils/amplitude.ts)). Dere kan fritt logge de eventene dere vil, men for at vi skal kunne foreta målinger for Min side som helhet er det påkrevd at trykk på mikrofrontenden sender et navigere event med feltet komponent: <microfrontendId>. Videre anbefaler vi å følge [taksonominen](https://github.com/navikt/analytics-taxonomy) i NAV.
 
 ### Hva er sensitivitet?
 
@@ -129,9 +118,3 @@ Om sensitivitet ikke er spesifisert i kafka-meldingen settes det alltid til `hig
 Om en person logger inn med `idporten-loa-substantial` og det finnes mikrofrontender som personen kan se
 på `idporten-loa-high` vil bruker få beskjed om dette og link til en "stepup"
 login. Se også [NAIS docs](https://docs.nais.io/security/auth/idporten/#security-levels) for mer info om acr-verdiene
-
-
-## Observability
-Hendelser blir logget til kibana med customfelter for filtrering \
-Alle microfrontends: `x_contenttype:"microfrontend` \
-Spesifik microfrontend: `x_minside_id :"<microfrontendid>"` 
