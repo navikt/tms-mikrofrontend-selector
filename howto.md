@@ -53,7 +53,7 @@ NB: Urlen skal være til **js-koden**, ikke json-manifest.
 
 ## 3. Koble til løsningen
 
-   1. "<microfrontendId>" skal samsvare med navnet på frontendrepoet
+   1. "microfrontendId" skal samsvare med navnet på frontendrepoet
    2. Koble på [min-side-microfrontend-topicet](https://github.com/navikt/min-side-microfrontend-topic-iac)
    3. Du kan nå sende oss Enable/Disable meldinger via Kafka for å skru av og på microfrontenden for spesifikke brukere
 
