@@ -29,3 +29,7 @@ hele dokumentet (`##`,deretter `###` osv).
    "__offerStepup_desc__": "Boolean, hvorvidt bruker har mikrofrontender som ikke kan vises ved gjeldende sensitivitetsnivå"
 }
 ```
+
+## Legge til min-side-repo-authenticator
+- Gi tilgang til det nye repoet fra authenticator.
+- Kopier secrets fra kubernetes og legg det inn i repoet som skal bruke authenticator.
