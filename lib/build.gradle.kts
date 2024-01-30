@@ -16,11 +16,8 @@ tasks.withType<KotlinCompile> {
 
 repositories {
     mavenCentral()
-    maven("https://maven.pkg.github.com/navikt/*") {
-        credentials {
-            username = System.getenv("GITHUB_ACTOR")?: "x-access-token"
-            password = System.getenv("GITHUB_TOKEN")?: project.findProperty("githubPassword") as String
-        }
+    maven {
+        url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
     }
     mavenLocal()
 }
@@ -52,7 +49,11 @@ publishing {
     repositories{
         mavenLocal()
         maven {
-            url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
+            url = uri("https://maven.pkg.github.com/navikt/tms-mikrofrontend-selector")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
         }
     }
 
