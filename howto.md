@@ -39,7 +39,10 @@ Videre anbefaler vi å følge [taksonominen](https://github.com/navikt/analytics
   Om en microfrontend vises avhenger av om den er enablet for en gitt bruker. Dette setter du ved å sende en melding på
   microfrontend-topicet.
 
-### Enable-melding når en bruker skal se mikrofrontenden
+### Enable-melding
+
+Enable-melding sender du for å vise microfrontenden til en bruker.
+
 ```json
 {
     "@action": "enable",
@@ -49,7 +52,9 @@ Videre anbefaler vi å følge [taksonominen](https://github.com/navikt/analytics
     "@initiated_by": <ditt-team>
 }
 ```
-### Disable-melding når bruker ikke skal se mikrofrontenden lenger
+### Disable-melding
+
+Disable-melding sender du for å slutte å vise microfrontenden til en bruker.
 
 ```json
 {
