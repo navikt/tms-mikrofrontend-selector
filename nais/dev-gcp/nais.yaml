@@ -41,11 +41,11 @@ spec:
         diskType: SSD
         diskSize: 10
         diskAutoresize: false
-        autoBackupTime: "03:00"
+        autoBackupHour: 3
         databases:
           - name: microfrontends
             envVarPrefix: DB
-        maintenanceWindow:
+        maintenance:
           day: 1
           hour: 4
         cascadingDelete: false
@@ -56,8 +56,8 @@ spec:
       cpu: "1"
       memory: 1024Mi
     requests:
-      cpu: "50m"
-      memory: 256Mi
+      cpu: "20m"
+      memory: 128Mi
   env:
     - name: GROUP_ID
       value: tms-mikrofrontend-selector-01
