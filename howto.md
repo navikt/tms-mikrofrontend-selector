@@ -1,4 +1,4 @@
-# Microfrontends på Min side
+# Microfrontends på min side
 
 Personalisering med microfrontends.
 
