@@ -1,4 +1,4 @@
-# Microfrontender på min side
+# Microfrontends
 
 Personalisering av Min side med microfrontends.
 
@@ -7,7 +7,7 @@ Microfrontendene brukt på min side kommer i form av små bokser med forskjellig
 Vår microfrontendrigg består av tre deler. Mikrofrontenden som lastes opp til frontend-plattform sin CDN, min side som viser microfrontendene, og Kafka-backenden for å aktivere og deaktivere mikrofrontends for spesifikke brukere. Selve mikrofrontenden blir bygget til ESM, lastet opp til CDN og hentes deretter inn som en remote ES-Modul.
 
 ## Sett opp microfrontend
-Følg readme til denne [templaten](https://github.com/navikt/tms-microfrontend-template).
+Bruk [denne](https://github.com/navikt/tms-microfrontend-template) templaten og følg instruksjonene i readme-filen.
 
 ### Design
 
@@ -19,8 +19,7 @@ Alt innhold må være tilgjengelig på bokmål, nynorsk og engelsk. Språkhåndt
 
 ### Dependencies
 
-Vi deler noen dependencies på tvers av apper. Per nå er det react og react-dom. DS-css blir også delt og bør ligge på samme major versjon.
-Veilendende versjon ligger [her](https://github.com/navikt/tms-min-side/blob/main/index.html).
+Vi deler noen dependencies på tvers av apper. Per nå er det react og react-dom. DS-css blir også delt og bør ligge på samme major versjon. Veilendende versjon ligger [her](https://github.com/navikt/tms-min-side/blob/main/index.html).
 
 ### Amplitude
 
