@@ -1,6 +1,6 @@
-# Microfrontends
+# Microfrontends på Min side
 
-Personalisering av Min side med microfrontends.
+Personalisering med microfrontends.
 
 Microfrontendene brukt på min side kommer i form av små bokser med forskjellig funksjonalitet og innhold teamene ønsker å presentere til en spesifikk gruppe brukere. Det overordnede konseptet er at bruker skal finne igjen mye av sitt mest relevante innhold og av innganger gruppert og løftet på min side.
 
