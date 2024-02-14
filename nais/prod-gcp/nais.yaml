@@ -53,10 +53,9 @@ spec:
       - name: microfrontend-manifest-prod
   resources:
     limits:
-      cpu: "1"
       memory: 1024Mi
     requests:
-      cpu: "20m"
+      cpu: "50m"
       memory: 128Mi
   env:
     - name: GROUP_ID
