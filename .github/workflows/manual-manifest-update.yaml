@@ -15,6 +15,9 @@ on:
         required: true
         description: "url til mikrofrontend"
         type: string
+      commitmsg:
+        required: false
+        description: "Melding for commit som trigget oppdateringen"
 
 jobs:
   update-dev-manifest:
@@ -44,6 +47,11 @@ jobs:
         run: echo '${{ github.actor }} har oppdaterert manifestfil for id ${{ inputs.id }} med url ${{ inputs.url }}'
       - name: 'Sjekk oppdatering'
         run: gcloud storage cp gs://microfrontend-manifest-dev/manifests.json manifests.json && cat manifests.json
+      - name: 'info'
+        run: |
+         echo '${{ inputs.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload.url }}'
+         echo ${{ inputs.commitmsg }}
+
 
 #  update-prod-manifest:
 #    concurrency: prod-manifest
