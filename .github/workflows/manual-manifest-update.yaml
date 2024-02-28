@@ -1,4 +1,5 @@
 name: Repo update microfrontend-manifest manually
+run-name: Oppdater ${{ github.event.inputs.id }} ${{ github.event.inputs.cluster }}
 
 on:
   workflow_dispatch:
