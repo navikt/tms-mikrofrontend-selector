@@ -31,7 +31,7 @@ hele dokumentet (`##`,deretter `###` osv).
 }
 ```
 
-### Gi prdosent-repo tilgang til å trigge actions i selector
+### Gi produsent-repo tilgang til å trigge actions i selector
 1. Oppdater [oversikten over microfrontends](https://navno.sharepoint.com/:x:/r/sites/Teampersonbruker/_layouts/15/Doc.aspx?sourcedoc=%7B566CB64A-D4E2-4672-A740-8C9B7CC9D460%7D&file=Mikrofrontends.xlsx&action=default&mobileredirect=true)
 2. Be om admin-tilgang til produsent-repoet
 3. Gå til [repouthenticator på github](https://github.com/organizations/navikt/settings/apps/min-side-repo-authenticator)
