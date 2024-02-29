@@ -1,5 +1,5 @@
 name: Repo update microfrontend-manifest
-run-name: Oppdater ${{ github.event.client_payload.id }} i ${{ github.event.client_payload.cluster }}
+run-name: "Oppdater ${{ github.event.client_payload.id }} i ${{ github.event.client_payload.cluster }} – ${{ github.event.client_payload.commitmsg }}"
 
 on:
   repository_dispatch:
