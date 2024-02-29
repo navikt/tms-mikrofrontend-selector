@@ -56,7 +56,8 @@ jobs:
       - name: 'Last opp til bucket'
         run: gcloud storage cp manifests.json gs://microfrontend-manifest-prod
       - name: 'info'
-        run: echo '${{ github.event.client_payload.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload.url }}'
-
+        run: | 
+          echo '${{ github.event.client_payload.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload.url }}'
+          echo 'commitmessage: ${{ github.event.client_payload.commitmsg }}'
 
 
