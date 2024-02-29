@@ -31,12 +31,12 @@ hele dokumentet (`##`,deretter `###` osv).
 }
 ```
 
-### Gi microfrontend-repoet tilgang til å trigge actions i selector
+### Gi prdosent-repo tilgang til å trigge actions i selector
 1. Oppdater [oversikten over microfrontends](https://navno.sharepoint.com/:x:/r/sites/Teampersonbruker/_layouts/15/Doc.aspx?sourcedoc=%7B566CB64A-D4E2-4672-A740-8C9B7CC9D460%7D&file=Mikrofrontends.xlsx&action=default&mobileredirect=true)
-2. Be om admin-tilgang til microfrontend-repoet
+2. Be om admin-tilgang til produsent-repoet
 3. Gå til [repouthenticator på github](https://github.com/organizations/navikt/settings/apps/min-side-repo-authenticator)
 4. Install App (i menyen til venstre) -> Settings (tannhjul til høyre)
-5. Velg microfrontend-repoet i dropdown-lista og trykk på den grønne "Update access"-knappen
-6. Legg inn secrets i microfrontend-repoet; Settings -> Secrets and variables -> Actions -> New repository secret
+5. Velg produsent-repoet i dropdown-lista og trykk på den grønne "Update access"-knappen
+6. Legg inn secrets i produsent-repoet; Settings -> Secrets and variables -> Actions -> New repository secret
    1. `PRIVATE_KEY` fra `github-auth-app-key` i secrets i prod-gcp
    2. `APP_ID` fra "App ID" under "About" i repoauthenticator
