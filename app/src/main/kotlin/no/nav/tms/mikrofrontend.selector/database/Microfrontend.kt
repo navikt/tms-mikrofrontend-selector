@@ -7,6 +7,7 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.applyMigrations
 import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.sensitivitet
 import no.nav.tms.mikrofrontend.selector.microfrontendId
+import no.nav.tms.mikrofrontend.selector.regelmotor.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.sensitivitet
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.toDbNode
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
@@ -94,6 +95,14 @@ internal class Microfrontends(initialJson: String? = null) {
     private fun String.jsonB() = PGobject().apply {
         type = "jsonb"
         value = this@jsonB
+    }
+
+    fun getDefinitions(): List<PersonalContentCollector.MicrofrontendsDefinition> {
+        TODO("Not yet implemented")
+    }
+
+    fun offerStepup(): Boolean {
+        TODO("Not yet implemented")
     }
 
 }

@@ -7,7 +7,10 @@ import io.kotest.matchers.shouldBe
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
@@ -105,6 +108,73 @@ internal class ApiTest {
     }
 
     @Test
+    fun `Skal svare med liste over mikrofrontends og produktkort med nivå 4`() = testApplication {
+        val testIdent = "12345678910"
+        val expectedMicrofrontends = mutableMapOf(
+            "mk1" to "https://cdn.test/mk1.json",
+            "mk2" to "https://cdn.test/mk2.json",
+            "mk3" to "https://cdn.test/mk1.json",
+        )
+
+        application {
+            selectorApi(personRepository, ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName)) {
+                authentication {
+                    tokenXMock {
+                        alwaysAuthenticated = true
+                        setAsDefault = true
+                        staticUserPid = testIdent
+                        staticLevelOfAssurance = LEVEL_4
+                    }
+                }
+            }
+        }
+
+        val expectedProduktkort = listOf("DAG", "PEN")
+
+        externalServices {
+            hosts("http://test.nav.no/minesaker-api") {
+                routing {
+                    get("sakstemaer/egne") {
+                        call.respondText(
+                            contentType = ContentType.Application.Json,
+                            status = HttpStatusCode.OK,
+                            provider = {
+                                expectedProduktkort.joinToString(
+                                    prefix = "[",
+                                    postfix = "]"
+                                ) { """{ "kode": "$it" }""".trimIndent() }
+                            })
+                    }
+                }
+            }
+        }
+
+        expectedMicrofrontends.keys.forEach {
+            testRapid.sendTestMessage(
+                currentVersionMessage(
+                    messageRequirements = EnableMessage,
+                    ident = testIdent,
+                    microfrontendId = it
+                )
+            )
+        }
+
+        gcpStorage.updateManifest(expectedMicrofrontends)
+
+        client.get("/microfrontends").assert {
+            status shouldBe HttpStatusCode.OK
+            objectMapper.readTree(bodyAsText()).assert {
+                this["microfrontends"].toList().size shouldBe 3
+                this["offerStepup"].asBoolean() shouldBe false
+                this["produktkort"].assert {
+                    this.size() shouldBe 2
+                    this.map { produktkortId -> produktkortId.asText() } shouldBe expectedProduktkort
+                }
+            }
+        }
+    }
+
+    @Test
     fun `Skal svare med liste over mikrofrontends og manifest for ident med innloggingsnivå 3`() = testApplication {
         val testIdent = "12345678910"
         val nivå4Mikrofrontends = mutableMapOf(
@@ -154,7 +224,7 @@ internal class ApiTest {
 
 
     @Test
-    fun `Skal svare med tom liste for personer som ikke har noen mikrofrontends`() = testApplication {
+    fun `Skal svare med tom liste for personer som ikke har noen mikrofrontends eller produktkort`() = testApplication {
         val testident2 = "12345678912"
 
         application {
@@ -170,14 +240,31 @@ internal class ApiTest {
             }
         }
 
+        externalServices {
+            hosts("http://test.nav.no/minesaker-api") {
+                routing {
+                    get("sakstemaer/egne") {
+                        call.respondText(
+                            contentType = ContentType.Application.Json,
+                            status = HttpStatusCode.OK,
+                            provider = {
+                                "[]"
+                            })
+                    }
+                }
+            }
+        }
+
         client.get("/microfrontends").assert {
             status shouldBe HttpStatusCode.OK
             objectMapper.readTree(bodyAsText()).assert {
                 this["microfrontends"].size() shouldBe 0
+                this["produktkort"].size() shouldBe 0
                 this["offerStepup"].asBoolean() shouldBe false
             }
 
         }
     }
+
 
 }

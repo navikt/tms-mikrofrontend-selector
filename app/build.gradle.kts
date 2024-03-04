@@ -33,6 +33,7 @@ dependencies {
     implementation(Ktor.Server.core)
     implementation(Ktor.Server.netty)
     implementation(Ktor.Server.contentNegotiation)
+    implementation(Ktor.Client.contentNegotiation)
     implementation(Ktor.Server.auth)
     implementation(Ktor.Server.authJwt)
     implementation(Ktor.Server.statusPages)
