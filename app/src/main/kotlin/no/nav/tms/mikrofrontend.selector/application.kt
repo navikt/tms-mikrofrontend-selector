@@ -1,9 +1,11 @@
 package no.nav.tms.mikrofrontend.selector
 
+import io.ktor.client.*
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidApplication.RapidApplicationConfig.Companion.fromEnv
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.database.Flyway
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.database.PostgresDatabase
@@ -28,7 +30,12 @@ private fun startRapid(
         counter = MicrofrontendCounter()
     )
     RapidApplication.Builder(fromEnv(environment.rapidConfig()))
-        .withKtorModule { selectorApi(personRepository, manifestStorage) }
+        .withKtorModule {
+            val apiClient = HttpClient {
+                configureJackson()
+            }
+            selectorApi(PersonalContentCollector(apiClient, repository = personRepository, manifestStorage))
+        }
         .build().apply {
             DisableSink(this, personRepository)
             EnableSink(this, personRepository)

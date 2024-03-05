@@ -2,11 +2,12 @@ package no.nav.tms.mikrofrontend.selector
 
 import LocalPostgresDatabase
 import assert
-import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
+import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
@@ -15,6 +16,7 @@ import io.ktor.server.testing.*
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
@@ -58,9 +60,17 @@ internal class ApiTest {
             "mk2" to "https://cdn.test/mk2.json",
             "mk3" to "https://cdn.test/mk1.json",
         )
+        val apiClient = createClient { configureJackson() }
 
         application {
-            selectorApi(personRepository, ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName)) {
+            selectorApi(
+                PersonalContentCollector(
+                    apiClient, repository = personRepository, ManifestsStorage(
+                        gcpStorage.storage,
+                        LocalGCPStorage.testBucketName
+                    )
+                ),
+            ) {
                 authentication {
                     tokenXMock {
                         alwaysAuthenticated = true
@@ -115,9 +125,17 @@ internal class ApiTest {
             "mk2" to "https://cdn.test/mk2.json",
             "mk3" to "https://cdn.test/mk1.json",
         )
+        val apiClient = createClient { configureJackson() }
 
         application {
-            selectorApi(personRepository, ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName)) {
+            selectorApi(
+                PersonalContentCollector(
+                    apiClient = apiClient,
+                    repository = personRepository,
+                    manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName)
+                )
+
+            ) {
                 authentication {
                     tokenXMock {
                         alwaysAuthenticated = true
@@ -175,60 +193,73 @@ internal class ApiTest {
     }
 
     @Test
-    fun `Skal svare med liste over mikrofrontends og manifest for ident med innloggingsnivå 3`() = testApplication {
-        val testIdent = "12345678910"
-        val nivå4Mikrofrontends = mutableMapOf(
-            "mk1" to "https://cdn.test/mk1.json",
-            "mk2" to "https://cdn.test/mk2.json",
-            "mk3" to "https://cdn.test/mk1.json",
-        )
+    fun `Skal svare med liste over mikrofrontends og tom produktkortliste for ident med innloggingsnivå 3`() =
+        testApplication {
+            val testIdent = "12345678910"
+            val nivå4Mikrofrontends = mutableMapOf(
+                "mk1" to "https://cdn.test/mk1.json",
+                "mk2" to "https://cdn.test/mk2.json",
+                "mk3" to "https://cdn.test/mk1.json",
+            )
+            val apiClient = createClient { configureJackson() }
 
-        application {
-            selectorApi(personRepository, ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName)) {
-                authentication {
-                    tokenXMock {
-                        alwaysAuthenticated = true
-                        setAsDefault = true
-                        staticUserPid = testIdent
-                        staticLevelOfAssurance = LEVEL_3
+
+            application {
+                selectorApi(
+                    PersonalContentCollector(
+                        apiClient = apiClient,
+                        repository = personRepository,
+                        manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName)
+                    ),
+                ) {
+                    authentication {
+                        tokenXMock {
+                            alwaysAuthenticated = true
+                            setAsDefault = true
+                            staticUserPid = testIdent
+                            staticLevelOfAssurance = LEVEL_3
+                        }
                     }
                 }
             }
-        }
 
-        nivå4Mikrofrontends.keys.forEach {
-            testRapid.sendTestMessage(legacyMessagev2(it, testIdent))
-        }
-        testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testIdent, 3))
-
-        gcpStorage.updateManifest(
-            nivå4Mikrofrontends.apply {
-                this["nivå3mkf"] = "https://nivå3mkf.cdn.test"
+            nivå4Mikrofrontends.keys.forEach {
+                testRapid.sendTestMessage(legacyMessagev2(it, testIdent))
             }
-        )
+            testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testIdent, 3))
 
-        client.get("/microfrontends").assert {
-            status shouldBe HttpStatusCode.OK
-            objectMapper.readTree(bodyAsText()).assert {
-                this["microfrontends"].toList().assert {
-                    size shouldBe 1
-                    first().assert {
-                        this["microfrontend_id"].asText() shouldBe "nivå3mkf"
-                        this["url"].asText() shouldBe "https://nivå3mkf.cdn.test"
-                    }
+            gcpStorage.updateManifest(
+                nivå4Mikrofrontends.apply {
+                    this["nivå3mkf"] = "https://nivå3mkf.cdn.test"
                 }
-                this["offerStepup"].asBoolean() shouldBe true
+            )
+
+            client.get("/microfrontends").assert {
+                status shouldBe HttpStatusCode.OK
+                objectMapper.readTree(bodyAsText()).assert {
+                    this["microfrontends"].toList().assert {
+                        size shouldBe 1
+                        first().assert {
+                            this["microfrontend_id"].asText() shouldBe "nivå3mkf"
+                            this["url"].asText() shouldBe "https://nivå3mkf.cdn.test"
+                        }
+                    }
+                    this["offerStepup"].asBoolean() shouldBe true
+                    this["produktkort"].size() shouldBe 0
+                }
             }
         }
-    }
 
 
     @Test
     fun `Skal svare med tom liste for personer som ikke har noen mikrofrontends eller produktkort`() = testApplication {
         val testident2 = "12345678912"
+        val apiClient = createClient { configureJackson() }
 
         application {
-            selectorApi(personRepository, mockk()) {
+            selectorApi(
+                PersonalContentCollector(apiClient, repository = personRepository, mockk()),
+            ) {
                 authentication {
                     tokenXMock {
                         alwaysAuthenticated = true

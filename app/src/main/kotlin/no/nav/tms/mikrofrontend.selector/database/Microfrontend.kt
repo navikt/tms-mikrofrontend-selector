@@ -4,19 +4,20 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
+import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector.MicrofrontendsDefinition
 import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.applyMigrations
 import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.sensitivitet
 import no.nav.tms.mikrofrontend.selector.microfrontendId
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.sensitivitet
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.toDbNode
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import org.postgresql.util.PGobject
 
 private val log = KotlinLogging.logger { }
 private val objectMapper = jacksonObjectMapper()
 
-internal class Microfrontends(initialJson: String? = null) {
+class Microfrontends(initialJson: String? = null) {
 
     private val originalData: List<JsonNode>? =
         initialJson
@@ -49,7 +50,8 @@ internal class Microfrontends(initialJson: String? = null) {
             node["microfrontend_id"].asText() == microfrontendId
         }
 
-    fun contentLogMessage() = newData.joinToString(prefix = "[", postfix = "]", separator = ",") { it["microfrontend_id"].asText() }
+    fun contentLogMessage() =
+        newData.joinToString(prefix = "[", postfix = "]", separator = ",") { it["microfrontend_id"].asText() }
 
     fun apiResponse(innloggetnivå: Int, manifestMap: Map<String, String>): String = """
         { 
@@ -97,13 +99,18 @@ internal class Microfrontends(initialJson: String? = null) {
         value = this@jsonB
     }
 
-    fun getDefinitions(): List<PersonalContentCollector.MicrofrontendsDefinition> {
-        TODO("Not yet implemented")
-    }
+    fun getDefinitions(innloggetnivå: Int, manifestMap: Map<String, String>): List<MicrofrontendsDefinition> =
+        newData
+            .filter { Sensitivitet.fromJsonNode(it["sensitivitet"]) <= innloggetnivå }
+            .mapNotNull {
+                val id = it["microfrontend_id"].asText()
+                val url = manifestMap[id]
+                if (url.isNullOrEmpty()) null
+                else MicrofrontendsDefinition(id = id, url = url)
+            }
 
-    fun offerStepup(): Boolean {
-        TODO("Not yet implemented")
-    }
+    fun offerStepup(innloggetnivå: Int): Boolean =
+        newData.any { Sensitivitet.fromJsonNode(it["sensitivitet"]) > innloggetnivå }
 
 }
 

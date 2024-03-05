@@ -1,7 +1,10 @@
 package no.nav.tms.mikrofrontend.selector
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
+import io.ktor.client.*
+import io.ktor.serialization.jackson.*
 import no.nav.tms.common.util.config.StringEnvVar.getEnvVar
 
 data class Environment(
@@ -54,6 +57,14 @@ fun getDbUrl(host: String, port: String, name: String): String {
         "jdbc:postgresql://${host}/$name"
     } else {
         "jdbc:postgresql://${host}:${port}/${name}"
+    }
+}
+
+fun HttpClientConfig<*>.configureJackson() {
+    install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+        jackson {
+            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        }
     }
 }
 
