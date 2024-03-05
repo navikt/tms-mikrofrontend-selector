@@ -33,6 +33,9 @@ spec:
     inbound:
       rules:
         - application: tms-min-side-proxy
+    outbound:
+      external:
+        - host: "safselvbetjening-q1.dev-fss-pub.nais.io"
   gcp:
     sqlInstances:
       - name: microfrontend

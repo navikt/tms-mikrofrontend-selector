@@ -39,6 +39,7 @@ dependencies {
     implementation(Ktor.Server.statusPages)
     implementation(Ktor.Serialization.jackson)
     implementation(TmsKtorTokenSupport.tokenXValidation)
+    implementation(TmsKtorTokenSupport.tokendingsExchange)
     implementation(Postgresql.postgresql)
     implementation(RapidsAndRivers.rapidsAndRivers)
     implementation(KotliQuery.kotliquery)

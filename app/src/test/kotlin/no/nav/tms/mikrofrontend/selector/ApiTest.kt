@@ -156,17 +156,12 @@ internal class ApiTest {
                         call.respondText(
                             contentType = ContentType.Application.Json,
                             status = HttpStatusCode.OK,
-                            provider = {
-                                expectedProduktkort.joinToString(
-                                    prefix = "[",
-                                    postfix = "]"
-                                ) { """{ "kode": "$it" }""".trimIndent() }
-                            })
+                            provider = { expectedProduktkort.safResponse() }
+                        )
                     }
                 }
             }
         }
-
         expectedMicrofrontends.keys.forEach {
             testRapid.sendTestMessage(
                 currentVersionMessage(
@@ -252,50 +247,65 @@ internal class ApiTest {
 
 
     @Test
-    fun `Skal svare med tom liste for personer som ikke har noen mikrofrontends eller produktkort`() = testApplication {
-        val testident2 = "12345678912"
-        val apiClient = createClient { configureJackson() }
+    fun `Skal svare med tom liste for personer som ikke har noen mikrofrontends eller produktkort`() =
+        testApplication {
+            val testident2 = "12345678912"
+            val apiClient = createClient { configureJackson() }
 
-        application {
-            selectorApi(
-                PersonalContentCollector(apiClient, repository = personRepository, mockk()),
-            ) {
-                authentication {
-                    tokenXMock {
-                        alwaysAuthenticated = true
-                        setAsDefault = true
-                        staticUserPid = testident2
-                        staticLevelOfAssurance = LEVEL_4
+            application {
+                selectorApi(
+                    PersonalContentCollector(apiClient, repository = personRepository, mockk()),
+                ) {
+                    authentication {
+                        tokenXMock {
+                            alwaysAuthenticated = true
+                            setAsDefault = true
+                            staticUserPid = testident2
+                            staticLevelOfAssurance = LEVEL_4
+                        }
                     }
                 }
             }
-        }
 
-        externalServices {
-            hosts("http://test.nav.no/minesaker-api") {
-                routing {
-                    get("sakstemaer/egne") {
-                        call.respondText(
-                            contentType = ContentType.Application.Json,
-                            status = HttpStatusCode.OK,
-                            provider = {
-                                "[]"
-                            })
+            externalServices {
+                hosts("http://test.nav.no/minesaker-api") {
+                    routing {
+                        get("sakstemaer/egne") {
+                            call.respondText(
+                                contentType = ContentType.Application.Json,
+                                status = HttpStatusCode.OK,
+                                provider = {
+                                    "[]"
+                                })
+                        }
                     }
                 }
             }
-        }
 
-        client.get("/microfrontends").assert {
-            status shouldBe HttpStatusCode.OK
-            objectMapper.readTree(bodyAsText()).assert {
-                this["microfrontends"].size() shouldBe 0
-                this["produktkort"].size() shouldBe 0
-                this["offerStepup"].asBoolean() shouldBe false
+            client.get("/microfrontends").assert {
+                status shouldBe HttpStatusCode.OK
+                objectMapper.readTree(bodyAsText()).assert {
+                    this["microfrontends"].size() shouldBe 0
+                    this["produktkort"].size() shouldBe 0
+                    this["offerStepup"].asBoolean() shouldBe false
+                }
+
             }
-
         }
-    }
-
-
 }
+
+private fun List<String>.safResponse() = """
+    {
+      "data": {
+        "dokumentoversiktSelvbetjening": {
+          "tema": ${
+    joinToString(
+        prefix = "[",
+        postfix = "]"
+    ) { """{ "kode": "$it" }""".trimIndent() }
+}
+          }
+        }
+      }
+    }
+""".trimIndent()
