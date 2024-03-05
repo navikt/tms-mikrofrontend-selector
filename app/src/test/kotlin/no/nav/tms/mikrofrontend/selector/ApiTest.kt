@@ -13,14 +13,18 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
+import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
+import no.nav.tms.mikrofrontend.selector.collector.SakstemaFetcher
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
+import no.nav.tms.token.support.tokendings.exchange.TokendingsService
 import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.*
 import no.nav.tms.token.support.tokenx.validation.mock.tokenXMock
 import org.junit.jupiter.api.AfterEach
@@ -39,6 +43,9 @@ internal class ApiTest {
         counter = counter
     )
     private val gcpStorage = LocalGCPStorage.instance
+    private val testUrl = "http://test.nav.no"
+    private val tokenDingsServiceMock =
+        mockk<TokendingsService>().also { coEvery { it.exchangeToken(any(), any()) } returns "dummyToken" }
 
     @BeforeAll
     fun setup() {
@@ -65,9 +72,13 @@ internal class ApiTest {
         application {
             selectorApi(
                 PersonalContentCollector(
-                    apiClient, repository = personRepository, ManifestsStorage(
-                        gcpStorage.storage,
-                        LocalGCPStorage.testBucketName
+                    repository = personRepository,
+                    manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
+                    sakstemaFetcher = SakstemaFetcher(
+                        safUrl = testUrl,
+                        safClientId = "clientId",
+                        httpClient = apiClient,
+                        tokendingsService = tokenDingsServiceMock
                     )
                 ),
             ) {
@@ -77,6 +88,29 @@ internal class ApiTest {
                         setAsDefault = true
                         staticUserPid = testIdent
                         staticLevelOfAssurance = LEVEL_4
+                    }
+                }
+            }
+        }
+        externalServices {
+            hosts(testUrl) {
+                routing {
+                    post {
+                        call.respondText(
+                            contentType = ContentType.Application.Json,
+                            status = HttpStatusCode.OK,
+                            provider = {
+                                //language=JSON
+                                """
+                                    {
+                                      "data": {
+                                        "dokumentoversiktSelvbetjening": {
+                                          "tema": []
+                                        }
+                                      }
+                                    }
+                                """.trimIndent()
+                            })
                     }
                 }
             }
@@ -130,9 +164,14 @@ internal class ApiTest {
         application {
             selectorApi(
                 PersonalContentCollector(
-                    apiClient = apiClient,
                     repository = personRepository,
-                    manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName)
+                    manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
+                    sakstemaFetcher = SakstemaFetcher(
+                        safUrl = testUrl,
+                        safClientId = "clientId",
+                        httpClient = apiClient,
+                        tokendingsService = tokenDingsServiceMock
+                    )
                 )
 
             ) {
@@ -150,9 +189,9 @@ internal class ApiTest {
         val expectedProduktkort = listOf("DAG", "PEN")
 
         externalServices {
-            hosts("http://test.nav.no/minesaker-api") {
+            hosts(testUrl) {
                 routing {
-                    get("sakstemaer/egne") {
+                    post {
                         call.respondText(
                             contentType = ContentType.Application.Json,
                             status = HttpStatusCode.OK,
@@ -202,9 +241,14 @@ internal class ApiTest {
             application {
                 selectorApi(
                     PersonalContentCollector(
-                        apiClient = apiClient,
                         repository = personRepository,
-                        manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName)
+                        manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
+                        sakstemaFetcher = SakstemaFetcher(
+                            safUrl = testUrl,
+                            safClientId = "clientId",
+                            httpClient = apiClient,
+                            tokendingsService = tokenDingsServiceMock
+                        )
                     ),
                 ) {
                     authentication {
@@ -213,6 +257,30 @@ internal class ApiTest {
                             setAsDefault = true
                             staticUserPid = testIdent
                             staticLevelOfAssurance = LEVEL_3
+                        }
+                    }
+                }
+            }
+
+            externalServices {
+                hosts(testUrl) {
+                    routing {
+                        post {
+                            call.respondText(
+                                contentType = ContentType.Application.Json,
+                                status = HttpStatusCode.OK,
+                                provider = {
+                                    //language=JSON
+                                    """
+                                    {
+                                      "data": {
+                                        "dokumentoversiktSelvbetjening": {
+                                          "tema": []
+                                        }
+                                      }
+                                    }
+                                """.trimIndent()
+                                })
                         }
                     }
                 }
@@ -254,7 +322,16 @@ internal class ApiTest {
 
             application {
                 selectorApi(
-                    PersonalContentCollector(apiClient, repository = personRepository, mockk()),
+                    PersonalContentCollector(
+                        repository = personRepository,
+                        manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
+                        sakstemaFetcher = SakstemaFetcher(
+                            safUrl = testUrl,
+                            safClientId = "clientId",
+                            httpClient = apiClient,
+                            tokendingsService = tokenDingsServiceMock
+                        )
+                    ),
                 ) {
                     authentication {
                         tokenXMock {
@@ -268,14 +345,23 @@ internal class ApiTest {
             }
 
             externalServices {
-                hosts("http://test.nav.no/minesaker-api") {
+                hosts(testUrl) {
                     routing {
-                        get("sakstemaer/egne") {
+                        post() {
                             call.respondText(
                                 contentType = ContentType.Application.Json,
                                 status = HttpStatusCode.OK,
                                 provider = {
-                                    "[]"
+                                    //language=JSON
+                                    """
+                                    {
+                                      "data": {
+                                        "dokumentoversiktSelvbetjening": {
+                                          "tema": []
+                                        }
+                                      }
+                                    }
+                                """.trimIndent()
                                 })
                         }
                     }

@@ -16,6 +16,7 @@ import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import nav.no.tms.common.metrics.installTmsApiMetrics
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
+import no.nav.tms.mikrofrontend.selector.collector.SafRequestException
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
 import no.nav.tms.token.support.tokenx.validation.tokenX
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
@@ -39,15 +40,24 @@ internal fun Application.selectorApi(
     }
     install(StatusPages) {
         exception<Throwable> { call, cause ->
-            if (cause is DatabaseException) {
-                log.warn { "Feil i henting av microfrontends" }
-                secureLog.warn(cause.originalException) { """Feil i henting av microfrontends for ${cause.ident}}""".trimMargin() }
-                call.respond(HttpStatusCode.InternalServerError)
+            when (cause) {
+                is DatabaseException -> {
+                    log.warn { "Feil i henting av microfrontends" }
+                    secureLog.warn(cause.originalException) { """Feil i henting av microfrontends for ${cause.ident}}""".trimMargin() }
+                    call.respond(HttpStatusCode.InternalServerError)
 
-            } else {
-                log.error { "Ukjent feil ved henting av microfrontends" }
-                secureLog.error(cause) { "Ukjent feil ved henting av microfrontends" }
-                call.respond(HttpStatusCode.InternalServerError)
+                }
+
+                is SafRequestException -> {
+                    log.warn(cause) { "Kall til Saf feilet med statuskode ${cause.statusCode}" }
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
+
+                else -> {
+                    log.error { "Ukjent feil ved henting av microfrontends: ${cause.message}" }
+                    secureLog.error(cause) { "Ukjent feil ved henting av microfrontends" }
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
             }
 
         }
@@ -64,7 +74,7 @@ internal fun Application.selectorApi(
                 get() {
                     val user = TokenXUserFactory.createTokenXUser(call)
                     call.respond(
-                        personalContentCollector.getContent(user.ident,user.loginLevel)
+                        personalContentCollector.getContent(user, user.loginLevel)
                     )
                 }
             }
