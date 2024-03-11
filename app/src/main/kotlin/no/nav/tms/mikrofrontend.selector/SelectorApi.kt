@@ -54,7 +54,7 @@ internal fun Application.selectorApi(
                 }
 
                 else -> {
-                    log.error { "Ukjent feil ved henting av microfrontends: ${cause.message}" }
+                    log.error { "Ukjent feil ved henting av microfrontends: ${cause.message} ${cause.javaClass}" }
                     secureLog.error(cause) { "Ukjent feil ved henting av microfrontends" }
                     call.respond(HttpStatusCode.InternalServerError)
                 }

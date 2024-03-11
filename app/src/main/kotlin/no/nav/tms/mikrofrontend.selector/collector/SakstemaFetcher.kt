@@ -39,13 +39,12 @@ class SakstemaFetcher(
         header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, safClientId)}")
         header("Content-Type", "application/json")
         setBody(query(user.ident))
+    }.let {
+        if (it.status != HttpStatusCode.OK) throw SafRequestException("Kall til SAF feilet", statusCode = it.status)
+        objectMapper.readTree(it.bodyAsText())["data"]["dokumentoversiktSelvbetjening"]["tema"]
+            .toList()
+            .map { node -> node["kode"].asText() }
     }
-        .let {
-            if (it.status != HttpStatusCode.OK) throw SafRequestException("Kall til SAF feilet", statusCode = it.status)
-            objectMapper.readTree(it.bodyAsText())["data"]["dokumentoversiktSelvbetjening"]["tema"]
-                .toList()
-                .map { node -> node["kode"].asText() }
-        }
 }
 
-class SafRequestException(message: String, val statusCode: HttpStatusCode): Exception(message)
+class SafRequestException(message: String, val statusCode: HttpStatusCode) : Exception(message)
