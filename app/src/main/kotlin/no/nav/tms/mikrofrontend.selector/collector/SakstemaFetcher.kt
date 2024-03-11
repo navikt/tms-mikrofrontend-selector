@@ -17,6 +17,7 @@ class SakstemaFetcher(
 ) {
 
     val log = KotlinLogging.logger { }
+    val secureLog = KotlinLogging.logger("secureLog")
     val objectMapper = jacksonObjectMapper()
 
     fun query(ident: String) = """
@@ -41,9 +42,16 @@ class SakstemaFetcher(
         setBody(query(user.ident))
     }.let {
         if (it.status != HttpStatusCode.OK) throw SafRequestException("Kall til SAF feilet", statusCode = it.status)
-        objectMapper.readTree(it.bodyAsText())["data"]["dokumentoversiktSelvbetjening"]["tema"]
-            .toList()
-            .map { node -> node["kode"].asText() }
+        val body = it.bodyAsText()
+        try {
+            objectMapper.readTree(body)["data"]["dokumentoversiktSelvbetjening"]["tema"]
+                .toList()
+                .map { node -> node["kode"].asText() }
+        }catch (e:Exception) {
+            secureLog.info { body }
+            throw SafRequestException("Kall til SAF feilet: ${e.javaClass.name}", statusCode = HttpStatusCode.InternalServerError)
+        }
+
     }
 }
 
