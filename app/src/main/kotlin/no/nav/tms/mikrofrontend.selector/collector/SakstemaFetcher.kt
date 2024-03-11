@@ -20,9 +20,9 @@ class SakstemaFetcher(
     val log = KotlinLogging.logger { }
     val objectMapper = jacksonObjectMapper()
 
-    fun query(ident: String) = """
-        "query": "query {
-            dokumentoversiktSelvbetjening(ident: \"$ident\", tema: []) {
+    fun query(ident: String) = """ {
+        "query": "query(${'$'}ident: String!) {
+            dokumentoversiktSelvbetjening(ident:${'$'}ident) {
                 tema {
                     kode
                     journalposter{
@@ -31,22 +31,18 @@ class SakstemaFetcher(
                         }
                     }
                 }
-            }
-        }"
-    """.trimIndent()
-
-    val x = """    
-     dokumentoversiktSelvbetjening(ident: $ident, tema: []) {
-        tema {
-            navn
-            kode
-            journalposter{
-                relevanteDatoer {
-                    dato
-                }
-            }
+              }
+           }",
+          "variables": {"ident" : \"$ident\"}
         }
-    }"""
+    """.compactJson()
+
+    private fun String.compactJson(): String =
+        trimIndent()
+            .replace("\r", " ")
+            .replace("\n", " ")
+            .replace("\\s+".toRegex(), " ")
+
 
     suspend fun fetchSakstema(user: TokenXUser): SafResponse {
         val token = tokendingsService.exchangeToken(user.tokenString, safClientId)
