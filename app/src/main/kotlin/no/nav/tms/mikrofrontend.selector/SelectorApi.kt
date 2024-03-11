@@ -68,6 +68,9 @@ internal fun Application.selectorApi(
                 get() {
                     val user = TokenXUserFactory.createTokenXUser(call)
                     val content = personalContentCollector.getContent(user, user.loginLevel)
+                    content.safError ?.let {
+                        log.warn { it }
+                    }
                     call.respond(
                         status = content.resolveStatus(),
                         content

@@ -48,17 +48,23 @@ class SakstemaFetcher(
                 log.info { "Mottok svar fra SAF" }
                 val body = response.bodyAsText().also { log.info { "body: $it" } }
                 val safResponse = objectMapper.readTree(body)
-                if (safResponse["errors"] != null && !safResponse["errors"].isMissingOrNull()) {
-                    SafResponse(emptyList(), safResponse["errors"].toList().map { it["message"].asText() })
-                } else {
-                    safResponse["data"]["dokumentoversiktSelvbetjening"]["tema"]
+                when {
+                    response.status != HttpStatusCode.OK -> SafResponse(emptyList(), listOf("Kall til SAF feilet med statuskode ${response.status}"))
+
+                    safResponse["errors"] != null && !safResponse["errors"].isMissingOrNull() -> SafResponse(
+                        emptyList(),
+                        safResponse["errors"].toList().map { it["message"].asText() })
+
+                    else -> safResponse["data"]["dokumentoversiktSelvbetjening"]["tema"]
                         .toList()
                         .map { node -> node["kode"].asText() }
                         .let {
                             SafResponse(it, emptyList())
                         }
                 }
+
             }
+
     }
 }
 
