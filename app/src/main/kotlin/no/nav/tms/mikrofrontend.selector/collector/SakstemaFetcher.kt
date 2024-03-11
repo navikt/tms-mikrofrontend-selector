@@ -43,6 +43,7 @@ class SakstemaFetcher(
     }.let {
         if (it.status != HttpStatusCode.OK) throw SafRequestException("Kall til SAF feilet", statusCode = it.status)
         val body = it.bodyAsText()
+        log.info { "body: $body" }
         try {
             objectMapper.readTree(body)["data"]["dokumentoversiktSelvbetjening"]["tema"]
                 .toList()
