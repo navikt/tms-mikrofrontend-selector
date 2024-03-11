@@ -24,7 +24,7 @@ class SakstemaFetcher(
         "query": "query {
             dokumentoversiktSelvbetjening(ident: \"$ident\", tema: []) {
                 tema {
-                    kode
+                    kode,
                     journalposter{
                         relevanteDatoer {
                             dato
