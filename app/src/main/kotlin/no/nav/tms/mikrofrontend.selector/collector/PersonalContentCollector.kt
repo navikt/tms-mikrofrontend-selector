@@ -1,6 +1,7 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import no.nav.tms.mikrofrontend.selector.collector.Produktkort.Companion.ids
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
@@ -12,9 +13,12 @@ class PersonalContentCollector(
     val manifestStorage: ManifestsStorage,
     val sakstemaFetcher: SakstemaFetcher
 ) {
+    val log = KotlinLogging.logger { }
 
     suspend fun getContent(user: TokenXUser, innloggetnivå: Int): PersonalContentResponse {
+        log.info { "Henter microfrontends" }
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
+        log.info { "Henter produktkort" }
         return PersonalContentResponse(
             microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestStorage.getManifestBucketContent())
                 ?: emptyList(),

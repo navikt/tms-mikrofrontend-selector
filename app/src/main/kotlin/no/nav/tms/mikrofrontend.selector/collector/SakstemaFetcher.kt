@@ -41,6 +41,7 @@ class SakstemaFetcher(
         header("Content-Type", "application/json")
         setBody(query(user.ident))
     }.let {
+        log.info { "Mottok svar fra SAF" }
         if (it.status != HttpStatusCode.OK) throw SafRequestException("Kall til SAF feilet", statusCode = it.status)
         val body = it.bodyAsText()
         log.info { "body: $body" }

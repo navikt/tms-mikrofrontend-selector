@@ -107,7 +107,7 @@ class Microfrontends(initialJson: String? = null) {
                 val url = manifestMap[id]
                 if (url.isNullOrEmpty()) null
                 else MicrofrontendsDefinition(id = id, url = url)
-            }
+            }.also { log.info { "Henter microfrontend definisjoner: $it" } }
 
     fun offerStepup(innloggetnivå: Int): Boolean =
         newData.any { Sensitivitet.fromJsonNode(it["sensitivitet"]) > innloggetnivå }
