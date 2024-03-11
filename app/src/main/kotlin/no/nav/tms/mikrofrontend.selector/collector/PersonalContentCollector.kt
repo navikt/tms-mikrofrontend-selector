@@ -26,10 +26,6 @@ class PersonalContentCollector(
         )
     }
 
-    private fun HttpClient.getProduktkort(ident: String): List<String> {
-        TODO("Not yet implemented")
-    }
-
     class PersonalContentResponse(
         val microfrontends: List<MicrofrontendsDefinition>,
         val produktkort: List<String>,
