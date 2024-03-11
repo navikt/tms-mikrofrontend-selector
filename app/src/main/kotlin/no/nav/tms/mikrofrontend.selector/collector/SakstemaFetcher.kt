@@ -37,9 +37,12 @@ class SakstemaFetcher(
 
     suspend fun fetchSakstema(user: TokenXUser): List<String> {
         log.info { "sende request til SAF" }
+        val token = tokendingsService.exchangeToken(user.tokenString, safClientId)
+        log.info { "Klarte å exchange token" }
+
         return httpClient.post {
             url("$safUrl/graphql")
-            header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, safClientId)}")
+            header("Authorization", "Bearer $token")
             header("Content-Type", "application/json")
             try {
                 setBody(query(user.ident))
