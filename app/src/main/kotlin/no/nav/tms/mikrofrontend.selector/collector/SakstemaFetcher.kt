@@ -22,7 +22,7 @@ class SakstemaFetcher(
 
     fun query(ident: String) = """ {
         "query": "query(${'$'}ident: String!) {
-            dokumentoversiktSelvbetjening(ident:${'$'}ident) {
+            dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
                 tema {
                     kode
                     journalposter{
@@ -33,7 +33,7 @@ class SakstemaFetcher(
                 }
               }
            }",
-          "variables": {"ident" : \"$ident\"}
+          "variables": {"ident" : "$ident"}
         }
     """.compactJson()
 
@@ -46,6 +46,7 @@ class SakstemaFetcher(
 
     suspend fun fetchSakstema(user: TokenXUser): SafResponse {
         val token = tokendingsService.exchangeToken(user.tokenString, safClientId)
+        log.info { query(user.ident) }
 
         return httpClient.post {
             url("$safUrl/graphql")
