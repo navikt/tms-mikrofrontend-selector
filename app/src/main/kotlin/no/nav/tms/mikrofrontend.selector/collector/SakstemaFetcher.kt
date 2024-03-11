@@ -35,8 +35,7 @@ class SakstemaFetcher(
         }
     """.trimIndent()
 
-    suspend fun fetchSakstema(user: TokenXUser) {
-        log.info { "Heneter sakstema fra $safUrl/graphql" }
+    suspend fun fetchSakstema(user: TokenXUser): List<String> =
         httpClient.post {
             url("$safUrl/graphql")
             header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, safClientId)}")
@@ -49,29 +48,29 @@ class SakstemaFetcher(
                     statusCode = HttpStatusCode.InternalServerError
                 )
             }
-        }.let {
-            log.info { "Mottok svar fra SAF" }
-            val body = it.bodyAsText().also { log.info { "body: $it" } }
-            val safResponse = objectMapper.readTree(body)
-            if (!safResponse["errors"].isMissingOrNull()) throw SafRequestException(
-                "Kall til SAF feilet",
-                statusCode = HttpStatusCode.MultiStatus
-            )
-            log.info { "body: $body" }
-            try {
-                safResponse["data"]["dokumentoversiktSelvbetjening"]["tema"]
-                    .toList()
-                    .map { node -> node["kode"].asText() }
-            } catch (e: Exception) {
-                log.info { body }
-                throw SafRequestException(
-                    "Kall til SAF feilet: ${e.javaClass.name}",
-                    statusCode = HttpStatusCode.InternalServerError
-                )
-            }
-
         }
-    }
+            .let { response ->
+                log.info { "Mottok svar fra SAF" }
+                val body = response.bodyAsText().also { log.info { "body: $it" } }
+                val safResponse = objectMapper.readTree(body)
+                if (safResponse["errors"] != null && !safResponse["errors"].isMissingOrNull()) throw SafRequestException(
+                    "Kall til SAF feilet",
+                    statusCode = HttpStatusCode.MultiStatus
+                )
+                log.info { "body: $body" }
+                try {
+                    safResponse["data"]["dokumentoversiktSelvbetjening"]["tema"]
+                        .toList()
+                        .map { node -> node["kode"].asText() }
+                } catch (e: Exception) {
+                    log.info { body }
+                    throw SafRequestException(
+                        "Kall til SAF feilet: ${e.javaClass.name}",
+                        statusCode = HttpStatusCode.InternalServerError
+                    )
+                }
+
+            }
 }
 
 class SafRequestException(message: String, val statusCode: HttpStatusCode) : Exception(message)
