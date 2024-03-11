@@ -14,10 +14,10 @@ import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import org.postgresql.util.PGobject
 
-private val log = KotlinLogging.logger { }
 private val objectMapper = jacksonObjectMapper()
 
 class Microfrontends(initialJson: String? = null) {
+    private val log = KotlinLogging.logger { }
 
     private val originalData: List<JsonNode>? =
         initialJson

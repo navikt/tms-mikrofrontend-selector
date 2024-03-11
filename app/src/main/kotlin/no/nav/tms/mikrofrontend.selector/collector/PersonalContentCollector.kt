@@ -19,12 +19,14 @@ class PersonalContentCollector(
         log.info { "Henter microfrontends" }
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
         log.info { "Henter produktkort" }
+        val produktkort = ProduktkortVerdier
+            .resolveProduktkort(koder = sakstemaFetcher.fetchSakstema(user), ident = user.ident, microfrontends = null)
+            .ids()
+        log.info { "Produktkort hentet $produktkort" }
         return PersonalContentResponse(
             microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestStorage.getManifestBucketContent())
                 ?: emptyList(),
-            produktkort = ProduktkortVerdier
-                .resolveProduktkort(koder = sakstemaFetcher.fetchSakstema(user), ident = user.ident, microfrontends = null)
-                .ids(),
+            produktkort = produktkort,
             offerStepup = microfrontends?.offerStepup(innloggetnivå = innloggetnivå) ?: false
 
         )
@@ -33,7 +35,7 @@ class PersonalContentCollector(
     class PersonalContentResponse(
         val microfrontends: List<MicrofrontendsDefinition>,
         val produktkort: List<String>,
-        val offerStepup: Boolean
+        val offerStepup : Boolean
     )
 
     class MicrofrontendsDefinition(
