@@ -6,6 +6,7 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.tms.token.support.tokendings.exchange.TokendingsService
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
 
@@ -39,14 +40,17 @@ class SakstemaFetcher(
         url("$safUrl/graphql")
         header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, safClientId)}")
         header("Content-Type", "application/json")
-        setBody(query(user.ident))
+        try {
+            setBody(query(user.ident))
+        } catch (e:Exception) { throw SafRequestException("Post kall feilet pga. feil i JSON body ${query(user.ident)}", statusCode = HttpStatusCode.InternalServerError) }
     }.let {
         log.info { "Mottok svar fra SAF" }
-        if (it.status != HttpStatusCode.OK) throw SafRequestException("Kall til SAF feilet", statusCode = it.status)
-        val body = it.bodyAsText()
+        val body = it.bodyAsText().also { log.info { "body: $it" } }
+        val safResponse = objectMapper.readTree(body)
+        if (!safResponse["errors"].isMissingOrNull()) throw SafRequestException("Kall til SAF feilet", statusCode = HttpStatusCode.MultiStatus)
         log.info { "body: $body" }
         try {
-            objectMapper.readTree(body)["data"]["dokumentoversiktSelvbetjening"]["tema"]
+            safResponse["data"]["dokumentoversiktSelvbetjening"]["tema"]
                 .toList()
                 .map { node -> node["kode"].asText() }
         } catch (e:Exception) {

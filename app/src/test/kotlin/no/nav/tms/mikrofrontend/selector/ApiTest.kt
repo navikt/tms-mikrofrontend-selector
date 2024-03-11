@@ -378,6 +378,89 @@ internal class ApiTest {
 
             }
         }
+
+    @Test
+    fun `Skal svare med multistatus når saf feiler`() =
+        testApplication {
+            val testident2 = "12345678912"
+            val apiClient = createClient { configureJackson() }
+
+            application {
+                selectorApi(
+                    PersonalContentCollector(
+                        repository = personRepository,
+                        manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
+                        sakstemaFetcher = SakstemaFetcher(
+                            safUrl = testUrl,
+                            safClientId = "clientId",
+                            httpClient = apiClient,
+                            tokendingsService = tokenDingsServiceMock
+                        )
+                    ),
+                ) {
+                    authentication {
+                        tokenXMock {
+                            alwaysAuthenticated = true
+                            setAsDefault = true
+                            staticUserPid = testident2
+                            staticLevelOfAssurance = LEVEL_4
+                        }
+                    }
+                }
+            }
+
+            externalServices {
+                hosts(testUrl) {
+                    routing {
+                        post("graphql") {
+                            call.respondText(
+                                contentType = ContentType.Application.Json,
+                                status = HttpStatusCode.OK,
+                                provider = {
+                                    //language=JSON
+                                    """
+                              {
+                                "errors": [
+                                  {
+                                    "message": "Fant ikke journalpost i fagarkivet. journalpostId=999999999",
+                                    "locations": [
+                                      {
+                                        "line": 2,
+                                        "column": 3
+                                      }
+                                    ],
+                                    "path": [
+                                      "journalpost"
+                                    ],
+                                    "extensions": {
+                                      "code": "not_found",
+                                      "classification": "ExecutionAborted"
+                                    }
+                                  }
+                                ],
+                                "data": {
+                                  "dokumentoversiktSelvbetjening": {
+                                    "tema": null
+                                  }
+                                }
+                              }
+                                """.trimIndent()
+                                })
+                        }
+                    }
+                }
+            }
+
+            client.get("/microfrontends").assert {
+                status shouldBe HttpStatusCode.InternalServerError
+                objectMapper.readTree(bodyAsText()).assert {
+                    this["microfrontends"].size() shouldBe 0
+                    this["produktkort"].size() shouldBe 0
+                    this["offerStepup"].asBoolean() shouldBe false
+                }
+
+            }
+        }
 }
 
 private fun List<String>.safResponse() = """
