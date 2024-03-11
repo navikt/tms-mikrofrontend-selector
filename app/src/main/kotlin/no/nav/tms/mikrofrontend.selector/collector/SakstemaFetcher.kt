@@ -18,7 +18,6 @@ class SakstemaFetcher(
 ) {
 
     val log = KotlinLogging.logger { }
-    val secureLog = KotlinLogging.logger("secureLog")
     val objectMapper = jacksonObjectMapper()
 
     fun query(ident: String) = """
@@ -36,28 +35,42 @@ class SakstemaFetcher(
         }
     """.trimIndent()
 
-    suspend fun fetchSakstema(user: TokenXUser) = httpClient.post {
-        url("$safUrl/graphql")
-        header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, safClientId)}")
-        header("Content-Type", "application/json")
-        try {
-            setBody(query(user.ident))
-        } catch (e:Exception) { throw SafRequestException("Post kall feilet pga. feil i JSON body ${query(user.ident)}", statusCode = HttpStatusCode.InternalServerError) }
-    }.let {
-        log.info { "Mottok svar fra SAF" }
-        val body = it.bodyAsText().also { log.info { "body: $it" } }
-        val safResponse = objectMapper.readTree(body)
-        if (!safResponse["errors"].isMissingOrNull()) throw SafRequestException("Kall til SAF feilet", statusCode = HttpStatusCode.MultiStatus)
-        log.info { "body: $body" }
-        try {
-            safResponse["data"]["dokumentoversiktSelvbetjening"]["tema"]
-                .toList()
-                .map { node -> node["kode"].asText() }
-        } catch (e:Exception) {
-            log.info { body }
-            throw SafRequestException("Kall til SAF feilet: ${e.javaClass.name}", statusCode = HttpStatusCode.InternalServerError)
-        }
+    suspend fun fetchSakstema(user: TokenXUser) {
+        log.info { "Heneter sakstema fra $safUrl/graphql" }
+        httpClient.post {
+            url("$safUrl/graphql")
+            header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, safClientId)}")
+            header("Content-Type", "application/json")
+            try {
+                setBody(query(user.ident))
+            } catch (e: Exception) {
+                throw SafRequestException(
+                    "Post kall feilet pga. feil i JSON body ${query(user.ident)}",
+                    statusCode = HttpStatusCode.InternalServerError
+                )
+            }
+        }.let {
+            log.info { "Mottok svar fra SAF" }
+            val body = it.bodyAsText().also { log.info { "body: $it" } }
+            val safResponse = objectMapper.readTree(body)
+            if (!safResponse["errors"].isMissingOrNull()) throw SafRequestException(
+                "Kall til SAF feilet",
+                statusCode = HttpStatusCode.MultiStatus
+            )
+            log.info { "body: $body" }
+            try {
+                safResponse["data"]["dokumentoversiktSelvbetjening"]["tema"]
+                    .toList()
+                    .map { node -> node["kode"].asText() }
+            } catch (e: Exception) {
+                log.info { body }
+                throw SafRequestException(
+                    "Kall til SAF feilet: ${e.javaClass.name}",
+                    statusCode = HttpStatusCode.InternalServerError
+                )
+            }
 
+        }
     }
 }
 
