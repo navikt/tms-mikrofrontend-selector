@@ -24,7 +24,7 @@ class SakstemaFetcher(
         "query": "query {
             dokumentoversiktSelvbetjening(ident: \"$ident\", tema: []) {
                 tema {
-                    kode,
+                    kode
                     journalposter{
                         relevanteDatoer {
                             dato
@@ -34,6 +34,19 @@ class SakstemaFetcher(
             }
         }"
     """.trimIndent()
+
+    val x = """    
+     dokumentoversiktSelvbetjening(ident: $ident, tema: []) {
+        tema {
+            navn
+            kode
+            journalposter{
+                relevanteDatoer {
+                    dato
+                }
+            }
+        }
+    }"""
 
     suspend fun fetchSakstema(user: TokenXUser): SafResponse {
         val token = tokendingsService.exchangeToken(user.tokenString, safClientId)
