@@ -35,7 +35,7 @@ class SakstemaFetcher(
     """.trimIndent()
 
     suspend fun fetchSakstema(user: TokenXUser) = httpClient.post {
-        url(safUrl)
+        url("$safUrl/graphql")
         header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, safClientId)}")
         header("Content-Type", "application/json")
         setBody(query(user.ident))

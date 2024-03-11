@@ -95,7 +95,7 @@ internal class ApiTest {
         externalServices {
             hosts(testUrl) {
                 routing {
-                    post {
+                    post("graphql") {
                         call.respondText(
                             contentType = ContentType.Application.Json,
                             status = HttpStatusCode.OK,
@@ -191,7 +191,7 @@ internal class ApiTest {
         externalServices {
             hosts(testUrl) {
                 routing {
-                    post {
+                    post("graphql") {
                         call.respondText(
                             contentType = ContentType.Application.Json,
                             status = HttpStatusCode.OK,
@@ -265,7 +265,7 @@ internal class ApiTest {
             externalServices {
                 hosts(testUrl) {
                     routing {
-                        post {
+                        post("graphql") {
                             call.respondText(
                                 contentType = ContentType.Application.Json,
                                 status = HttpStatusCode.OK,
@@ -347,7 +347,7 @@ internal class ApiTest {
             externalServices {
                 hosts(testUrl) {
                     routing {
-                        post() {
+                        post("graphql") {
                             call.respondText(
                                 contentType = ContentType.Application.Json,
                                 status = HttpStatusCode.OK,
