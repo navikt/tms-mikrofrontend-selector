@@ -35,47 +35,33 @@ class SakstemaFetcher(
         }
     """.trimIndent()
 
-    suspend fun fetchSakstema(user: TokenXUser): List<String> {
-        log.info { "sende request til SAF" }
+    suspend fun fetchSakstema(user: TokenXUser): SafResponse {
         val token = tokendingsService.exchangeToken(user.tokenString, safClientId)
-        log.info { "Klarte å exchange token" }
 
         return httpClient.post {
             url("$safUrl/graphql")
             header("Authorization", "Bearer $token")
             header("Content-Type", "application/json")
-            try {
-                setBody(query(user.ident))
-            } catch (e: Exception) {
-                throw SafRequestException(
-                    "Post kall feilet pga. feil i JSON body ${query(user.ident)}",
-                    statusCode = HttpStatusCode.InternalServerError
-                )
-            }
+            setBody(query(user.ident))
         }
             .let { response ->
                 log.info { "Mottok svar fra SAF" }
                 val body = response.bodyAsText().also { log.info { "body: $it" } }
                 val safResponse = objectMapper.readTree(body)
-                if (safResponse["errors"] != null && !safResponse["errors"].isMissingOrNull()) throw SafRequestException(
-                    "Kall til SAF feilet",
-                    statusCode = HttpStatusCode.MultiStatus
-                )
-                log.info { "body: $body" }
-                try {
+                if (safResponse["errors"] != null && !safResponse["errors"].isMissingOrNull()) {
+                    SafResponse(emptyList(), safResponse["errors"].toList().map { it["message"].asText() })
+                } else {
                     safResponse["data"]["dokumentoversiktSelvbetjening"]["tema"]
                         .toList()
                         .map { node -> node["kode"].asText() }
-                } catch (e: Exception) {
-                    log.info { body }
-                    throw SafRequestException(
-                        "Kall til SAF feilet: ${e.javaClass.name}",
-                        statusCode = HttpStatusCode.InternalServerError
-                    )
+                        .let {
+                            SafResponse(it, emptyList())
+                        }
                 }
-
             }
     }
 }
 
-class SafRequestException(message: String, val statusCode: HttpStatusCode) : Exception(message)
+class SafResponse(val sakstemakoder: List<String>, val errors: List<String>) {
+    val hasErrors = errors.isNotEmpty()
+}

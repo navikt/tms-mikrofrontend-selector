@@ -1,8 +1,9 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.client.*
+import io.ktor.http.*
 import no.nav.tms.mikrofrontend.selector.collector.Produktkort.Companion.ids
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
@@ -16,27 +17,33 @@ class PersonalContentCollector(
     val log = KotlinLogging.logger { }
 
     suspend fun getContent(user: TokenXUser, innloggetnivå: Int): PersonalContentResponse {
-        log.info { "Henter microfrontends" }
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
-        log.info { "Henter produktkort" }
-        val produktkort = ProduktkortVerdier
-            .resolveProduktkort(koder = sakstemaFetcher.fetchSakstema(user), ident = user.ident, microfrontends = null)
-            .ids()
-        log.info { "Produktkort hentet $produktkort" }
+        val safResponse = sakstemaFetcher.fetchSakstema(user)
         return PersonalContentResponse(
             microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestStorage.getManifestBucketContent())
                 ?: emptyList(),
-            produktkort = produktkort,
+            produktkort = ProduktkortVerdier
+                .resolveProduktkort(
+                    koder = safResponse.sakstemakoder,
+                    ident = user.ident,
+                    microfrontends = null
+                ).ids(),
             offerStepup = microfrontends?.offerStepup(innloggetnivå = innloggetnivå) ?: false
-
-        )
+        ).apply {
+            if (safResponse.hasErrors)
+                safError = safResponse.errors.joinToString { it }
+        }
     }
 
     class PersonalContentResponse(
         val microfrontends: List<MicrofrontendsDefinition>,
         val produktkort: List<String>,
-        val offerStepup : Boolean
-    )
+        val offerStepup: Boolean
+    ) {
+        @JsonIgnore
+        var safError: String? = null
+        fun resolveStatus(): HttpStatusCode = if (safError != null) HttpStatusCode.MultiStatus else HttpStatusCode.OK
+    }
 
     class MicrofrontendsDefinition(
         @JsonProperty("microfrontend_id")

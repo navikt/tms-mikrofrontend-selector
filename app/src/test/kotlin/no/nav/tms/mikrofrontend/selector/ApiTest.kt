@@ -451,10 +451,12 @@ internal class ApiTest {
                 }
             }
 
+            testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
+
             client.get("/microfrontends").assert {
-                status shouldBe HttpStatusCode.InternalServerError
+                status shouldBe HttpStatusCode.MultiStatus
                 objectMapper.readTree(bodyAsText()).assert {
-                    this["microfrontends"].size() shouldBe 0
+                    this["microfrontends"].size() shouldBe 1
                     this["produktkort"].size() shouldBe 0
                     this["offerStepup"].asBoolean() shouldBe false
                 }

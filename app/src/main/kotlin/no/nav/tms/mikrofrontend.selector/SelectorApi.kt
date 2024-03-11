@@ -16,7 +16,6 @@ import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import nav.no.tms.common.metrics.installTmsApiMetrics
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
-import no.nav.tms.mikrofrontend.selector.collector.SafRequestException
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
 import no.nav.tms.token.support.tokenx.validation.tokenX
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
@@ -48,11 +47,6 @@ internal fun Application.selectorApi(
 
                 }
 
-                is SafRequestException -> {
-                    log.warn(cause) { "Kall til Saf feilet med statuskode ${cause.statusCode}" }
-                    call.respond(HttpStatusCode.InternalServerError)
-                }
-
                 else -> {
                     log.error { "Ukjent feil ved henting av microfrontends: ${cause.message} ${cause.javaClass.name}" }
                     secureLog.error(cause) { "Ukjent feil ved henting av microfrontends" }
@@ -73,8 +67,10 @@ internal fun Application.selectorApi(
             route("microfrontends") {
                 get() {
                     val user = TokenXUserFactory.createTokenXUser(call)
+                    val content = personalContentCollector.getContent(user, user.loginLevel)
                     call.respond(
-                        personalContentCollector.getContent(user, user.loginLevel)
+                        status = content.resolveStatus(),
+                        content
                     )
                 }
             }
