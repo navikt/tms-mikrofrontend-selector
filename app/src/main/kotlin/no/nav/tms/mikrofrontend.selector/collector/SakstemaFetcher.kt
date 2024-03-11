@@ -21,7 +21,7 @@ class SakstemaFetcher(
     val objectMapper = jacksonObjectMapper()
 
     fun query(ident: String) = """
-        query {
+        "query": "query {
             dokumentoversiktSelvbetjening(ident: \"$ident\", tema: []) {
                 tema {
                     kode
@@ -32,7 +32,7 @@ class SakstemaFetcher(
                     }
                 }
             }
-        }
+        }"
     """.trimIndent()
 
     suspend fun fetchSakstema(user: TokenXUser): SafResponse {
