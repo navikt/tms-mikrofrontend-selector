@@ -35,8 +35,9 @@ class SakstemaFetcher(
         }
     """.trimIndent()
 
-    suspend fun fetchSakstema(user: TokenXUser): List<String> =
-        httpClient.post {
+    suspend fun fetchSakstema(user: TokenXUser): List<String> {
+        log.info { "sende request til SAF" }
+        return httpClient.post {
             url("$safUrl/graphql")
             header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, safClientId)}")
             header("Content-Type", "application/json")
@@ -71,6 +72,7 @@ class SakstemaFetcher(
                 }
 
             }
+    }
 }
 
 class SafRequestException(message: String, val statusCode: HttpStatusCode) : Exception(message)
