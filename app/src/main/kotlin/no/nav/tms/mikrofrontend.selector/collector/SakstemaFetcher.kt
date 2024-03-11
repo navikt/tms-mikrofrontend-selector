@@ -47,8 +47,8 @@ class SakstemaFetcher(
             objectMapper.readTree(body)["data"]["dokumentoversiktSelvbetjening"]["tema"]
                 .toList()
                 .map { node -> node["kode"].asText() }
-        }catch (e:Exception) {
-            secureLog.info { body }
+        } catch (e:Exception) {
+            log.info { body }
             throw SafRequestException("Kall til SAF feilet: ${e.javaClass.name}", statusCode = HttpStatusCode.InternalServerError)
         }
 
