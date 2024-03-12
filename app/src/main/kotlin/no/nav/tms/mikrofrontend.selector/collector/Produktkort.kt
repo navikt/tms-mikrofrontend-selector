@@ -29,7 +29,7 @@ enum class ProduktkortVerdier(val produktkort: Produktkort) {
     PEN(Produktkort(id = "PEN", navn = "Pensjon")),
     UFO(Produktkort(id = "UFO", navn = "Uføretrygd")),
     SYK(Produktkort(id = "SYK", navn = "Sykefravær")),
-    SYM(Produktkort(id = "SYM", navn = "Sykefravær"));
+    SYM(Produktkort(id = "SYK", navn = "Sykefravær"));
 
     companion object {
         private val values = ProduktkortVerdier.entries.map { it.name }
@@ -43,12 +43,7 @@ enum class ProduktkortVerdier(val produktkort: Produktkort) {
                             } else null
                         }
                 } else null
-            }
+            }.distinctBy { it.id }
     }
-}
-
-
-private fun Microfrontends?.ids(): List<String> {
-    TODO("Not yet implemented")
 }
 

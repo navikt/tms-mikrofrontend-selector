@@ -112,6 +112,8 @@ class Microfrontends(initialJson: String? = null) {
     fun offerStepup(innloggetnivå: Int): Boolean =
         newData.any { Sensitivitet.fromJsonNode(it["sensitivitet"]) > innloggetnivå }
 
+    fun ids(): List<String>? = newData.map { it["microfrontend_id"].asText() }
+
 }
 
 

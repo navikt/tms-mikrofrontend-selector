@@ -18,22 +18,34 @@ class ProduktkortTest {
     }
     @ParameterizedTest
     @CsvSource(
-        "DAG, Dagpenger",
-        "FOR, Foreldrepenger",
-        "HJE, Hjelpemidler",
-        "KOM, Sosialhjelp",
-        "PEN, Pensjon",
-        "UFO, Uføretrygd",
-        "SYK, Sykefravær",
-        "SYM, Sykefravær"
+        "DAG, Dagpenger, DAG",
+        "FOR, Foreldrepenger, FOR",
+        "HJE, Hjelpemidler, HJE",
+        "KOM, Sosialhjelp, KOM",
+        "PEN, Pensjon, PEN",
+        "UFO, Uføretrygd, UFO",
+        "SYK, Sykefravær, SYK",
+        "SYM, Sykefravær, SYK"
     )
-
-    fun `skal mappes til riktige koder og navn`(kode: String, forventetNavn: String){
+    fun `skal mappes til riktige koder og navn`(kode: String, forventetNavn: String, forventetKode: String){
         ProduktkortVerdier.resolveProduktkort(
             koder = listOf(kode), ident = "12345678910", microfrontends = null
         ).first().assert {
-            id shouldBe kode
+            id shouldBe forventetKode
             navn shouldBe forventetNavn
+        }
+    }
+
+    @Test
+    fun `slår sammen like produktkort`(){
+        ProduktkortVerdier.resolveProduktkort(
+            koder = listOf("SYK","SYM"), ident = "12345678910", microfrontends = null
+        ).assert {
+            size shouldBe 1
+            first().assert {
+                id shouldBe "SYK"
+                navn shouldBe "Sykefravær"
+            }
         }
     }
 
