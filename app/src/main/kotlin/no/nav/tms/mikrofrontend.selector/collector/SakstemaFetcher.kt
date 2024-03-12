@@ -14,8 +14,8 @@ class SakstemaFetcher(
     val safUrl: String,
     val safClientId: String,
     val httpClient: HttpClient,
-    val tokendingsService: TokendingsService
-) {
+    val tokendingsService: TokendingsService,
+    ) {
 
     val log = KotlinLogging.logger { }
     private val objectMapper = jacksonObjectMapper()

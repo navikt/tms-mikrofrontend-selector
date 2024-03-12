@@ -5,13 +5,15 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.http.*
 import no.nav.tms.mikrofrontend.selector.collector.Produktkort.Companion.ids
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
+import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
 
 class PersonalContentCollector(
     val repository: PersonRepository,
     val manifestStorage: ManifestsStorage,
-    val sakstemaFetcher: SakstemaFetcher
+    val sakstemaFetcher: SakstemaFetcher,
+    val produktkortCounter: ProduktkortCounter
 ) {
 
     suspend fun getContent(user: TokenXUser, innloggetnivå: Int): PersonalContentResponse {
@@ -25,7 +27,7 @@ class PersonalContentCollector(
                     koder = safResponse.sakstemakoder,
                     ident = user.ident,
                     microfrontends = null
-                ).ids(),
+                ).ids().also{ produktkortCounter.countProduktkort(it) },
             offerStepup = microfrontends?.offerStepup(innloggetnivå = innloggetnivå) ?: false
         ).apply {
             if (safResponse.hasErrors)

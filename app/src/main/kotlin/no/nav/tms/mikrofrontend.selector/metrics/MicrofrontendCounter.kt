@@ -2,7 +2,7 @@ package no.nav.tms.mikrofrontend.selector.metrics
 
 import io.prometheus.client.Counter
 
-private const val METRIC_PREFIX = "tms_mikrofrontend_selector"
+const val METRIC_PREFIX = "tms_mikrofrontend_selector"
 
 class MicrofrontendCounter {
     private val counter = Counter.build()
