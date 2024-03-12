@@ -22,6 +22,7 @@ import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.SakstemaFetcher
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
+import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.tokendings.exchange.TokendingsService
@@ -47,6 +48,7 @@ internal class ApiTest {
     private val testUrl = "http://test.nav.no"
     private val tokenDingsServiceMock =
         mockk<TokendingsService>().also { coEvery { it.exchangeToken(any(), any()) } returns "dummyToken" }
+    private val produktkortCounter = ProduktkortCounter()
 
     @BeforeAll
     fun setup() {
@@ -286,8 +288,9 @@ internal class ApiTest {
                     safUrl = testUrl,
                     safClientId = "clientId",
                     httpClient = apiClient,
-                    tokendingsService = tokenDingsServiceMock
-                )
+                    tokendingsService = tokenDingsServiceMock,
+                ),
+                produktkortCounter = produktkortCounter
             ),
         ) {
             authentication {

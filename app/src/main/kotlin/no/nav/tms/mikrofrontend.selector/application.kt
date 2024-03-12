@@ -11,6 +11,7 @@ import no.nav.tms.mikrofrontend.selector.database.Flyway
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.database.PostgresDatabase
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
+import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.tokendings.exchange.TokendingsService
 import no.nav.tms.token.support.tokendings.exchange.TokendingsServiceBuilder
@@ -26,7 +27,7 @@ fun main() {
         safUrl = environment.safUrl,
         safClientId = environment.safClientId,
         httpClient = HttpClient { configureJackson() },
-        tokendingsService = TokendingsServiceBuilder.buildTokendingsService()
+        tokendingsService = TokendingsServiceBuilder.buildTokendingsService(),
     )
 
     startRapid(
@@ -50,7 +51,8 @@ private fun startRapid(
                 PersonalContentCollector(
                     repository = personRepository,
                     manifestStorage = manifestStorage,
-                    sakstemaFetcher = sakstemaFetcher
+                    sakstemaFetcher = sakstemaFetcher,
+                    produktkortCounter = ProduktkortCounter()
                 )
             )
         }
