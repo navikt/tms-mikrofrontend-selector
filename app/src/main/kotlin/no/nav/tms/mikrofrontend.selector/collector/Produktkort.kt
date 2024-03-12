@@ -29,7 +29,7 @@ enum class ProduktkortVerdier(val produktkort: Produktkort) {
     PEN(Produktkort(id = "PEN", navn = "Pensjon")),
     UFO(Produktkort(id = "UFO", navn = "Uføretrygd")),
     SYK(Produktkort(id = "SYK", navn = "Sykefravær")),
-    SYM(Produktkort(id = "UFO", navn = "Uføretrygd"));
+    SYM(Produktkort(id = "SYM", navn = "Sykefravær"));
 
     companion object {
         private val values = ProduktkortVerdier.entries.map { it.name }
