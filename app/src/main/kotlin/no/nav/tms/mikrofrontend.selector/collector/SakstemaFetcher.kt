@@ -18,7 +18,7 @@ class SakstemaFetcher(
 ) {
 
     val log = KotlinLogging.logger { }
-    val objectMapper = jacksonObjectMapper()
+    private val objectMapper = jacksonObjectMapper()
 
     fun query(ident: String) = """ {
         "query": "query(${'$'}ident: String!) {
@@ -46,7 +46,6 @@ class SakstemaFetcher(
 
     suspend fun fetchSakstema(user: TokenXUser): SafResponse {
         val token = tokendingsService.exchangeToken(user.tokenString, safClientId)
-        log.info { query(user.ident) }
 
         return httpClient.post {
             url("$safUrl/graphql")
@@ -55,8 +54,7 @@ class SakstemaFetcher(
             setBody(query(user.ident))
         }
             .let { response ->
-                log.info { "Mottok svar fra SAF" }
-                val body = response.bodyAsText().also { log.info { "body: $it" } }
+                val body = response.bodyAsText()
                 val safResponse = objectMapper.readTree(body)
                 when {
                     response.status != HttpStatusCode.OK -> SafResponse(emptyList(), listOf("Kall til SAF feilet med statuskode ${response.status}"))
