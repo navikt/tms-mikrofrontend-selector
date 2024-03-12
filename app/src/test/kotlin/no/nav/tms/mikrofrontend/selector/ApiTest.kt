@@ -25,6 +25,7 @@ import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.tokendings.exchange.TokendingsService
+import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance
 import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.*
 import no.nav.tms.token.support.tokenx.validation.mock.tokenXMock
 import org.junit.jupiter.api.AfterEach
@@ -68,52 +69,10 @@ internal class ApiTest {
             "mk3" to "https://cdn.test/mk1.json",
         )
         val apiClient = createClient { configureJackson() }
+        application { initSelectorApi(apiClient = apiClient, testident = testIdent) }
 
-        application {
-            selectorApi(
-                PersonalContentCollector(
-                    repository = personRepository,
-                    manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
-                    sakstemaFetcher = SakstemaFetcher(
-                        safUrl = testUrl,
-                        safClientId = "clientId",
-                        httpClient = apiClient,
-                        tokendingsService = tokenDingsServiceMock
-                    )
-                ),
-            ) {
-                authentication {
-                    tokenXMock {
-                        alwaysAuthenticated = true
-                        setAsDefault = true
-                        staticUserPid = testIdent
-                        staticLevelOfAssurance = LEVEL_4
-                    }
-                }
-            }
-        }
-        externalServices {
-            hosts(testUrl) {
-                routing {
-                    post("graphql") {
-                        call.respondText(
-                            contentType = ContentType.Application.Json,
-                            status = HttpStatusCode.OK,
-                            provider = {
-                                //language=JSON
-                                """
-                                    {
-                                      "data": {
-                                        "dokumentoversiktSelvbetjening": {
-                                          "tema": []
-                                        }
-                                      }
-                                    }
-                                """.trimIndent()
-                            })
-                    }
-                }
-            }
+        initSaf {
+            emptyList<String>().safResponse()
         }
 
         expectedMicrofrontends.keys.forEach {
@@ -160,47 +119,12 @@ internal class ApiTest {
             "mk3" to "https://cdn.test/mk1.json",
         )
         val apiClient = createClient { configureJackson() }
-
-        application {
-            selectorApi(
-                PersonalContentCollector(
-                    repository = personRepository,
-                    manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
-                    sakstemaFetcher = SakstemaFetcher(
-                        safUrl = testUrl,
-                        safClientId = "clientId",
-                        httpClient = apiClient,
-                        tokendingsService = tokenDingsServiceMock
-                    )
-                )
-
-            ) {
-                authentication {
-                    tokenXMock {
-                        alwaysAuthenticated = true
-                        setAsDefault = true
-                        staticUserPid = testIdent
-                        staticLevelOfAssurance = LEVEL_4
-                    }
-                }
-            }
-        }
-
         val expectedProduktkort = listOf("DAG", "PEN")
 
-        externalServices {
-            hosts(testUrl) {
-                routing {
-                    post("graphql") {
-                        call.respondText(
-                            contentType = ContentType.Application.Json,
-                            status = HttpStatusCode.OK,
-                            provider = { expectedProduktkort.safResponse() }
-                        )
-                    }
-                }
-            }
-        }
+        application { initSelectorApi(apiClient = apiClient, testident = testIdent) }
+
+        initSaf { expectedProduktkort.safResponse() }
+
         expectedMicrofrontends.keys.forEach {
             testRapid.sendTestMessage(
                 currentVersionMessage(
@@ -237,53 +161,10 @@ internal class ApiTest {
             )
             val apiClient = createClient { configureJackson() }
 
+            application { initSelectorApi(apiClient = apiClient, testident = testIdent, levelOfAssurance = LEVEL_3) }
 
-            application {
-                selectorApi(
-                    PersonalContentCollector(
-                        repository = personRepository,
-                        manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
-                        sakstemaFetcher = SakstemaFetcher(
-                            safUrl = testUrl,
-                            safClientId = "clientId",
-                            httpClient = apiClient,
-                            tokendingsService = tokenDingsServiceMock
-                        )
-                    ),
-                ) {
-                    authentication {
-                        tokenXMock {
-                            alwaysAuthenticated = true
-                            setAsDefault = true
-                            staticUserPid = testIdent
-                            staticLevelOfAssurance = LEVEL_3
-                        }
-                    }
-                }
-            }
-
-            externalServices {
-                hosts(testUrl) {
-                    routing {
-                        post("graphql") {
-                            call.respondText(
-                                contentType = ContentType.Application.Json,
-                                status = HttpStatusCode.OK,
-                                provider = {
-                                    //language=JSON
-                                    """
-                                    {
-                                      "data": {
-                                        "dokumentoversiktSelvbetjening": {
-                                          "tema": []
-                                        }
-                                      }
-                                    }
-                                """.trimIndent()
-                                })
-                        }
-                    }
-                }
+            initSaf {
+                emptyList<String>().safResponse()
             }
 
             nivå4Mikrofrontends.keys.forEach {
@@ -320,52 +201,10 @@ internal class ApiTest {
             val testident2 = "12345678912"
             val apiClient = createClient { configureJackson() }
 
-            application {
-                selectorApi(
-                    PersonalContentCollector(
-                        repository = personRepository,
-                        manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
-                        sakstemaFetcher = SakstemaFetcher(
-                            safUrl = testUrl,
-                            safClientId = "clientId",
-                            httpClient = apiClient,
-                            tokendingsService = tokenDingsServiceMock
-                        )
-                    ),
-                ) {
-                    authentication {
-                        tokenXMock {
-                            alwaysAuthenticated = true
-                            setAsDefault = true
-                            staticUserPid = testident2
-                            staticLevelOfAssurance = LEVEL_4
-                        }
-                    }
-                }
-            }
+            application { initSelectorApi(apiClient = apiClient, testident = testident2) }
 
-            externalServices {
-                hosts(testUrl) {
-                    routing {
-                        post("graphql") {
-                            call.respondText(
-                                contentType = ContentType.Application.Json,
-                                status = HttpStatusCode.OK,
-                                provider = {
-                                    //language=JSON
-                                    """
-                                    {
-                                      "data": {
-                                        "dokumentoversiktSelvbetjening": {
-                                          "tema": []
-                                        }
-                                      }
-                                    }
-                                """.trimIndent()
-                                })
-                        }
-                    }
-                }
+            initSaf {
+                emptyList<String>().safResponse()
             }
 
             client.get("/microfrontends").assert {
@@ -385,40 +224,11 @@ internal class ApiTest {
             val testident2 = "12345678912"
             val apiClient = createClient { configureJackson() }
 
-            application {
-                selectorApi(
-                    PersonalContentCollector(
-                        repository = personRepository,
-                        manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
-                        sakstemaFetcher = SakstemaFetcher(
-                            safUrl = testUrl,
-                            safClientId = "clientId",
-                            httpClient = apiClient,
-                            tokendingsService = tokenDingsServiceMock
-                        )
-                    ),
-                ) {
-                    authentication {
-                        tokenXMock {
-                            alwaysAuthenticated = true
-                            setAsDefault = true
-                            staticUserPid = testident2
-                            staticLevelOfAssurance = LEVEL_4
-                        }
-                    }
-                }
-            }
+            application { initSelectorApi(apiClient = apiClient, testident = testident2) }
 
-            externalServices {
-                hosts(testUrl) {
-                    routing {
-                        post("graphql") {
-                            call.respondText(
-                                contentType = ContentType.Application.Json,
-                                status = HttpStatusCode.OK,
-                                provider = {
-                                    //language=JSON
-                                    """
+            initSaf {
+                //language=JSON
+                """
                               {
                                 "errors": [
                                   {
@@ -445,11 +255,10 @@ internal class ApiTest {
                                 }
                               }
                                 """.trimIndent()
-                                })
-                        }
-                    }
-                }
+
             }
+
+            gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
             testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
 
@@ -463,6 +272,51 @@ internal class ApiTest {
 
             }
         }
+
+    fun Application.initSelectorApi(
+        apiClient: HttpClient,
+        testident: String,
+        levelOfAssurance: LevelOfAssurance = LEVEL_4
+    ) {
+        selectorApi(
+            PersonalContentCollector(
+                repository = personRepository,
+                manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
+                sakstemaFetcher = SakstemaFetcher(
+                    safUrl = testUrl,
+                    safClientId = "clientId",
+                    httpClient = apiClient,
+                    tokendingsService = tokenDingsServiceMock
+                )
+            ),
+        ) {
+            authentication {
+                tokenXMock {
+                    alwaysAuthenticated = true
+                    setAsDefault = true
+                    staticUserPid = testident
+                    staticLevelOfAssurance = levelOfAssurance
+                }
+            }
+        }
+
+    }
+
+    fun ApplicationTestBuilder.initSaf(
+        provider: suspend () -> String
+    ) = externalServices {
+        hosts(testUrl) {
+            routing {
+                post("graphql") {
+                    call.respondText(
+                        contentType = ContentType.Application.Json,
+                        status = HttpStatusCode.OK,
+                        provider = provider
+                    )
+                }
+            }
+        }
+    }
 }
 
 private fun List<String>.safResponse() = """
