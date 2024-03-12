@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector.metrics
 
 import io.prometheus.client.Counter
-import no.nav.tms.mikrofrontend.selector.collector.Produktkort
 
 class ProduktkortCounter {
     private val counter = Counter.build()
@@ -13,7 +12,7 @@ class ProduktkortCounter {
     fun countProduktkort(produktkort: List<String>) {
         if (produktkort.isNotEmpty()) {
             counter
-                .labels(produktkort.joinToString(), "${produktkort.size}")
+                .labels(produktkort.sorted().joinToString(), "${produktkort.size}")
                 .inc()
         }
     }

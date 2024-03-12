@@ -7,14 +7,12 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
@@ -74,7 +72,7 @@ internal class ApiTest {
         application { initSelectorApi(apiClient = apiClient, testident = testIdent) }
 
         initSaf {
-            emptyList<String>().safResponse()
+            listOf("DAG").safResponse()
         }
 
         expectedMicrofrontends.keys.forEach {
@@ -107,6 +105,7 @@ internal class ApiTest {
                         jsonMicrofrontend["url"].asText() shouldBe microfrontendUrl
                     }
                 }
+                this["produktkort"].toList().size shouldBe 1
                 this["offerStepup"].asBoolean() shouldBe false
             }
         }

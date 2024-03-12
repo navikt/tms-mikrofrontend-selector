@@ -26,7 +26,7 @@ class PersonalContentCollector(
                 .resolveProduktkort(
                     koder = safResponse.sakstemakoder,
                     ident = user.ident,
-                    microfrontends = null
+                    microfrontends = microfrontends
                 ).ids().also{ produktkortCounter.countProduktkort(it) },
             offerStepup = microfrontends?.offerStepup(innloggetnivå = innloggetnivå) ?: false
         ).apply {
