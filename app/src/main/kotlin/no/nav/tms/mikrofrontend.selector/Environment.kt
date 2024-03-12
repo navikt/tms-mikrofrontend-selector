@@ -1,7 +1,10 @@
 package no.nav.tms.mikrofrontend.selector
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
+import io.ktor.client.*
+import io.ktor.serialization.jackson.*
 import no.nav.tms.common.util.config.StringEnvVar.getEnvVar
 
 data class Environment(
@@ -18,8 +21,13 @@ data class Environment(
     val aivenSchemaRegistry: String = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
     val securityVars: SecurityVars = SecurityVars(),
     val rapidTopic: String = getEnvVar("RAPID_TOPIC"),
-    val storageBucketName: String = getEnvVar("STORAGE_BUCKET_NAME")
-    ) {
+    val storageBucketName: String = getEnvVar("STORAGE_BUCKET_NAME"),
+    val safUrl: String = getEnvVar("SAF_URL"),
+    val safClientId: String = getEnvVar("SAF_CLIENT_ID")
+
+) {
+
+
 
     fun rapidConfig(): Map<String, String> = mapOf(
         "KAFKA_BROKERS" to aivenBrokers,
@@ -31,14 +39,14 @@ data class Environment(
         "KAFKA_RESET_POLICY" to "earliest",
         "HTTP_PORT" to "8080",
         "NAIS_NAMESPACE" to namespace,
-        "NAIS_CLUSTER_NAME" to  clusterName
+        "NAIS_CLUSTER_NAME" to clusterName
     )
 
     fun initGcpStorage(): Storage = StorageOptions
-            .newBuilder()
-            .setProjectId(getEnvVar("GCP_TEAM_PROJECT_ID"))
-            .build()
-            .service
+        .newBuilder()
+        .setProjectId(getEnvVar("GCP_TEAM_PROJECT_ID"))
+        .build()
+        .service
 }
 
 data class SecurityVars(
@@ -54,6 +62,14 @@ fun getDbUrl(host: String, port: String, name: String): String {
         "jdbc:postgresql://${host}/$name"
     } else {
         "jdbc:postgresql://${host}:${port}/${name}"
+    }
+}
+
+fun HttpClientConfig<*>.configureJackson() {
+    install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+        jackson {
+            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        }
     }
 }
 

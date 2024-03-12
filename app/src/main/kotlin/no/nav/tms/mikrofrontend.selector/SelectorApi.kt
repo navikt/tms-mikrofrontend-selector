@@ -15,18 +15,15 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import nav.no.tms.common.metrics.installTmsApiMetrics
+import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
-import no.nav.tms.mikrofrontend.selector.database.Microfrontends
-import no.nav.tms.mikrofrontend.selector.database.PersonRepository
-import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.tokenx.validation.tokenX
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
 import observability.ApiMdc
 import java.text.DateFormat
 
 internal fun Application.selectorApi(
-    personRepository: PersonRepository,
-    manifestsStorage: ManifestsStorage,
+    personalContentCollector: PersonalContentCollector,
     installAuthenticatorsFunction: Application.() -> Unit = installAuth(),
 ) {
     val secureLog = KotlinLogging.logger("secureLog")
@@ -42,15 +39,19 @@ internal fun Application.selectorApi(
     }
     install(StatusPages) {
         exception<Throwable> { call, cause ->
-            if (cause is DatabaseException) {
-                log.warn { "Feil i henting av microfrontends" }
-                secureLog.warn(cause.originalException) { """Feil i henting av microfrontends for ${cause.ident}}""".trimMargin() }
-                call.respond(HttpStatusCode.InternalServerError)
+            when (cause) {
+                is DatabaseException -> {
+                    log.warn { "Feil i henting av microfrontends" }
+                    secureLog.warn(cause.originalException) { """Feil i henting av microfrontends for ${cause.ident}}""".trimMargin() }
+                    call.respond(HttpStatusCode.InternalServerError)
 
-            } else {
-                log.error { "Ukjent feil ved henting av microfrontends" }
-                secureLog.error(cause) { "Ukjent feil ved henting av microfrontends" }
-                call.respond(HttpStatusCode.InternalServerError)
+                }
+
+                else -> {
+                    log.error { "Ukjent feil ved henting av microfrontends: ${cause.message} ${cause.javaClass.name}" }
+                    secureLog.error(cause) { "Ukjent feil ved henting av microfrontends" }
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
             }
 
         }
@@ -66,10 +67,13 @@ internal fun Application.selectorApi(
             route("microfrontends") {
                 get() {
                     val user = TokenXUserFactory.createTokenXUser(call)
+                    val content = personalContentCollector.getContent(user, user.loginLevel)
+                    content.safError ?.let {
+                        log.warn { it }
+                    }
                     call.respond(
-                        personRepository.getEnabledMicrofrontends(user.ident)
-                            ?.apiResponse(user.loginLevel, manifestsStorage.getManifestBucketContent())
-                            ?: Microfrontends.emptyApiResponse()
+                        status = content.resolveStatus(),
+                        content
                     )
                 }
             }

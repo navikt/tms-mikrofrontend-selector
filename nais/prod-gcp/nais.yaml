@@ -33,6 +33,9 @@ spec:
     inbound:
       rules:
         - application: tms-min-side-proxy
+    outbound:
+      external:
+        - host: "safselvbetjening.prod-fss-pub.nais.io"
   gcp:
     sqlInstances:
       - name: microfrontend
@@ -64,3 +67,7 @@ spec:
       value: min-side.aapen-microfrontend-v1
     - name: STORAGE_BUCKET_NAME
       value: microfrontend-manifest-prod
+    - name: SAF_URL
+      value: https://safselvbetjening.prod-fss-pub.nais.io
+    - name: SAF_CLIENT_ID
+      value: prod-fss:teamdokumenthandtering:safselvbetjening
