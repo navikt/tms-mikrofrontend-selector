@@ -47,6 +47,7 @@ dependencies {
     implementation(TmsCommonLib.metrics)
     implementation(TmsCommonLib.observability)
     implementation(GoogleCloud.storage)
+    implementation(Kotlinx.coroutines)
 
 
     testImplementation(Junit.api)
