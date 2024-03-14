@@ -11,10 +11,10 @@ class ProduktkortTest {
     @Test
     fun `avgjør om et dagpenge produktkort skal vises eller ikke`() {
         ProduktkortVerdier.resolveProduktkort(
-            koder = listOf("DAG"), ident = "12345678910", microfrontends = null
+            koder = listOf("DAG"), microfrontends = null
         )
             .first()
-            .skalVises("123", emptyList()) shouldBe true
+            .skalVises( emptyList()) shouldBe true
     }
     @ParameterizedTest
     @CsvSource(
@@ -29,7 +29,7 @@ class ProduktkortTest {
     )
     fun `skal mappes til riktige koder og navn`(kode: String, forventetNavn: String, forventetKode: String){
         ProduktkortVerdier.resolveProduktkort(
-            koder = listOf(kode), ident = "12345678910", microfrontends = null
+            koder = listOf(kode),  microfrontends = null
         ).first().assert {
             id shouldBe forventetKode
             navn shouldBe forventetNavn
@@ -39,7 +39,7 @@ class ProduktkortTest {
     @Test
     fun `slår sammen like produktkort`(){
         ProduktkortVerdier.resolveProduktkort(
-            koder = listOf("SYK","SYM"), ident = "12345678910", microfrontends = null
+            koder = listOf("SYK","SYM"),  microfrontends = null
         ).assert {
             size shouldBe 1
             first().assert {
@@ -52,7 +52,7 @@ class ProduktkortTest {
     @Test
     fun `skal ikke legge til produktkort for ukjente verdier`() {
         ProduktkortVerdier.resolveProduktkort(
-            koder = listOf("ABC"), ident = "12345678910", microfrontends = null
+            koder = listOf("ABC"),  microfrontends = null
         ).size shouldBe 0
     }
 }

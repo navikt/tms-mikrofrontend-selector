@@ -10,9 +10,8 @@ import io.ktor.server.auth.*
 import io.ktor.server.testing.*
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.tms.mikrofrontend.selector.SafProvider.Companion.emptySafProvider
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
-import no.nav.tms.mikrofrontend.selector.collector.SakstemaFetcher
+import no.nav.tms.mikrofrontend.selector.collector.ServicesFetcher
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
@@ -60,7 +59,12 @@ internal class ApiTest {
         )
 
         initSelectorApi(testident = testIdent)
-        initExternalServices(SafProvider(sakstemaer = listOf("DAG")))
+        initExternalServices(
+            SafRoute(sakstemaer = listOf("DAG")),
+            MeldekortRoute(),
+            OppfolgingRoute(false),
+            ArbeidsøkerRoute()
+        )
 
         expectedMicrofrontends.keys.forEach {
             testRapid.sendTestMessage(
@@ -93,6 +97,8 @@ internal class ApiTest {
                     }
                 }
                 this["produktkort"].toList().size shouldBe 1
+                this["aia_standard_wrapper"] shouldBe false
+                this["oppfolging_content"] shouldBe false
                 this["offerStepup"].asBoolean() shouldBe false
             }
         }
@@ -109,7 +115,12 @@ internal class ApiTest {
         val expectedProduktkort = listOf("DAG", "PEN")
 
         initSelectorApi(testident = testIdent)
-        initExternalServices(SafProvider(expectedProduktkort))
+        initExternalServices(
+            SafRoute(expectedProduktkort),
+            MeldekortRoute(),
+            OppfolgingRoute(false),
+            ArbeidsøkerRoute()
+        )
 
         expectedMicrofrontends.keys.forEach {
             testRapid.sendTestMessage(
@@ -147,7 +158,7 @@ internal class ApiTest {
             )
 
             initSelectorApi(testident = testIdent, levelOfAssurance = LEVEL_3)
-            initExternalServices(emptySafProvider)
+            initExternalServices(SafRoute())
 
             nivå4Mikrofrontends.keys.forEach {
                 testRapid.sendTestMessage(legacyMessagev2(it, testIdent))
@@ -183,7 +194,12 @@ internal class ApiTest {
             val testident2 = "12345678912"
 
             initSelectorApi(testident = testident2)
-            initExternalServices(emptySafProvider)
+            initExternalServices(
+                SafRoute(),
+                MeldekortRoute(),
+                OppfolgingRoute(false),
+                ArbeidsøkerRoute()
+            )
 
             client.get("/microfrontends").assert {
                 status shouldBe HttpStatusCode.OK
@@ -202,7 +218,12 @@ internal class ApiTest {
             val testident2 = "12345678912"
 
             initSelectorApi(testident = testident2)
-            initExternalServices(SafProvider(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"))
+            initExternalServices(
+                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
+                MeldekortRoute(),
+                OppfolgingRoute(false),
+                ArbeidsøkerRoute()
+            )
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
@@ -230,11 +251,17 @@ internal class ApiTest {
                 PersonalContentCollector(
                     repository = personRepository,
                     manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
-                    sakstemaFetcher = SakstemaFetcher(
+                    servicesFetcher = ServicesFetcher(
                         safUrl = testHost,
                         safClientId = "clientId",
                         httpClient = apiClient,
                         tokendingsService = tokendingsmockk,
+                        oppfølgingBase = testHost,
+                        oppfølgingClientId ="oppfolging",
+                        aiaBackendUrl = testHost,
+                        aiaBackendClientId ="clientaia",
+                        meldekortUrl = testHost,
+                        meldekortClientId ="clientmeldekort",
                     ),
                     produktkortCounter = testproduktkortCounter
                 ),

@@ -16,6 +16,7 @@ import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import nav.no.tms.common.metrics.installTmsApiMetrics
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
+import no.nav.tms.mikrofrontend.selector.collector.ServicesFetcher
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
 import no.nav.tms.token.support.tokenx.validation.tokenX
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
@@ -41,10 +42,15 @@ internal fun Application.selectorApi(
         exception<Throwable> { call, cause ->
             when (cause) {
                 is DatabaseException -> {
-                    log.warn { "Feil i henting av microfrontends" }
+                    log.error { "Feil i henting av microfrontends" }
                     secureLog.warn(cause.originalException) { """Feil i henting av microfrontends for ${cause.ident}}""".trimMargin() }
                     call.respond(HttpStatusCode.InternalServerError)
 
+                }
+
+                is ServicesFetcher.ApiException -> {
+                    log.warn { cause.message }
+                    call.respond(HttpStatusCode.ServiceUnavailable)
                 }
 
                 else -> {
@@ -68,7 +74,7 @@ internal fun Application.selectorApi(
                 get() {
                     val user = TokenXUserFactory.createTokenXUser(call)
                     val content = personalContentCollector.getContent(user, user.loginLevel)
-                    content.safError ?.let {
+                    content.errors?.let {
                         log.warn { it }
                     }
                     call.respond(

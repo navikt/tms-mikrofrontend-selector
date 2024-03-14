@@ -1,6 +1,5 @@
 package no.nav.tms.mikrofrontend.selector
 
-import com.google.api.RoutingProto.routing
 import io.ktor.http.*
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
@@ -8,40 +7,38 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.ktor.util.pipeline.*
+import kotlinx.coroutines.delay
 
 
 const val testHost = "http://test.nav.no"
 
 abstract class RouteProvider(
-    val endpoint: String,
-    val contentProvider: String,
-    val statusCode: HttpStatusCode
+    val path: String,
+    private val routeMethodFunction: Routing.(
+        path: String,
+        suspend PipelineContext<Unit, ApplicationCall>.(Unit) -> Unit
+    ) -> Unit,
+    private val statusCode: HttpStatusCode = OK,
 ) {
-    suspend fun PipelineContext<Unit, ApplicationCall>.response() {
-        call.respondText(
-            contentType = ContentType.Application.Json,
-            status = statusCode,
-            provider = { contentProvider }
-        )
-    }
-
-    abstract fun Routing.initRoute()
-}
-
-
-class SafProvider(sakstemaer: List<String> = emptyList(), errorMsg: String? = null) :
-    RouteProvider(endpoint = "graphql", contentProvider = sakstemaer.safResponse(errorMsg), statusCode = OK) {
-
-    override fun Routing.initRoute() {
-        post(endpoint) {
-            response()
+    abstract fun content(): String
+    fun Routing.initRoute() {
+        routeMethodFunction(path) {
+            delay(1000)
+            call.respondText(
+                contentType = ContentType.Application.Json,
+                status = statusCode,
+                provider = ::content
+            )
         }
     }
+}
 
-    companion object {
-        private fun List<String>.safResponse(errorMsg: String?): String {
-            val errors = errorMsg?.let {
-                """
+class SafRoute(
+    private val sakstemaer: List<String> = emptyList(),
+    errorMsg: String? = null
+) : RouteProvider(path = "graphql", Routing::post) {
+    private val errors = errorMsg?.let {
+        """
                   "errors": [
                                   {
                                     "message": "$it",
@@ -61,39 +58,60 @@ class SafProvider(sakstemaer: List<String> = emptyList(), errorMsg: String? = nu
                                   }
                                 ],  
                 """.trimIndent()
-            } ?: ""
-
-            return """
-                {
-                      $errors  
-                      "data": {
-                        "dokumentoversiktSelvbetjening": {
-                          "tema": ${
-                joinToString(
-                    prefix = "[",
-                    postfix = "]"
-                ) { """{ "kode": "$it" }""".trimIndent() }
+    } ?: ""
+    override fun content(): String = """
+        {
+          $errors  
+          "data": {
+            "dokumentoversiktSelvbetjening": {
+              "tema": ${
+        sakstemaer.joinToString(prefix = "[", postfix = "]") { """{ "kode": "$it" }""".trimIndent() }
+    }
             }
-                          }
-                        }
-                      }
-                    }
-                ""${'"'}.trimIndent()
-            """.trimIndent()
-
+          }
         }
-        val emptySafProvider = SafProvider()
+    ""${'"'}.trimIndent()
+""".trimIndent()
+}
+
+class MeldekortRoute : RouteProvider(path = "api/person/meldekortstatus", routeMethodFunction = Routing::get) {
+
+    //TODO
+    override fun content(): String {
+        return """
+            {
+              "meldekort": 0,
+              "etterregistrerteMeldekort": 0,
+              "antallGjenstaaendeFeriedager": 0,
+              "nesteMeldekort": null,
+              "nesteInnsendingAvMeldekort": null
+            }
+        """.trimIndent()
     }
 }
 
-class GetProvider(endpoint: String, contentProvider: String, statusCode: HttpStatusCode) :
-    RouteProvider(endpoint, contentProvider, statusCode) {
-    override fun Routing.initRoute() {
-        get(endpoint) {
-            response()
+class OppfolgingRoute(private val underOppfølging: Boolean = false) :
+    RouteProvider(path = "api/niva3/underoppfolging", routeMethodFunction = Routing::get) {
+    //TODO: sjekk route i proxy
+    override fun content(): String = """
+        {
+          "underOppfolging": $underOppfølging
         }
-    }
+    """.trimIndent()
+
 }
+
+class ArbeidsøkerRoute(private val erArbeidsøker: Boolean = false, private val erStandard: Boolean = false) :
+    RouteProvider(path = "aia-backend/er-arbeidssoker", routeMethodFunction = Routing::get) {
+    override fun content(): String = """
+        {
+          "erArbeidssoker": $erArbeidsøker,
+          "erStandard": $erStandard
+        }
+    """.trimIndent()
+
+}
+
 
 fun ApplicationTestBuilder.initExternalServices(
     vararg routeProviders: RouteProvider

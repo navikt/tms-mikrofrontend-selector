@@ -5,87 +5,108 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import no.nav.tms.mikrofrontend.selector.collector.Produktkort.Companion.ids
+import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
-import java.time.Instant
-import kotlin.random.Random
 
 class PersonalContentCollector(
     val repository: PersonRepository,
     val manifestStorage: ManifestsStorage,
-    val sakstemaFetcher: SakstemaFetcher,
+    val servicesFetcher: ServicesFetcher,
     val produktkortCounter: ProduktkortCounter
 ) {
     suspend fun getContent(user: TokenXUser, innloggetnivå: Int): PersonalContentResponse {
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
-        val safResponse = sakstemaFetcher.fetchSakstema(user)
-        return PersonalContentResponse(
+        return asyncCollector(user).build(microfrontends,innloggetnivå,manifestStorage.getManifestBucketContent())
+      /*  return PersonalContentResponse(
             microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestStorage.getManifestBucketContent())
                 ?: emptyList(),
             produktkort = ProduktkortVerdier
                 .resolveProduktkort(
                     koder = safResponse.sakstemakoder,
-                    ident = user.ident,
                     microfrontends = microfrontends
                 ).ids().also { produktkortCounter.countProduktkort(it) },
-            offerStepup = microfrontends?.offerStepup(innloggetnivå = innloggetnivå) ?: false
+            offerStepup = microfrontends?.offerStepup(innloggetnivå = innloggetnivå) ?: false,
+            aiaStandardWrapper = sakstemaFetcher.fetchArbeidsøker(user).let { it.erStandard && it.erArbeidssoker },
+            oppfolgingContent = sakstemaFetcher.fetchOppfolging(user).underOppfolging ?: false,
+            meldekort = sakstemaFetcher.fetchMeldekort(user).harMeldekort()
         ).apply {
             if (safResponse.hasErrors)
-                safError = safResponse.errors.joinToString { it }
-        }
+                errors = null //TODO, itererer gjennom lista
+        }*/
     }
 
-    /*
-    suspend fun asyncf(user: TokenXUser): Pair<SafResponse, String> {
+
+    suspend fun asyncCollector(user: TokenXUser): PersonalContentFactory {
         return coroutineScope {
-            val safResponse = async { sakstemaFetcher.fetchSakstema(user) }
-            val sleepResponse = async { sakstemaFetcher.sleepTest() }
-            return@coroutineScope Pair(safResponse.await(), sleepResponse.await())
+            val safResponse = async { servicesFetcher.fetchSakstema(user) }
+            val arbeidsøkerResponse = async { servicesFetcher.fetchArbeidsøker(user) }
+            val oppfolgingResponse = async { servicesFetcher.fetchOppfolging(user) }
+            val meldekortResponse = async { servicesFetcher.fetchMeldekort(user) }
+            return@coroutineScope PersonalContentFactory(
+                arbeidsøkerResponse = arbeidsøkerResponse.await(),
+                safResponse = safResponse.await(),
+                meldekortResponse = meldekortResponse.await(),
+                oppfolgingResponse = oppfolgingResponse.await()
+            )
         }
-    }*/
-
-
-    class PersonalContentResponse(
-        val microfrontends: List<MicrofrontendsDefinition>,
-        val produktkort: List<String>,
-        val offerStepup: Boolean
-    ) {
-        @JsonIgnore
-        var safError: String? = null
-        fun resolveStatus(): HttpStatusCode = if (safError != null) HttpStatusCode.MultiStatus else HttpStatusCode.OK
     }
-
-    class MicrofrontendsDefinition(
-        @JsonProperty("microfrontend_id")
-        val id: String,
-        val url: String
-    )
 }
 
-suspend fun fetchStockPrice(stock: String): Double {
-    println("Fetching stock $stock, ${Instant.now()}")
-    delay(Random.nextLong(1000)) // Simulating variable data retrieval delay
-    println("Stock $stock collected")
-    return Random.nextDouble(50.0, 200.0)
+class PersonalContentFactory(
+    val arbeidsøkerResponse: ArbeidsøkerResponse,
+    val safResponse: SafResponse,
+    val meldekortResponse: MeldekortResponse,
+    val oppfolgingResponse: OppfolgingResponse
+) {
+    fun build(
+        microfrontends: Microfrontends?,
+        innloggetnivå: Int,
+        manifestMap: Map<String, String>,
+    ): PersonalContentResponse =
+        PersonalContentResponse(
+            microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestMap)?: emptyList(),
+            produktkort = ProduktkortVerdier
+                .resolveProduktkort(
+                    koder = safResponse.sakstemakoder,
+                    microfrontends = microfrontends
+                ).ids(),
+            offerStepup = microfrontends?.offerStepup(innloggetnivå)?:false,
+            aiaStandardWrapper = arbeidsøkerResponse.erStandard && arbeidsøkerResponse.erArbeidssoker,
+            oppfolgingContent = oppfolgingResponse.underOppfolging ?: false,
+            meldekort = meldekortResponse.harMeldekort()
+        ).apply {
+            errors = listOf(
+                arbeidsøkerResponse,
+                safResponse,
+                meldekortResponse,
+                oppfolgingResponse
+            ).mapNotNull { it.errorMessage() }.joinToString()
+        }
 }
 
-fun main() = runBlocking {
-    val stocks = listOf("AAPL", "GOOGL", "AMZN", "MSFT")
-    val deferredStockPrices = stocks.map { stock ->
-        async { stock to fetchStockPrice(stock) }
-    }
-
-    val stockPrices = deferredStockPrices.map { deferred ->
-        val (stock, price) = deferred.await()
-        "$stock: $price"
-    }
-
-    stockPrices.forEach(::println)
+class PersonalContentResponse(
+    val microfrontends: List<MicrofrontendsDefinition>,
+    val produktkort: List<String>,
+    val offerStepup: Boolean,
+    @JsonProperty("aia_standard_wrapper")
+    val aiaStandardWrapper: Boolean,
+    @JsonProperty("oppfolgingContent")
+    val oppfolgingContent: Boolean,
+    @JsonProperty
+    val meldekort: Boolean
+) {
+    @JsonIgnore
+    var errors: String? = null
+    fun resolveStatus(): HttpStatusCode =
+        if (errors.isNullOrEmpty()) HttpStatusCode.OK else HttpStatusCode.MultiStatus
 }
 
-
+data class MicrofrontendsDefinition(
+    @JsonProperty("microfrontend_id")
+    val id: String,
+    val url: String
+)

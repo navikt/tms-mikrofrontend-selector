@@ -4,14 +4,13 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector.MicrofrontendsDefinition
+import no.nav.tms.mikrofrontend.selector.collector.MicrofrontendsDefinition
 import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.applyMigrations
 import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.sensitivitet
 import no.nav.tms.mikrofrontend.selector.microfrontendId
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.sensitivitet
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.toDbNode
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import org.postgresql.util.PGobject
 
 private val objectMapper = jacksonObjectMapper()
