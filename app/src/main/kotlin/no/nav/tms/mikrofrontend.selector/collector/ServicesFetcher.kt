@@ -7,8 +7,8 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.tms.mikrofrontend.selector.collector.SafResponse.Companion.toSafKoder
-import no.nav.tms.mikrofrontend.selector.database.DatabaseException
 import no.nav.tms.token.support.tokendings.exchange.TokendingsService
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
 
@@ -26,8 +26,6 @@ class ServicesFetcher(
 ) {
 
     val log = KotlinLogging.logger { }
-    private val objectMapper = jacksonObjectMapper()
-
     fun query(ident: String) = """ {
         "query": "query(${'$'}ident: String!) {
             dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
@@ -61,14 +59,13 @@ class ServicesFetcher(
         }
             .let { response ->
                 if (response.status != HttpStatusCode.OK) {
-                    SafResponse("statuskode ${response.status}")
+                    SafResponse(response)
                 } else {
                     val jsonResponse = response.bodyAsJsonNode()
                     SafResponse(
-                        sakstemakoder = jsonResponse["data"]["dokumentoversiktSelvbetjening"]["tema"].toSafKoder(),
-                        errors = jsonResponse["errors"].takeUnless { it == null || it.isNull }?.toList()?.map {
-                            it["message"].asText()
-                        } ?: emptyList()
+                        sakstemakoder = jsonResponse?.getFromPath<List<String>>("data.dokumentoversiktSelvbetjening.tema..kode")
+                            ?: emptyList(),
+                        errors = jsonResponse?.getFromPath<List<String>>("errors..message") ?: emptyList()
                     )
                 }
             }
@@ -81,9 +78,9 @@ class ServicesFetcher(
             //BODY?
         }.let { response ->
             if (response.status != HttpStatusCode.OK)
-                OppfolgingResponse("response status ${response.status}")
+                OppfolgingResponse(response)
             else
-                OppfolgingResponse(underOppfolging = response.bodyAsJsonNode()["underOppfolging"].asBoolean())
+                OppfolgingResponse(underOppfolging = response.bodyAsJsonNode()?.getFromKey<Boolean>("underOppfolging") ?: false)
         }
     }
 
@@ -102,7 +99,7 @@ class ServicesFetcher(
     }
 
     suspend fun fetchMeldekort(user: TokenXUser): MeldekortResponse = withErrorHandling {
-        httpClient.get("$meldekortUrl/") {
+        httpClient.get("$meldekortUrl/api/person/meldekortstatus") {
             header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, meldekortClientId)}")
             header("Content-Type", "application/json")
             //TODO: body
@@ -114,7 +111,7 @@ class ServicesFetcher(
         }
     }
 
-    private suspend fun HttpResponse.bodyAsJsonNode() = objectMapper.readTree(bodyAsText())
+    private suspend fun HttpResponse.bodyAsJsonNode() = NullSafeJson.initObjectMapper(bodyAsText())
 
     private suspend fun <T> withErrorHandling(function: suspend () -> T) =
         try {
@@ -129,6 +126,9 @@ class ServicesFetcher(
 
 
 abstract class ResponseWithErrors(val errors: List<String>) {
+
+    constructor(response: HttpResponse): this(listOf("Status fra ${response.request.url} er ${response.status}"))
+
     abstract val source: String
     fun errorMessage() = errors.let {
         if (it.isEmpty())
@@ -138,8 +138,17 @@ abstract class ResponseWithErrors(val errors: List<String>) {
     }
 }
 
-class SafResponse(val sakstemakoder: List<String>, errors: List<String>) : ResponseWithErrors(errors) {
-    constructor(error: String) : this(emptyList(), listOf(error))
+class SafResponse : ResponseWithErrors {
+    var sakstemakoder: List<String>
+
+    constructor(sakstemakoder: List<String>, errors: List<String>) : super(errors) {
+        this.sakstemakoder = sakstemakoder
+    }
+
+    constructor(response: HttpResponse) : super(response) {
+
+        this.sakstemakoder = emptyList()
+    }
 
     override val source: String = "SAF"
 
@@ -150,9 +159,16 @@ class SafResponse(val sakstemakoder: List<String>, errors: List<String>) : Respo
     }
 }
 
-class OppfolgingResponse(val underOppfolging: Boolean?, errors: List<String> = emptyList()) :
-    ResponseWithErrors(errors) {
-    constructor(error: String) : this(null, listOf(error))
+class OppfolgingResponse : ResponseWithErrors {
+    var underOppfolging: Boolean
+
+    constructor(underOppfolging: Boolean) : super(emptyList()) {
+        this.underOppfolging = underOppfolging
+    }
+
+    constructor(response: HttpResponse) : super(response) {
+        this.underOppfolging = false
+    }
 
     override val source = "Oppfølgingapi"
 }
@@ -163,7 +179,7 @@ class MeldekortResponse(val todo: Boolean, errors: List<String>) : ResponseWithE
     fun harMeldekort(): Boolean = false
 
     constructor(error: String) : this(false, listOf(error))
-    constructor(jsonNode: JsonNode?) : this(
+    constructor(jsonNode: NullSafeJson?) : this(
         false,
         emptyList()
     )
@@ -178,9 +194,9 @@ class ArbeidsøkerResponse(
     override val source = "aia-backend"
 
     constructor(error: String) : this(erArbeidssoker = false, erStandard = false, listOf(error))
-    constructor(jsonNode: JsonNode) : this(
-        erArbeidssoker = jsonNode["erArbeidsoker"].asBoolean(),
-        erStandard = jsonNode["erStandard"].asBoolean(),
+    constructor(jsonNode: NullSafeJson?) : this(
+        erArbeidssoker = jsonNode?.getFromKey<Boolean>("erArbeidssoker") ?: false,
+        erStandard = jsonNode?.getFromKey<Boolean>("erStandard")?:false ,
         emptyList()
     )
 }

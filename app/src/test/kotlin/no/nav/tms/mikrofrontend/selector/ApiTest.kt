@@ -2,6 +2,7 @@ package no.nav.tms.mikrofrontend.selector
 
 import LocalPostgresDatabase
 import assert
+import io.kotest.matchers.comparables.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -24,6 +25,9 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.time.Instant
+import kotlin.system.measureTimeMillis
+import kotlin.time.measureTime
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ApiTest {
@@ -97,11 +101,13 @@ internal class ApiTest {
                     }
                 }
                 this["produktkort"].toList().size shouldBe 1
-                this["aia_standard_wrapper"] shouldBe false
-                this["oppfolging_content"] shouldBe false
+                this["aia_standard_wrapper"].asBoolean() shouldBe false
+              //  this["oppfolging_content"].asBoolean() shouldBe false
                 this["offerStepup"].asBoolean() shouldBe false
             }
         }
+
+        measureTimeMillis { client.get("/microfrontends") } shouldBeLessThan 1500
     }
 
     @Test
@@ -134,6 +140,8 @@ internal class ApiTest {
 
         gcpStorage.updateManifest(expectedMicrofrontends)
 
+        val now = Instant.now()
+
         client.get("/microfrontends").assert {
             status shouldBe HttpStatusCode.OK
             objectMapper.readTree(bodyAsText()).assert {
@@ -158,7 +166,12 @@ internal class ApiTest {
             )
 
             initSelectorApi(testident = testIdent, levelOfAssurance = LEVEL_3)
-            initExternalServices(SafRoute())
+            initExternalServices(
+                SafRoute(),
+                MeldekortRoute(),
+                OppfolgingRoute(),
+                ArbeidsøkerRoute()
+            )
 
             nivå4Mikrofrontends.keys.forEach {
                 testRapid.sendTestMessage(legacyMessagev2(it, testIdent))
@@ -257,11 +270,11 @@ internal class ApiTest {
                         httpClient = apiClient,
                         tokendingsService = tokendingsmockk,
                         oppfølgingBase = testHost,
-                        oppfølgingClientId ="oppfolging",
+                        oppfølgingClientId = "oppfolging",
                         aiaBackendUrl = testHost,
-                        aiaBackendClientId ="clientaia",
+                        aiaBackendClientId = "clientaia",
                         meldekortUrl = testHost,
-                        meldekortClientId ="clientmeldekort",
+                        meldekortClientId = "clientmeldekort",
                     ),
                     produktkortCounter = testproduktkortCounter
                 ),

@@ -21,22 +21,6 @@ class PersonalContentCollector(
     suspend fun getContent(user: TokenXUser, innloggetnivå: Int): PersonalContentResponse {
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
         return asyncCollector(user).build(microfrontends,innloggetnivå,manifestStorage.getManifestBucketContent())
-      /*  return PersonalContentResponse(
-            microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestStorage.getManifestBucketContent())
-                ?: emptyList(),
-            produktkort = ProduktkortVerdier
-                .resolveProduktkort(
-                    koder = safResponse.sakstemakoder,
-                    microfrontends = microfrontends
-                ).ids().also { produktkortCounter.countProduktkort(it) },
-            offerStepup = microfrontends?.offerStepup(innloggetnivå = innloggetnivå) ?: false,
-            aiaStandardWrapper = sakstemaFetcher.fetchArbeidsøker(user).let { it.erStandard && it.erArbeidssoker },
-            oppfolgingContent = sakstemaFetcher.fetchOppfolging(user).underOppfolging ?: false,
-            meldekort = sakstemaFetcher.fetchMeldekort(user).harMeldekort()
-        ).apply {
-            if (safResponse.hasErrors)
-                errors = null //TODO, itererer gjennom lista
-        }*/
     }
 
 

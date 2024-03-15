@@ -72,7 +72,7 @@ class PersonalContentFactoryTest {
     @Test
     fun `skal ha oppfolgingcontent`() {
         testFactory(
-            oppfolgingResponse = OppfolgingResponse(true, emptyList())
+            oppfolgingResponse = OppfolgingResponse(true)
 
         ).build(
             microfrontends = Microfrontends(),
@@ -90,14 +90,14 @@ class PersonalContentFactoryTest {
     }
 
     @Test
-    fun `skal ha produkkort og aia standard og 207 pga oppfolging`() {
+    fun `skal ha produkkort og aia standard og 207 pga meldekort`() {
         testFactory(
             arbeidsøkerResponse = ArbeidsøkerResponse(
                 erArbeidssoker = true,
                 erStandard = true,
                 errors = emptyList()
             ),
-            oppfolgingResponse = OppfolgingResponse(null, listOf("Feil fra oppføging"))
+            meldekortResponse = MeldekortResponse("Feil fra oppføging")
 
         ).build(
             microfrontends = Microfrontends(),
@@ -122,7 +122,7 @@ class PersonalContentFactoryTest {
             arbeidsøkerResponse = ArbeidsøkerResponse(true, true, emptyList()),
             safResponse = SafResponse(listOf("DAG"), emptyList()),
             meldekortResponse = MeldekortResponse(todo = true, errors = emptyList()),
-            oppfolgingResponse = OppfolgingResponse(underOppfolging = true, errors = emptyList()),
+            oppfolgingResponse = OppfolgingResponse(underOppfolging = true),
         ).build(
             microfrontends = microfrontendMocck(
                 level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5
@@ -172,7 +172,7 @@ private fun testFactory(
     arbeidsøkerResponse: ArbeidsøkerResponse = ArbeidsøkerResponse(false, false, emptyList()),
     safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
     meldekortResponse: MeldekortResponse = MeldekortResponse(todo = false, errors = emptyList()),
-    oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false, errors = emptyList())
+    oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false)
 ) =
     PersonalContentFactory(
         arbeidsøkerResponse = arbeidsøkerResponse,

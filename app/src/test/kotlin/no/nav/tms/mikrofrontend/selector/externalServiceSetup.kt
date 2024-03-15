@@ -59,6 +59,7 @@ class SafRoute(
                                 ],  
                 """.trimIndent()
     } ?: ""
+
     override fun content(): String = """
         {
           $errors  
@@ -119,7 +120,9 @@ fun ApplicationTestBuilder.initExternalServices(
     hosts(testHost) {
         routing {
             routeProviders.forEach { provider ->
-                provider.run { this@routing.initRoute() }
+                provider.run {
+                    this@routing.initRoute()
+                }
             }
         }
     }
