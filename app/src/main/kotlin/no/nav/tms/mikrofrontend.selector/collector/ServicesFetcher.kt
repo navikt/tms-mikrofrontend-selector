@@ -3,11 +3,10 @@ package no.nav.tms.mikrofrontend.selector.collector
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
+import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsJsonNode
 import no.nav.tms.token.support.tokendings.exchange.TokendingsService
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
-import org.apache.kafka.common.protocol.types.Field.Bool
 
 class ServicesFetcher(
     val safUrl: String,
@@ -117,9 +116,6 @@ class ServicesFetcher(
 
         }
     }
-
-    private suspend fun HttpResponse.bodyAsJsonNode() = NullOrJsonNode.initObjectMapper(bodyAsText())
-
     private suspend fun <T> withErrorHandling(function: suspend () -> T) =
         try {
             function()

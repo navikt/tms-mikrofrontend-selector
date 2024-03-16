@@ -2,6 +2,7 @@ package no.nav.tms.mikrofrontend.selector
 
 import LocalPostgresDatabase
 import assert
+import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -10,6 +11,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.testing.*
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsJsonNode
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ServicesFetcher
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
@@ -90,20 +92,18 @@ internal class ApiTest {
 
         client.get("/microfrontends").assert {
             status shouldBe HttpStatusCode.OK
-            objectMapper.readTree(bodyAsText()).assert {
-                this["microfrontends"].toList().assert {
+            bodyAsJsonNode(true).assert {
+                require(this != null)
+                getFromKey<List<JsonNode>>("microfrontends").assert {
+                    require(this!=null)
                     size shouldBe expectedMicrofrontends.size
-                    forEach { jsonMicrofrontend ->
-                        val microfrontendUrl = expectedMicrofrontends[jsonMicrofrontend["microfrontend_id"].asText()]
-                        require(microfrontendUrl != null)
-                        jsonMicrofrontend["url"].asText() shouldBe microfrontendUrl
-                    }
                 }
-                this["produktkort"].toList().size shouldBe 1
-                this["aiaStandard"].asBoolean() shouldBe false
-                this["oppfolging_content"].asBoolean() shouldBe false
-                this["meldekort"]
-                this["offerStepup"].asBoolean() shouldBe false
+                getAllValuesForPath<String>("microfrontends..url")
+                getFromKeyOrException<List<String>>("produktkort").size shouldBe 1
+                getFromKeyOrException<Boolean>("aiaStandard") shouldBe false
+                getFromKeyOrException<Boolean>("oppfolging_content") shouldBe false
+                getFromKeyOrException<Boolean>("meldekort") shouldBe false
+                getFromKeyOrException<Boolean>("offerStepup") shouldBe false
             }
         }
     }
