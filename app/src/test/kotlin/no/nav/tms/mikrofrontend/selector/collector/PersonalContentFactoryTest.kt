@@ -2,6 +2,7 @@ package no.nav.tms.mikrofrontend.selector.collector
 
 import assert
 import io.kotest.matchers.shouldBe
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
@@ -9,6 +10,11 @@ import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import org.junit.jupiter.api.Test
 
 class PersonalContentFactoryTest {
+    private val mockErrorUrl = Url("https://test.feil")
+    private val mockHttpResponse = mockk<HttpResponse>().apply {
+        every { status } returns HttpStatusCode.InternalServerError
+        every { request.url } returns mockErrorUrl
+    }
 
     @Test
     fun `Skal være tom`() {
@@ -52,7 +58,6 @@ class PersonalContentFactoryTest {
             arbeidsøkerResponse = ArbeidsøkerResponse(
                 erArbeidssoker = true,
                 erStandard = true,
-                errors = emptyList()
             )
         ).build(
             microfrontends = Microfrontends(),
@@ -95,9 +100,8 @@ class PersonalContentFactoryTest {
             arbeidsøkerResponse = ArbeidsøkerResponse(
                 erArbeidssoker = true,
                 erStandard = true,
-                errors = emptyList()
             ),
-            meldekortResponse = MeldekortResponse("Feil fra oppføging")
+            meldekortResponse = MeldekortResponse(response = mockHttpResponse)
 
         ).build(
             microfrontends = Microfrontends(),
@@ -119,9 +123,9 @@ class PersonalContentFactoryTest {
     fun `skal ha produkkort, aiastandard, oppfolging, meldekort og microfrontends`() {
         //TODO
         testFactory(
-            arbeidsøkerResponse = ArbeidsøkerResponse(true, true, emptyList()),
-            safResponse = SafResponse(listOf("DAG"), emptyList()),
-            meldekortResponse = MeldekortResponse(todo = true, errors = emptyList()),
+            arbeidsøkerResponse = ArbeidsøkerResponse(erArbeidssoker = true, erStandard = true),
+            safResponse = SafResponse(sakstemakoder = listOf("DAG"), errors = emptyList()),
+            meldekortResponse = MeldekortResponse(todo = true),
             oppfolgingResponse = OppfolgingResponse(underOppfolging = true),
         ).build(
             microfrontends = microfrontendMocck(
@@ -169,9 +173,9 @@ private operator fun MicrofrontendsDefinition.times(i: Int): List<Microfrontends
     (1..i).map { this.copy(id = "$id$it", url = "$url$it") }
 
 private fun testFactory(
-    arbeidsøkerResponse: ArbeidsøkerResponse = ArbeidsøkerResponse(false, false, emptyList()),
+    arbeidsøkerResponse: ArbeidsøkerResponse = ArbeidsøkerResponse(false, false),
     safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
-    meldekortResponse: MeldekortResponse = MeldekortResponse(todo = false, errors = emptyList()),
+    meldekortResponse: MeldekortResponse = MeldekortResponse(false),
     oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false)
 ) =
     PersonalContentFactory(

@@ -11,26 +11,26 @@ class NullSafeJsonTest {
 
     @Test
     fun `skal returnere null hvis det er ugyldig json`() {
-        NullSafeJson.initObjectMapper("Ikke gyldig json 12345678910") shouldBe null
+        NullOrJsonNode.initObjectMapper("Ikke gyldig json 12345678910") shouldBe null
     }
 
     @Test
     fun `skal parse gyldig json`() {
-        NullSafeJson.initObjectMapper("""["onestring","twostring"]""".trimIndent()) shouldNotBe null
-        NullSafeJson.initObjectMapper("""{"something":["onestring","twostring"]}""".trimIndent()) shouldNotBe null
+        NullOrJsonNode.initObjectMapper("""["onestring","twostring"]""".trimIndent()) shouldNotBe null
+        NullOrJsonNode.initObjectMapper("""{"something":["onestring","twostring"]}""".trimIndent()) shouldNotBe null
     }
 
     @Test
     fun `Skal returnere null node om nøkkel ikke finnes`() {
-        NullSafeJson.initObjectMapper("""{"something":["onestring","twostring"]}""".trimIndent()).assert {
+        NullOrJsonNode.initObjectMapper("""{"something":["onestring","twostring"]}""".trimIndent()).assert {
             require(this != null)
             getFromPath<Boolean>("doesnotexist") shouldBe null
         }
-        NullSafeJson.initObjectMapper("""{"something":["onestring","twostring"]}""".trimIndent()).assert {
+        NullOrJsonNode.initObjectMapper("""{"something":["onestring","twostring"]}""".trimIndent()).assert {
             require(this != null)
             getFromPath<Boolean>("something.doesnotexist") shouldBe null
         }
-        NullSafeJson.initObjectMapper("""{"something": { "nested":"tadda"} }""".trimIndent()).assert {
+        NullOrJsonNode.initObjectMapper("""{"something": { "nested":"tadda"} }""".trimIndent()).assert {
             require(this != null)
             getFromPath<Boolean>("something.doesnotexist") shouldBe null
         }
@@ -38,7 +38,7 @@ class NullSafeJsonTest {
 
     @Test
     fun `Skal finne eksisterende noder med komplett path`() {
-        NullSafeJson.initObjectMapper(
+        NullOrJsonNode.initObjectMapper(
             """
             {
                 "levelOneString":"nmbr1!",
@@ -70,7 +70,7 @@ class NullSafeJsonTest {
 
     @Test
     fun `Skal finne eksisterende noder med nested key som eneste input`() {
-        NullSafeJson.initObjectMapper(
+        NullOrJsonNode.initObjectMapper(
             """
             {
                 "levelOneString":"nmbr1!",
@@ -120,13 +120,13 @@ class NullSafeJsonTest {
         }
     ""${'"'}.trimIndent()
 """.trimIndent()
-        NullSafeJson.initObjectMapper(safResponse)
+        NullOrJsonNode.initObjectMapper(safResponse)
             ?.getFromPath<List<String>>("data.dokumentoversiktSelvbetjening.tema..kode")
             .assert {
                 require(this != null)
                 this.size shouldBe 2
             }
-        val arb = NullSafeJson.initObjectMapper(
+        val arb = NullOrJsonNode.initObjectMapper(
             """
         {
           "erArbeidssoker": false,

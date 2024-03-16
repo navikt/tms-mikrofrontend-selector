@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.nfeld.jsonpathkt.JsonPath
 import com.nfeld.jsonpathkt.extension.read
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tms.mikrofrontend.selector.collector.NullSafeJson.Companion.logsafeMessage
+import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.logsafeMessage
 
-class NullSafeJson private constructor(jsonString: String) {
+class NullOrJsonNode private constructor(jsonString: String) {
     val parsedJsonPath = try {
         JsonPath.parse(jsonString)
     } catch (e: Exception) {
@@ -53,7 +53,7 @@ class NullSafeJson private constructor(jsonString: String) {
 
     companion object {
         val log = KotlinLogging.logger { }
-        fun initObjectMapper(jsonString: String) = NullSafeJson(jsonString).let {
+        fun initObjectMapper(jsonString: String) = NullOrJsonNode(jsonString).let {
             if (it.parsedJsonPath == null) {
                 log.warn { "Could not parse inputstring to json: ${jsonString.logsafeMessage()}" }
                 null

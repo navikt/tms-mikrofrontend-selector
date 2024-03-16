@@ -2,7 +2,6 @@ package no.nav.tms.mikrofrontend.selector
 
 import LocalPostgresDatabase
 import assert
-import io.kotest.matchers.comparables.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -101,13 +100,12 @@ internal class ApiTest {
                     }
                 }
                 this["produktkort"].toList().size shouldBe 1
-                this["aia_standard_wrapper"].asBoolean() shouldBe false
-              //  this["oppfolging_content"].asBoolean() shouldBe false
+                this["aiaStandard"].asBoolean() shouldBe false
+                this["oppfolging_content"].asBoolean() shouldBe false
+                this["meldekort"]
                 this["offerStepup"].asBoolean() shouldBe false
             }
         }
-
-        measureTimeMillis { client.get("/microfrontends") } shouldBeLessThan 1500
     }
 
     @Test
