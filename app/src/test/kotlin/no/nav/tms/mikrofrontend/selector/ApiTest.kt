@@ -11,7 +11,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.testing.*
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsJsonNode
+import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ServicesFetcher
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
@@ -26,9 +26,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.time.Instant
-import kotlin.system.measureTimeMillis
-import kotlin.time.measureTime
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ApiTest {
@@ -92,18 +89,18 @@ internal class ApiTest {
 
         client.get("/microfrontends").assert {
             status shouldBe HttpStatusCode.OK
-            bodyAsJsonNode(true).assert {
+            bodyAsNullOrJsonNode(true).assert {
                 require(this != null)
                 getFromKey<List<JsonNode>>("microfrontends").assert {
-                    require(this!=null)
+                    require(this != null)
                     size shouldBe expectedMicrofrontends.size
                 }
                 getAllValuesForPath<String>("microfrontends..url")
                 getFromKeyOrException<List<String>>("produktkort").size shouldBe 1
-                getFromKeyOrException<Boolean>("aiaStandard") shouldBe false
-                getFromKeyOrException<Boolean>("oppfolging_content") shouldBe false
-                getFromKeyOrException<Boolean>("meldekort") shouldBe false
-                getFromKeyOrException<Boolean>("offerStepup") shouldBe false
+                boolean("aiaStandard") shouldBe false
+                boolean("oppfolgingContent") shouldBe false
+                boolean("meldekort") shouldBe false
+                boolean("offerStepup") shouldBe false
             }
         }
     }
@@ -138,16 +135,16 @@ internal class ApiTest {
 
         gcpStorage.updateManifest(expectedMicrofrontends)
 
-        val now = Instant.now()
-
         client.get("/microfrontends").assert {
             status shouldBe HttpStatusCode.OK
-            objectMapper.readTree(bodyAsText()).assert {
-                this["microfrontends"].toList().size shouldBe 3
-                this["offerStepup"].asBoolean() shouldBe false
-                this["produktkort"].assert {
-                    this.size() shouldBe 2
-                    this.map { produktkortId -> produktkortId.asText() } shouldBe expectedProduktkort
+            bodyAsNullOrJsonNode().assert {
+                require(this != null)
+                getFromKeyOrException<List<JsonNode>>("microfrontends").size shouldBe 3
+                getFromKeyOrException<Boolean>("offerStepup") shouldBe false
+                getAllValuesForPath<String>("produktkort").assert {
+                    require(this != null)
+                    size shouldBe 2
+                    this shouldBe expectedProduktkort
                 }
             }
         }

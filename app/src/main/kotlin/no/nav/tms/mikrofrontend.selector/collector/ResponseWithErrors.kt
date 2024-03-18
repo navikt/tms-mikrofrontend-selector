@@ -10,7 +10,7 @@ abstract class ResponseWithErrors private constructor() {
         errors = (error ?: "") + (response?.let { "; Status fra ${it.request.url} er ${it.status}" } ?: "")
     }
 
-    fun errorMessage() = if(!errors.isNullOrEmpty())errors.let { "Kall til $source feiler: $errors" } else null
+    fun errorMessage() = if (!errors.isNullOrEmpty()) errors.let { "Kall til $source feiler: $errors" } else null
 }
 
 class SafResponse(
@@ -33,13 +33,24 @@ class OppfolgingResponse(
 }
 
 class MeldekortResponse(
-    val todo: Boolean = false,
+    meldekortApiResponse: NullOrJsonNode? = null,
     errors: String? = null,
     response: HttpResponse? = null
 ) : ResponseWithErrors(errors, response) {
     //TODO
     override val source = "meldekort"
-    fun harMeldekort(): Boolean = false
+    val harMeldekort: Boolean =
+        when {
+            meldekortApiResponse == null -> false
+            !meldekortApiResponse.hasContent() -> false
+            else -> {
+                meldekortApiResponse.int("etterregistrerteMeldekort") > 0
+                        || meldekortApiResponse.intOrNull("meldekort")?.let { it > 0 } ?: false
+                        || meldekortApiResponse.intOrNull("antallGjenstaaendeFeriedager")?.let { it > 0 } ?: false
+                        || meldekortApiResponse.isNotNull("nesteMeldekort")
+                        || meldekortApiResponse.isNotNull("nesteInnsendingAvMeldekort")
+            }
+        }
 }
 
 class ArbeidsøkerResponse(

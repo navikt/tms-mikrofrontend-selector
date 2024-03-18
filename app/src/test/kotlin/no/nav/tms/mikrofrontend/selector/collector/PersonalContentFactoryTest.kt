@@ -26,7 +26,7 @@ class PersonalContentFactoryTest {
             oppfolgingContent shouldBe false
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
-            aiaStandardWrapper shouldBe false
+            aiaStandard shouldBe false
             oppfolgingContent shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends shouldBe emptyList()
@@ -45,7 +45,7 @@ class PersonalContentFactoryTest {
             oppfolgingContent shouldBe false
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG")
-            aiaStandardWrapper shouldBe false
+            aiaStandard shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends.size shouldBe 5
         }
@@ -67,7 +67,7 @@ class PersonalContentFactoryTest {
             oppfolgingContent shouldBe false
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
-            aiaStandardWrapper shouldBe true
+            aiaStandard shouldBe true
             oppfolgingContent shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.MultiStatus
             this.microfrontends shouldBe emptyList()
@@ -87,7 +87,7 @@ class PersonalContentFactoryTest {
             oppfolgingContent shouldBe true
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
-            aiaStandardWrapper shouldBe false
+            aiaStandard shouldBe false
             oppfolgingContent shouldBe true
             this.resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends shouldBe emptyList()
@@ -111,7 +111,7 @@ class PersonalContentFactoryTest {
             oppfolgingContent shouldBe false
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
-            aiaStandardWrapper shouldBe true
+            aiaStandard shouldBe true
             oppfolgingContent shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.MultiStatus
             this.microfrontends shouldBe emptyList()
@@ -125,7 +125,7 @@ class PersonalContentFactoryTest {
         testFactory(
             arbeidsøkerResponse = ArbeidsøkerResponse(erArbeidssoker = true, erStandard = true),
             safResponse = SafResponse(sakstemakoder = listOf("DAG"), errors = emptyList()),
-            meldekortResponse = MeldekortResponse(todo = true),
+            meldekortResponse = MeldekortResponse(NullOrJsonNode.initObjectMapper("{}")),
             oppfolgingResponse = OppfolgingResponse(underOppfolging = true),
         ).build(
             microfrontends = microfrontendMocck(
@@ -137,7 +137,7 @@ class PersonalContentFactoryTest {
             oppfolgingContent shouldBe true
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG")
-            aiaStandardWrapper shouldBe true
+            aiaStandard shouldBe true
             oppfolgingContent shouldBe true
             resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends.size shouldBe 5
@@ -161,7 +161,7 @@ class PersonalContentFactoryTest {
             oppfolgingContent shouldBe false
             offerStepup shouldBe true
             produktkort shouldBe listOf("DAG")
-            aiaStandardWrapper shouldBe false
+            aiaStandard shouldBe false
             oppfolgingContent shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends.size shouldBe 2
@@ -175,7 +175,7 @@ private operator fun MicrofrontendsDefinition.times(i: Int): List<Microfrontends
 private fun testFactory(
     arbeidsøkerResponse: ArbeidsøkerResponse = ArbeidsøkerResponse(false, false),
     safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
-    meldekortResponse: MeldekortResponse = MeldekortResponse(false),
+    meldekortResponse: MeldekortResponse = MeldekortResponse(NullOrJsonNode.initObjectMapper("{meldekort:0}")),
     oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false)
 ) =
     PersonalContentFactory(

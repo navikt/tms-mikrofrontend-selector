@@ -6,6 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 
 class NullSafeJsonTest {
 
@@ -54,7 +55,8 @@ class NullSafeJsonTest {
                 }
                 }
             }
-        """.trimIndent()
+        """.trimIndent(),
+            true
         ).assert {
             require(this != null)
             getFromPath<String>("levelOneString") shouldBe "nmbr1!"
@@ -64,12 +66,50 @@ class NullSafeJsonTest {
                 size shouldBe 1
                 first() shouldBe "liststuff"
             }
+            getAllValuesForPath<List<Int>>("level_one.levelTwoObject.level3List")
             getFromPath<String>("level_one.levelTwoObject.level3Object.level4StringValue") shouldBe "Hurra!"
+        }
+    }
+    @Test
+    fun `Skal finne eksisterende noder med nested key som eneste input`() {
+        NullOrJsonNode.initObjectMapper(
+            """
+            {
+                "levelOneString":"nmbr1!",
+                "duplicateValue":"dup",
+                "level_one": {
+                "duplicateValue":"dup",
+                "levelTwoList":["liststuff"],
+                "levelTwoIntValue": 2,
+                "levelTwoObject": {
+                "duplicateValue":"dup",
+                "level3BooelanValue":true,
+                "level3List":[1,2,3,4,5,6,7,8,9,10],
+                "level3Object": {
+                        "level4StringValue":"Hurra!"     
+                    }
+                }
+                }
+            }
+        """.trimIndent(),
+            true
+        ).assert {
+            require(this != null)
+            getFromKey<String>("levelOneString") shouldBe "nmbr1!"
+            getFromKey<List<Int>>("level3List").assert {
+                require(this != null)
+                size shouldBe 10
+                first() shouldBe 1
+                last() shouldBe 10
+            }
+            getFromKey<String>("level4StringValue") shouldBe "Hurra!"
+            getFromKey<String>("level3Object.level4StringValue") shouldBe "Hurra!"
+            getAllValuesForKey<String>("duplicateValue")!!.size shouldBe 3
         }
     }
 
     @Test
-    fun `Skal finne eksisterende noder med nested key som eneste input`() {
+    fun `bruker riktig funksjon for kun nøkkelpath`() {
         NullOrJsonNode.initObjectMapper(
             """
             {
@@ -92,49 +132,22 @@ class NullSafeJsonTest {
         """.trimIndent()
         ).assert {
             require(this != null)
-            getFromKey<String>("levelOneString") shouldBe "nmbr1!"
+            string("levelOneString") shouldBe "nmbr1!"
             getFromKey<List<Int>>("level3List").assert {
                 require(this != null)
                 size shouldBe 10
                 first() shouldBe 1
                 last() shouldBe 10
             }
-            getFromKey<String>("level4StringValue") shouldBe "Hurra!"
-            getFromKey<String>("level3Object.level4StringValue") shouldBe "Hurra!"
-            getAllValuesForKey<String>("duplicateValue")!!.size shouldBe 3
-        }
-    }
-
-    @Test
-    fun `Kaster ikke nullpointerexception`() {
-        val sakstemaer = listOf("DAG", "FOR")
-        val safResponse = """
-        {  
-          "data": {
-            "dokumentoversiktSelvbetjening": {
-              "tema": ${
-            sakstemaer.joinToString(prefix = "[", postfix = "]") { """{ "kode": "$it" }""".trimIndent() }
-        }
+            string("level4StringValue") shouldBe "Hurra!"
+            stringOrNull("level4StringValue") shouldBe "Hurra!"
+            string("level3Object.level4StringValue") shouldBe "Hurra!"
+            stringOrNull("level3Object.level4StringValue") shouldBe "Hurra!"
+            assertThrows<MultipleValuesInJsonPathSearchException> {
+                string("duplicateValue")
             }
-          }
+            assertThrows<JsonPathSearchException> { string("notakey")  }
+            stringOrNull("notakey") shouldBe null
         }
-    ""${'"'}.trimIndent()
-""".trimIndent()
-        NullOrJsonNode.initObjectMapper(safResponse)
-            ?.getFromPath<List<String>>("data.dokumentoversiktSelvbetjening.tema..kode")
-            .assert {
-                require(this != null)
-                this.size shouldBe 2
-            }
-        val arb = NullOrJsonNode.initObjectMapper(
-            """
-        {
-          "erArbeidssoker": false,
-          "erStandard": false
-        }
-    """.trimIndent()
-        )
-
-        assertDoesNotThrow { arb!!.getFromKey<Boolean>("noe") }
     }
 }

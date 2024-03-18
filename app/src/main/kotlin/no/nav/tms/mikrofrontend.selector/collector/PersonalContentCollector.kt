@@ -59,9 +59,9 @@ class PersonalContentFactory(
                     microfrontends = microfrontends
                 ).ids(),
             offerStepup = microfrontends?.offerStepup(innloggetnivå)?:false,
-            aiaStandardWrapper = arbeidsøkerResponse.erStandard && arbeidsøkerResponse.erArbeidssoker,
-            oppfolgingContent = oppfolgingResponse.underOppfolging ?: false,
-            meldekort = meldekortResponse.harMeldekort()
+            aiaStandard = arbeidsøkerResponse.erStandard && arbeidsøkerResponse.erArbeidssoker,
+            oppfolgingContent = oppfolgingResponse.underOppfolging,
+            meldekort = meldekortResponse.harMeldekort
         ).apply {
             errors = listOf(
                 arbeidsøkerResponse,
@@ -76,11 +76,8 @@ class PersonalContentResponse(
     val microfrontends: List<MicrofrontendsDefinition>,
     val produktkort: List<String>,
     val offerStepup: Boolean,
-    @JsonProperty("aia_standard_wrapper")
-    val aiaStandardWrapper: Boolean,
-    @JsonProperty("oppfolgingContent")
+    val aiaStandard: Boolean,
     val oppfolgingContent: Boolean,
-    @JsonProperty
     val meldekort: Boolean
 ) {
     @JsonIgnore

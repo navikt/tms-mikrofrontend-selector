@@ -4,7 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsJsonNode
+import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokendings.exchange.TokendingsService
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
 
@@ -57,10 +57,10 @@ class ServicesFetcher(
                 if (response.status != HttpStatusCode.OK) {
                     SafResponse(response = response)
                 } else {
-                    val jsonResponse = response.bodyAsJsonNode()
+                    val jsonResponse = response.bodyAsNullOrJsonNode()
                     SafResponse(
-                        sakstemakoder = jsonResponse?.getFromPath<List<String>>("data.dokumentoversiktSelvbetjening.tema..kode"),
-                        errors = jsonResponse?.getFromPath<List<String>>("errors..message")
+                        sakstemakoder = jsonResponse?.list<String>("data.dokumentoversiktSelvbetjening.tema..kode"),
+                        errors = jsonResponse?.list<String>("errors..message")
                     )
                 }
             }
@@ -76,7 +76,7 @@ class ServicesFetcher(
                 OppfolgingResponse(response = response)
             else
                 OppfolgingResponse(
-                    underOppfolging = response.bodyAsJsonNode()?.getFromKey<Boolean>("underOppfolging")
+                    underOppfolging = response.bodyAsNullOrJsonNode()?.boolean("underOppfolging")
                 )
         }
     }
@@ -91,10 +91,10 @@ class ServicesFetcher(
             if (response.status != HttpStatusCode.OK)
                 ArbeidsøkerResponse(response = response)
             else
-                response.bodyAsJsonNode().let { jsonNode ->
+                response.bodyAsNullOrJsonNode().let { jsonNode ->
                     ArbeidsøkerResponse(
-                        erArbeidssoker = jsonNode?.getFromKey<Boolean>("erArbeidssoker") ?: false,
-                        erStandard = jsonNode?.getFromKey<Boolean>("erStandard") ?: false
+                        erArbeidssoker = jsonNode?.boolean("erArbeidssoker") ?: false,
+                        erStandard = jsonNode?.boolean("erStandard") ?: false
                     )
                 }
 
@@ -105,13 +105,12 @@ class ServicesFetcher(
         httpClient.get("$meldekortUrl/api/person/meldekortstatus") {
             header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, meldekortClientId)}")
             header("Content-Type", "application/json")
-            //TODO: body
         }.let { response ->
             if (response.status != HttpStatusCode.OK)
-                MeldekortResponse(response = response)
+                MeldekortResponse(response = response, errors = "Kall til meldekortstatus feiler med ${response.status}")
             else
-                response.bodyAsJsonNode().let {
-                    MeldekortResponse(false)
+                response.bodyAsNullOrJsonNode().let {
+                    MeldekortResponse(meldekortApiResponse = response.bodyAsNullOrJsonNode())
                 }
 
         }
