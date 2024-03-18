@@ -75,11 +75,24 @@ class SafRoute(
 """.trimIndent()
 }
 
-class MeldekortRoute : RouteProvider(path = "api/person/meldekortstatus", routeMethodFunction = Routing::get) {
+class MeldekortRoute(private val harMeldekort: Boolean = false) :
+    RouteProvider(path = "api/person/meldekortstatus", routeMethodFunction = Routing::get) {
 
     //TODO
-    override fun content(): String {
-        return """
+    override fun content(): String = if (harMeldekort)
+        """{
+          "antallGjenstaaendeFeriedager": 0,
+          "etterregistrerteMeldekort": 2,
+          "meldekort": 2,
+          "nesteInnsendingAvMeldekort": "2019-09-30",
+          "nesteMeldekort": {
+            "fra": "2019-09-09",
+            "kanSendesFra": "2019-09-21",
+            "til": "2024-09-22",
+            "uke": "37-38"
+          }
+        }""".trimIndent()
+    else """
             {
               "meldekort": 0,
               "etterregistrerteMeldekort": 0,
@@ -88,8 +101,8 @@ class MeldekortRoute : RouteProvider(path = "api/person/meldekortstatus", routeM
               "nesteInnsendingAvMeldekort": null
             }
         """.trimIndent()
-    }
 }
+
 
 class OppfolgingRoute(private val underOppfølging: Boolean = false) :
     RouteProvider(path = "api/niva3/underoppfolging", routeMethodFunction = Routing::get) {

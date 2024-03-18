@@ -52,7 +52,7 @@ internal class ApiTest {
     }
 
     @Test
-    fun `Skal svare med liste over mikrofrontends og manifest med nivå 4`() = testApplication {
+    fun `Skal svare med liste over mikrofrontends,meldekort og manifest med for loa-high`() = testApplication {
         val testIdent = "12345678910"
         val expectedMicrofrontends = mutableMapOf(
             "mk1" to "https://cdn.test/mk1.json",
@@ -63,7 +63,7 @@ internal class ApiTest {
         initSelectorApi(testident = testIdent)
         initExternalServices(
             SafRoute(sakstemaer = listOf("DAG")),
-            MeldekortRoute(),
+            MeldekortRoute(harMeldekort = true),
             OppfolgingRoute(false),
             ArbeidsøkerRoute()
         )
@@ -99,7 +99,7 @@ internal class ApiTest {
                 getFromKeyOrException<List<String>>("produktkort").size shouldBe 1
                 boolean("aiaStandard") shouldBe false
                 boolean("oppfolgingContent") shouldBe false
-                boolean("meldekort") shouldBe false
+                boolean("meldekort") shouldBe true
                 boolean("offerStepup") shouldBe false
             }
         }
