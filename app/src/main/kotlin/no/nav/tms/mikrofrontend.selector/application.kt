@@ -27,10 +27,12 @@ fun main() {
         safClientId = environment.safClientId,
         httpClient = HttpClient { configureJackson() },
         tokendingsService = TokendingsServiceBuilder.buildTokendingsService(),
-        oppfølgingClientId = "todo",
-        oppfølgingBase = "todo",
-        aiaBackendUrl = "todo",
-        aiaBackendClientId = "todo", meldekortUrl ="todo", meldekortClientId = "todo",
+        oppfølgingClientId = environment.oppfolgingClienId,
+        oppfølgingBaseUrl = environment.oppfolgingUrl,
+        aiaBackendUrl = environment.aiaUrl,
+        aiaBackendClientId = environment.aiaClientId,
+        meldekortUrl =environment.meldekortUrl,
+        meldekortClientId = environment.meldekortClientId,
 
         )
 

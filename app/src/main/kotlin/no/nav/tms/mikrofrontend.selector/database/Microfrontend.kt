@@ -49,45 +49,12 @@ class Microfrontends(initialJson: String? = null) {
             node["microfrontend_id"].asText() == microfrontendId
         }
 
-    fun contentLogMessage() =
-        newData.joinToString(prefix = "[", postfix = "]", separator = ",") { it["microfrontend_id"].asText() }
-
-    fun apiResponse(innloggetnivå: Int, manifestMap: Map<String, String>): String = """
-        { 
-           "microfrontends": ${
-        newData
-            .filter { Sensitivitet.fromJsonNode(it["sensitivitet"]) <= innloggetnivå }
-            .mapNotNull {
-                val id = it["microfrontend_id"].asText()
-                val url = manifestMap[id]
-                if (url == null) {
-                    log.error { "Fant ikke manifest for microfrontend med id $id" }
-                    null
-                } else {
-                    mapOf(
-                        "microfrontend_id" to id,
-                        "url" to manifestMap[id]
-                    ).let { contentMap ->
-                        objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contentMap)
-                    }
-                }
-            }.jsonArrayString()
-    }, 
-           "offerStepup": ${newData.any { Sensitivitet.fromJsonNode(it["sensitivitet"]) > innloggetnivå }} 
-        }
-        """.trimIndent()
 
     fun newDataJsonB(): PGobject = """{ "microfrontends": ${newData.jsonArrayString()}}""".trimMargin().jsonB()
     fun originalDataJsonB(): PGobject? =
         originalData?.let { """{ "microfrontends": ${it.jsonArrayString()}}""".trimMargin() }?.jsonB()
 
     private fun Collection<JsonNode>.jsonArrayString(): String = joinToString(
-        prefix = "[",
-        postfix = "]",
-        separator = ",",
-    )
-
-    private fun List<String>.jsonArrayString(): String = joinToString(
         prefix = "[",
         postfix = "]",
         separator = ",",
@@ -106,7 +73,7 @@ class Microfrontends(initialJson: String? = null) {
                 val url = manifestMap[id]
                 if (url.isNullOrEmpty()) null
                 else MicrofrontendsDefinition(id = id, url = url)
-            }.also { log.info { "Henter microfrontend definisjoner: $it" } }
+            }
 
     fun offerStepup(innloggetnivå: Int): Boolean =
         newData.any { Sensitivitet.fromJsonNode(it["sensitivitet"]) > innloggetnivå }

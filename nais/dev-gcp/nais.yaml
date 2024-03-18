@@ -34,6 +34,15 @@ spec:
       rules:
         - application: tms-min-side-proxy
     outbound:
+      rules:
+        - application: meldekort-api-q2
+          namespace: meldekort
+        - application: veilarboppfolging
+          namespace: pto
+          cluster: dev-fss
+        - application: aia-backend
+          namespace: paw
+          cluster: dev-gcp
       external:
         - host: "safselvbetjening-q1.dev-fss-pub.nais.io"
   gcp:
@@ -72,4 +81,16 @@ spec:
       value: https://safselvbetjening-q1.dev-fss-pub.nais.io
     - name: SAF_CLIENT_ID
       value: dev-fss:teamdokumenthandtering:safselvbetjening-q1
+    - name: OPPFOLGING_API_URL
+      value: https://veilarboppfolging.dev-fss-pub.nais.io/veilarboppfolging
+    - name: OPPFOLGING_CLIENT_ID
+      value: dev-fss:pto:veilarboppfolging
+    - name: AIA_API_URL
+      value: http://aia-backend.paw
+    - name: AIA_CLIENT_ID
+      value: dev-gcp:paw:aia-backend
+    - name: MELDEKORT_BASE_URL
+      value: http://meldekort-api-q2.meldekort/meldekort/meldekort-api
+    - name: MELDEKORT_CLIENT_ID
+      value: dev-gcp:meldekort:meldekort-api-q2
 

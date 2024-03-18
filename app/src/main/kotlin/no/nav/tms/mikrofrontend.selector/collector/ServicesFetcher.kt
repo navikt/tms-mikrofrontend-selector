@@ -13,7 +13,7 @@ class ServicesFetcher(
     val safClientId: String,
     val httpClient: HttpClient,
     val tokendingsService: TokendingsService,
-    val oppfølgingBase: String,
+    val oppfølgingBaseUrl: String,
     val oppfølgingClientId: String,
     val aiaBackendUrl: String,
     val aiaBackendClientId: String,
@@ -67,7 +67,7 @@ class ServicesFetcher(
     }
 
     suspend fun fetchOppfolging(user: TokenXUser): OppfolgingResponse = withErrorHandling {
-        httpClient.get("$oppfølgingBase/api/niva3/underoppfolging") {
+        httpClient.get("$oppfølgingBaseUrl/api/niva3/underoppfolging") {
             header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, oppfølgingClientId)}")
             header("Content-Type", "application/json")
             //BODY?

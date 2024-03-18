@@ -20,7 +20,9 @@ class PersonalContentCollector(
 ) {
     suspend fun getContent(user: TokenXUser, innloggetnivå: Int): PersonalContentResponse {
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
-        return asyncCollector(user).build(microfrontends,innloggetnivå,manifestStorage.getManifestBucketContent())
+        return asyncCollector(user).build(microfrontends,innloggetnivå,manifestStorage.getManifestBucketContent()).also {
+            produktkortCounter.countProduktkort(it.produktkort)
+        }
     }
 
 
