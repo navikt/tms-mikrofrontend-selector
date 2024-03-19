@@ -27,7 +27,7 @@ data class Environment(
     val aiaUrl: String = getEnvVar("AIA_API_URL"),
     val aiaClientId: String = getEnvVar("AIA_CLIENT_ID"),
     val oppfolgingUrl: String = getEnvVar("OPPFOLGING_API_URL"),
-    val oppfolgingClienId: String = getEnvVar("OPPFOLGING_CLIENT_IDL"),
+    val oppfolgingClienId: String = getEnvVar("OPPFOLGING_CLIENT_ID"),
     val meldekortUrl:String = getEnvVar("MELDEKORT_BASE_URL"),
     val meldekortClientId :String = getEnvVar("MELDEKORT_CLIENT_ID")
 
