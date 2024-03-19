@@ -65,7 +65,6 @@ class ServicesFetcher(
         httpClient.get("$oppfølgingBaseUrl/api/niva3/underoppfolging") {
             header("Authorization", "Bearer ${tokenFetcher.oppfolgingToken(user)}")
             header("Content-Type", "application/json")
-            //BODY?
         }.let { response ->
             if (response.status != HttpStatusCode.OK)
                 OppfolgingResponse(response = response)

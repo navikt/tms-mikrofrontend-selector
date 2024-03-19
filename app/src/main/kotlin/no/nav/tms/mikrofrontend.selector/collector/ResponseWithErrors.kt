@@ -6,8 +6,8 @@ abstract class ResponseWithErrors private constructor() {
     private var errors: String? = null
     abstract val source: String
 
-    constructor(error: String? = null, response: HttpResponse? = null) : this() {
-        errors = (error ?: "") + (response?.let { "; Status fra ${it.request.url} er ${it.status}" } ?: "")
+    constructor(error: String? = null, response: HttpResponse? = null, bodyAsText: String?= null) : this() {
+        errors = (error ?: "") + (response?.let { "; Status fra ${it.request.url} er ${it.status} $bodyAsText" } ?: "")
     }
 
     fun errorMessage() = if (!errors.isNullOrEmpty()) errors.let { "Kall til $source feiler: $errors" } else null
