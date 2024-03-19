@@ -114,7 +114,7 @@ class NullOrJsonNode private constructor(jsonString: String, val debugLog: Boole
     fun intOrNull(path: String) = resolveFunction<Int>(path)
 
     fun logNotFound(path: String, jsonNode: JsonNode?) {
-        log.warn { "Fant ikke '$path' i json: ${jsonNode?.toPrettyString()?.redactedMessage(debugLog) ?: "tom json"}" }
+        log.debug { "Fant ikke '$path' i json: ${jsonNode?.toPrettyString()?.redactedMessage(debugLog) ?: "tom json"}" }
     }
 
     companion object {
@@ -130,7 +130,7 @@ class NullOrJsonNode private constructor(jsonString: String, val debugLog: Boole
                     if (keepAll)
                         it
                     else
-                        substringOrAll(0..20)
+                        substringOrAll(0..50)
                 }
 
         private fun String.substringOrAll(intRange: IntRange): String =
