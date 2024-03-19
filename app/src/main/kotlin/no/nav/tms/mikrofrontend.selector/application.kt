@@ -7,6 +7,7 @@ import no.nav.helse.rapids_rivers.RapidApplication.RapidApplicationConfig.Compan
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ServicesFetcher
+import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.database.Flyway
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.database.PostgresDatabase
@@ -23,17 +24,18 @@ fun main() {
     )
 
     val servicesFetcher = ServicesFetcher(
-        safUrl = environment.safUrl,
-        safClientId = environment.safClientId,
         httpClient = HttpClient { configureJackson() },
-        tokendingsService = TokendingsServiceBuilder.buildTokendingsService(),
-        oppfølgingClientId = environment.oppfolgingClienId,
         oppfølgingBaseUrl = environment.oppfolgingUrl,
         aiaBackendUrl = environment.aiaUrl,
-        aiaBackendClientId = environment.aiaClientId,
         meldekortUrl =environment.meldekortUrl,
-        meldekortClientId = environment.meldekortClientId,
-
+        safUrl = environment.safUrl,
+        tokenFetcher = TokenFetcher(
+            tokendingsService = TokendingsServiceBuilder.buildTokendingsService(),
+            meldekortClientId = environment.meldekortClientId,
+            oppfølgingClientId = environment.oppfolgingClienId,
+            safClientId = environment.safClientId,
+            aiaClientId = environment.aiaClientId
+        )
         )
 
     startRapid(

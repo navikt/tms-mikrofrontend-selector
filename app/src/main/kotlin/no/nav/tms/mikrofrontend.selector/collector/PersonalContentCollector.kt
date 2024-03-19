@@ -33,11 +33,13 @@ class PersonalContentCollector(
             val arbeidsøkerResponse = async { servicesFetcher.fetchArbeidsøker(user) }
             val oppfolgingResponse = async { servicesFetcher.fetchOppfolging(user) }
             val meldekortResponse = async { servicesFetcher.fetchMeldekort(user) }
+            val pdlResponse = async { servicesFetcher.fetchPersonOpplysninger(user) }
             return@coroutineScope PersonalContentFactory(
                 arbeidsøkerResponse = arbeidsøkerResponse.await(),
                 safResponse = safResponse.await(),
                 meldekortResponse = meldekortResponse.await(),
-                oppfolgingResponse = oppfolgingResponse.await()
+                oppfolgingResponse = oppfolgingResponse.await(),
+                pdlResponse = pdlResponse.await()
             )
         }
     }
@@ -48,6 +50,7 @@ class PersonalContentFactory(
     val safResponse: SafResponse,
     val meldekortResponse: MeldekortResponse,
     val oppfolgingResponse: OppfolgingResponse,
+    val pdlResponse: PdlResponse
 ) {
     fun build(
         microfrontends: Microfrontends?,
@@ -65,7 +68,7 @@ class PersonalContentFactory(
             aiaStandard = arbeidsøkerResponse.erStandard && arbeidsøkerResponse.erArbeidssoker,
             oppfolgingContent = oppfolgingResponse.underOppfolging,
             meldekort = meldekortResponse.harMeldekort,
-            aktuelt = Akutelt.getAktueltContent(safResponse.sakstemakoder,manifestMap)
+            aktuelt = Akutelt.getAktueltContent(0,safResponse.sakstemakoder,manifestMap)
         ).apply {
             errors = listOf(
                 arbeidsøkerResponse,
