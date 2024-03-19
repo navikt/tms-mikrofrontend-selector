@@ -5,20 +5,15 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsNullOrJsonNode
-import no.nav.tms.token.support.tokendings.exchange.TokendingsService
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
 
 class ServicesFetcher(
     val safUrl: String,
-    val safClientId: String,
     val httpClient: HttpClient,
-    val tokendingsService: TokendingsService,
     val oppfølgingBaseUrl: String,
-    val oppfølgingClientId: String,
     val aiaBackendUrl: String,
-    val aiaBackendClientId: String,
     val meldekortUrl: String,
-    val meldekortClientId: String,
+    val tokenFetcher: TokenFetcher
 ) {
 
     val log = KotlinLogging.logger { }
@@ -49,7 +44,7 @@ class ServicesFetcher(
     suspend fun fetchSakstema(user: TokenXUser): SafResponse = withErrorHandling {
         httpClient.post {
             url("$safUrl/graphql")
-            header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, safClientId)}")
+            header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
             header("Content-Type", "application/json")
             setBody(query(user.ident))
         }
@@ -68,7 +63,7 @@ class ServicesFetcher(
 
     suspend fun fetchOppfolging(user: TokenXUser): OppfolgingResponse = withErrorHandling {
         httpClient.get("$oppfølgingBaseUrl/api/niva3/underoppfolging") {
-            header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, oppfølgingClientId)}")
+            header("Authorization", "Bearer ${tokenFetcher.oppfolgingToken(user)}")
             header("Content-Type", "application/json")
             //BODY?
         }.let { response ->
@@ -84,9 +79,8 @@ class ServicesFetcher(
 
     suspend fun fetchArbeidsøker(user: TokenXUser): ArbeidsøkerResponse = withErrorHandling {
         httpClient.get("$aiaBackendUrl/aia-backend/er-arbeidssoker") {
-            header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, aiaBackendClientId)}")
+            header("Authorization", "Bearer ${tokenFetcher.aiaToken(user)}")
             header("Content-Type", "application/json")
-            //TODO: body
         }.let { response ->
             if (response.status != HttpStatusCode.OK)
                 ArbeidsøkerResponse(response = response)
@@ -103,11 +97,14 @@ class ServicesFetcher(
 
     suspend fun fetchMeldekort(user: TokenXUser): MeldekortResponse = withErrorHandling {
         httpClient.get("$meldekortUrl/api/person/meldekortstatus") {
-            header("Authorization", "Bearer ${tokendingsService.exchangeToken(user.tokenString, meldekortClientId)}")
+            header("Authorization", "Bearer ${tokenFetcher.meldekortToken(user)}")
             header("Content-Type", "application/json")
         }.let { response ->
             if (response.status != HttpStatusCode.OK)
-                MeldekortResponse(response = response, errors = "Kall til meldekortstatus feiler med ${response.status}")
+                MeldekortResponse(
+                    response = response,
+                    errors = "Kall til meldekortstatus feiler med ${response.status}"
+                )
             else
                 response.bodyAsNullOrJsonNode().let {
                     MeldekortResponse(meldekortApiResponse = response.bodyAsNullOrJsonNode())
@@ -115,6 +112,7 @@ class ServicesFetcher(
 
         }
     }
+
     private suspend fun <T> withErrorHandling(function: suspend () -> T) =
         try {
             function()
@@ -123,5 +121,10 @@ class ServicesFetcher(
         }
 
     class ApiException(e: Exception) :
-        Exception("Kall til eksterne tjenester feiler: ${e.message ?: e::class.simpleName}")
+        Exception(
+            """
+            |Kall til eksterne tjenester feiler: ${errorDetails(e)}. 
+           
+        """.trimMargin()
+        )
 }

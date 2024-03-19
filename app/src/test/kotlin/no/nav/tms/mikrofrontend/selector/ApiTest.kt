@@ -9,11 +9,14 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.testing.*
+import io.mockk.coEvery
+import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ServicesFetcher
+import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
@@ -261,15 +264,16 @@ internal class ApiTest {
                     manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
                     servicesFetcher = ServicesFetcher(
                         safUrl = testHost,
-                        safClientId = "clientId",
                         httpClient = apiClient,
-                        tokendingsService = tokendingsmockk,
                         oppfølgingBaseUrl = testHost,
-                        oppfølgingClientId = "oppfolging",
                         aiaBackendUrl = testHost,
-                        aiaBackendClientId = "clientaia",
                         meldekortUrl = testHost,
-                        meldekortClientId = "clientmeldekort",
+                        tokenFetcher = mockk<TokenFetcher>().apply {
+                            coEvery { oppfolgingToken(any()) } returns "<oppfolging>"
+                            coEvery { meldekortToken(any()) } returns "<meldekort>"
+                            coEvery { safToken(any()) } returns "<saf>"
+                            coEvery { aiaToken(any()) } returns "<aia>"
+                        },
                     ),
                     produktkortCounter = testproduktkortCounter
                 ),

@@ -62,3 +62,12 @@ class ArbeidsøkerResponse(
 ) : ResponseWithErrors(errors, response) {
     override val source = "aia-backend"
 }
+
+fun errorDetails(exception: Exception) {
+    exception.stackTrace.firstOrNull()?.let { stacktraceElement ->
+        """
+                   Origin: ${stacktraceElement.fileName ?: "---"} ${stacktraceElement.methodName ?: "----"} linenumber:${stacktraceElement.lineNumber}
+                   melding: "${exception::class.simpleName} ${exception.message?.let { ":$it" }}"
+                """.trimIndent()
+    } ?: "${exception::class.simpleName} ${exception.message?.let { ":$it" }}"
+}
