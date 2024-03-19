@@ -12,7 +12,7 @@ class NullOrJsonNode private constructor(jsonString: String, val debugLog: Boole
     val parsedJsonPath = try {
         JsonPath.parse(jsonString).also {
             if (it == null)
-                log.warn { "Could not parse inputstring to json: ${jsonString.redactedMessage(debugLog)}" }
+                log.debug { "Could not parse inputstring to json: ${jsonString.redactedMessage(debugLog)}" }
         }
     } catch (e: Exception) {
         throw JsonPathParseException(e = e, jsonString = jsonString, debugLog = debugLog)

@@ -182,7 +182,8 @@ private fun testFactory(
         arbeidsøkerResponse = arbeidsøkerResponse,
         safResponse = safResponse,
         meldekortResponse = meldekortResponse,
-        oppfolgingResponse = oppfolgingResponse
+        oppfolgingResponse = oppfolgingResponse,
+        pdlResponse = PdlResponse(0) //TODO
     )
 
 private fun microfrontendMocck(
