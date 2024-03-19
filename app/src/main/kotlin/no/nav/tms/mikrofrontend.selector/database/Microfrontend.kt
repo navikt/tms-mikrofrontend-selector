@@ -69,10 +69,7 @@ class Microfrontends(initialJson: String? = null) {
         newData
             .filter { Sensitivitet.fromJsonNode(it["sensitivitet"]) <= innloggetnivå }
             .mapNotNull {
-                val id = it["microfrontend_id"].asText()
-                val url = manifestMap[id]
-                if (url.isNullOrEmpty()) null
-                else MicrofrontendsDefinition(id = id, url = url)
+                MicrofrontendsDefinition.create(it["microfrontend_id"].asText(),manifestMap)
             }
 
     fun offerStepup(innloggetnivå: Int): Boolean =

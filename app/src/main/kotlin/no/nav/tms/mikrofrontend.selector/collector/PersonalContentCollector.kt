@@ -20,9 +20,10 @@ class PersonalContentCollector(
 ) {
     suspend fun getContent(user: TokenXUser, innloggetnivå: Int): PersonalContentResponse {
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
-        return asyncCollector(user).build(microfrontends,innloggetnivå,manifestStorage.getManifestBucketContent()).also {
-            produktkortCounter.countProduktkort(it.produktkort)
-        }
+        return asyncCollector(user).build(microfrontends, innloggetnivå, manifestStorage.getManifestBucketContent())
+            .also {
+                produktkortCounter.countProduktkort(it.produktkort)
+            }
     }
 
 
@@ -46,7 +47,7 @@ class PersonalContentFactory(
     val arbeidsøkerResponse: ArbeidsøkerResponse,
     val safResponse: SafResponse,
     val meldekortResponse: MeldekortResponse,
-    val oppfolgingResponse: OppfolgingResponse
+    val oppfolgingResponse: OppfolgingResponse,
 ) {
     fun build(
         microfrontends: Microfrontends?,
@@ -54,16 +55,17 @@ class PersonalContentFactory(
         manifestMap: Map<String, String>,
     ): PersonalContentResponse =
         PersonalContentResponse(
-            microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestMap)?: emptyList(),
+            microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestMap) ?: emptyList(),
             produktkort = ProduktkortVerdier
                 .resolveProduktkort(
                     koder = safResponse.sakstemakoder,
                     microfrontends = microfrontends
                 ).ids(),
-            offerStepup = microfrontends?.offerStepup(innloggetnivå)?:false,
+            offerStepup = microfrontends?.offerStepup(innloggetnivå) ?: false,
             aiaStandard = arbeidsøkerResponse.erStandard && arbeidsøkerResponse.erArbeidssoker,
             oppfolgingContent = oppfolgingResponse.underOppfolging,
-            meldekort = meldekortResponse.harMeldekort
+            meldekort = meldekortResponse.harMeldekort,
+            aktuelt = Akutelt.getAktueltContent(safResponse.sakstemakoder,manifestMap)
         ).apply {
             errors = listOf(
                 arbeidsøkerResponse,
@@ -80,7 +82,8 @@ class PersonalContentResponse(
     val offerStepup: Boolean,
     val aiaStandard: Boolean,
     val oppfolgingContent: Boolean,
-    val meldekort: Boolean
+    val meldekort: Boolean,
+    val aktuelt: List<MicrofrontendsDefinition>
 ) {
     @JsonIgnore
     var errors: String? = null
@@ -88,8 +91,16 @@ class PersonalContentResponse(
         if (errors.isNullOrEmpty()) HttpStatusCode.OK else HttpStatusCode.MultiStatus
 }
 
-data class MicrofrontendsDefinition(
+open class MicrofrontendsDefinition(
     @JsonProperty("microfrontend_id")
     val id: String,
     val url: String
-)
+) {
+    companion object {
+        fun create(id: String, manifestMap: Map<String, String>) = manifestMap[id]
+            .takeUnless { it.isNullOrEmpty() }
+            ?.let { url ->
+                MicrofrontendsDefinition(id,url)
+            }
+    }
+}

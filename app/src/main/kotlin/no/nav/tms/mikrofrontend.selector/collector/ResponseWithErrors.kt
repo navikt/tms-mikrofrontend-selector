@@ -62,3 +62,12 @@ class ArbeidsøkerResponse(
 ) : ResponseWithErrors(errors, response) {
     override val source = "aia-backend"
 }
+
+class PdlResponse(
+    val alder: Int = 0,
+    errors: String? = null,
+    response: HttpResponse? = null
+
+) : ResponseWithErrors(errors, response) {
+    override val source = "aia-backend"
+}

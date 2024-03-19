@@ -170,7 +170,7 @@ class PersonalContentFactoryTest {
 }
 
 private operator fun MicrofrontendsDefinition.times(i: Int): List<MicrofrontendsDefinition> =
-    (1..i).map { this.copy(id = "$id$it", url = "$url$it") }
+    (1..i).map { MicrofrontendsDefinition(id = "$id$it", url = "$url$it") }
 
 private fun testFactory(
     arbeidsøkerResponse: ArbeidsøkerResponse = ArbeidsøkerResponse(false, false),

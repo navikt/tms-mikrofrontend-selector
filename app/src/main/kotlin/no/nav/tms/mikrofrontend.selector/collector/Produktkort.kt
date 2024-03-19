@@ -3,14 +3,14 @@ package no.nav.tms.mikrofrontend.selector.collector
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 
 
-abstract class ProduktkortRegel {
+abstract class ContentRule {
     abstract fun applyRule(microfrontends: List<String>): Boolean
 }
 
 class Produktkort(
     val id: String,
     val navn: String,
-    val rules: List<ProduktkortRegel> = emptyList()
+    val rules: List<ContentRule> = emptyList()
 ) {
 
     fun skalVises(microfrontends: List<String>) =

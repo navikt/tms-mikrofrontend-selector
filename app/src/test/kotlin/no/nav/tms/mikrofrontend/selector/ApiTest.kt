@@ -52,6 +52,70 @@ internal class ApiTest {
     }
 
     @Test
+    fun `Skal svare med liste over regelstyrte of kafkabaserte microfrontends`() = testApplication {
+        val testIdent = "12345678910"
+        val regelstyrtAktuell = Pair("ra1", "https://cdn.test/ra1.json")
+        val regelstyrtDinOversikt = Pair("rm1", "https://cdn.test/rm1.json")
+        val kafkastyrtDinOversikt = Pair("rm1", "https://cdn.test/rm1.json")
+
+        initSelectorApi(testident = testIdent)
+        initExternalServices(
+            SafRoute(sakstemaer = listOf("DAG")),
+            MeldekortRoute(harMeldekort = true),
+            OppfolgingRoute(false),
+            ArbeidsøkerRoute()
+        )
+
+        gcpStorage.updateManifest(mutableMapOf(regelstyrtAktuell, regelstyrtDinOversikt, kafkastyrtDinOversikt))
+
+        testRapid.sendTestMessage(
+            currentVersionMessage(
+                messageRequirements = EnableMessage,
+                ident = testIdent,
+                microfrontendId = kafkastyrtDinOversikt.first
+            )
+        )
+
+        client.get("/microfrontends").assert {
+            status shouldBe HttpStatusCode.OK
+            bodyAsNullOrJsonNode(true).assert {
+                require(this != null)
+                getFromKey<List<JsonNode>>("microfrontends").assert {
+                    require(this != null)
+                    size shouldBe 2
+                    this.find {
+                        it["microfrontend_id"].asText() == kafkastyrtDinOversikt.first
+                    }.assert {
+                        require(this != null)
+                        this["url"].asText() shouldBe kafkastyrtDinOversikt.second
+
+                    }
+                    this.find {
+                        it["microfrontend_id"].asText() == kafkastyrtDinOversikt.first
+                    }.assert {
+                        require(this != null)
+                        this["url"].asText() shouldBe kafkastyrtDinOversikt.second
+
+                    }
+                }
+                getAllValuesForPath<String>("microfrontends..url")
+
+                getFromKey<List<JsonNode>>("aktuell").assert {
+                    require(this != null)
+                    size shouldBe 1
+                    this.find {
+                        it["microfrontend_id"].asText() == regelstyrtAktuell.first
+                    }.assert {
+                        require(this != null)
+                        this["url"].asText() shouldBe regelstyrtAktuell.second
+                    }
+                }
+            }
+
+        }
+
+    }
+    @Test
     fun `Skal svare med liste over mikrofrontends,meldekort og manifest med for loa-high`() = testApplication {
         val testIdent = "12345678910"
         val expectedMicrofrontends = mutableMapOf(
@@ -264,7 +328,7 @@ internal class ApiTest {
                         safClientId = "clientId",
                         httpClient = apiClient,
                         tokendingsService = tokendingsmockk,
-                        oppfølgingBase = testHost,
+                        oppfølgingBaseUrl = testHost,
                         oppfølgingClientId = "oppfolging",
                         aiaBackendUrl = testHost,
                         aiaBackendClientId = "clientaia",
