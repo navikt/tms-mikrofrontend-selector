@@ -264,7 +264,7 @@ internal class ApiTest {
                         safClientId = "clientId",
                         httpClient = apiClient,
                         tokendingsService = tokendingsmockk,
-                        oppfølgingBase = testHost,
+                        oppfølgingBaseUrl = testHost,
                         oppfølgingClientId = "oppfolging",
                         aiaBackendUrl = testHost,
                         aiaBackendClientId = "clientaia",
