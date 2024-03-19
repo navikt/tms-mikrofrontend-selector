@@ -16,8 +16,9 @@ abstract class ResponseWithErrors private constructor() {
 class SafResponse(
     sakstemakoder: List<String>? = null,
     errors: List<String>? = null,
-    response: HttpResponse? = null
-) : ResponseWithErrors(errors?.joinToString(";"), response) {
+    response: HttpResponse? = null,
+    bodyAsText: String?= null
+) : ResponseWithErrors(errors?.joinToString(";"), response, bodyAsText) {
     val sakstemakoder = sakstemakoder ?: emptyList()
     override val source: String = "SAF"
 }
@@ -25,9 +26,10 @@ class SafResponse(
 class OppfolgingResponse(
     underOppfolging: Boolean? = false,
     error: String? = null,
-    response: HttpResponse? = null
+    response: HttpResponse? = null,
+    bodyAsText: String?= null
 ) :
-    ResponseWithErrors(error, response) {
+    ResponseWithErrors(error, response, bodyAsText) {
     val underOppfolging: Boolean = underOppfolging ?: false
     override val source = "Oppfølgingapi"
 }
@@ -35,8 +37,9 @@ class OppfolgingResponse(
 class MeldekortResponse(
     meldekortApiResponse: NullOrJsonNode? = null,
     errors: String? = null,
-    response: HttpResponse? = null
-) : ResponseWithErrors(errors, response) {
+    response: HttpResponse? = null,
+    bodyAsText: String?= null
+) : ResponseWithErrors(errors, response, bodyAsText) {
     //TODO
     override val source = "meldekort"
     val harMeldekort: Boolean =
@@ -57,9 +60,9 @@ class ArbeidsøkerResponse(
     val erArbeidssoker: Boolean = false,
     val erStandard: Boolean = false,
     errors: String? = null,
-    response: HttpResponse? = null
-
-) : ResponseWithErrors(errors, response) {
+    response: HttpResponse? = null,
+    bodyAsText: String?= null
+) : ResponseWithErrors(errors, response, bodyAsText) {
     override val source = "aia-backend"
 }
 

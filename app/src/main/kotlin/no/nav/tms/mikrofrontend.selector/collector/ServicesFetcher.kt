@@ -3,6 +3,7 @@ package no.nav.tms.mikrofrontend.selector.collector
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
@@ -50,7 +51,7 @@ class ServicesFetcher(
         }
             .let { response ->
                 if (response.status != HttpStatusCode.OK) {
-                    SafResponse(response = response)
+                    SafResponse(response = response, bodyAsText = response.bodyAsText())
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     SafResponse(
@@ -67,7 +68,7 @@ class ServicesFetcher(
             header("Content-Type", "application/json")
         }.let { response ->
             if (response.status != HttpStatusCode.OK)
-                OppfolgingResponse(response = response)
+                OppfolgingResponse(response = response, bodyAsText = response.bodyAsText())
             else
                 OppfolgingResponse(
                     underOppfolging = response.bodyAsNullOrJsonNode()?.boolean("underOppfolging")
@@ -82,7 +83,7 @@ class ServicesFetcher(
             header("Content-Type", "application/json")
         }.let { response ->
             if (response.status != HttpStatusCode.OK)
-                ArbeidsøkerResponse(response = response)
+                ArbeidsøkerResponse(response = response, bodyAsText = response.bodyAsText())
             else
                 response.bodyAsNullOrJsonNode().let { jsonNode ->
                     ArbeidsøkerResponse(
@@ -102,7 +103,8 @@ class ServicesFetcher(
             if (response.status != HttpStatusCode.OK)
                 MeldekortResponse(
                     response = response,
-                    errors = "Kall til meldekortstatus feiler med ${response.status}"
+                    errors = "Kall til meldekortstatus feiler med ${response.status}",
+                    bodyAsText = response.bodyAsText()
                 )
             else
                 response.bodyAsNullOrJsonNode().let {
