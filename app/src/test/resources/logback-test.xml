@@ -18,6 +18,6 @@
 
     <root level="DEBUG">
         <appender-ref ref="stdout"/>
-        <appender-ref ref="secureLog"/>
+        <!--appender-ref ref="secureLog"/-->
     </root>
 </configuration>

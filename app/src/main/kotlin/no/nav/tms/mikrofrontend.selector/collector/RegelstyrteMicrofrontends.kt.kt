@@ -1,8 +1,15 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
+import io.github.oshai.kotlinlogging.KotlinLogging
+
 
 sealed class RegelstyrtMicrofrontend(id: String, manifestMap: Map<String, String>) {
-    val definition = MicrofrontendsDefinition.create(id, manifestMap)
+    private val log = KotlinLogging.logger {  }
+    val definition = MicrofrontendsDefinition.create(id, manifestMap).also {
+        if(it==null)
+            log.debug { "Fant ikke manifest for regestyrt microfrontend med id $id i $manifestMap" }
+
+    }
     abstract fun skalVises(): Boolean
 
 }
@@ -27,11 +34,6 @@ object Akutelt {
         listOf(Pensjon(manifestMap = manifest, alder = alder, sakstemaer = sakstemaer))
             .filter { it.skalVises() }
             .mapNotNull { it.definition }
-
-    private fun String.getAgeFromFnr(): Int {
-
-        TODO()
-    }
 }
 
 

@@ -1,24 +1,70 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import io.ktor.client.statement.*
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
+import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
+import kotlin.reflect.KType
+import kotlin.reflect.full.isSubtypeOf
+import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.full.starProjectedType
 
-abstract class ResponseWithErrors private constructor() {
-    private var errors: String? = null
+
+abstract class ResponseWithErrors(private val errors: String? = null) {
+
     abstract val source: String
 
-    constructor(error: String? = null, response: HttpResponse? = null, bodyAsText: String?= null) : this() {
-        errors = (error ?: "") + (response?.let { "; Status fra ${it.request.url} er ${it.status} $bodyAsText" } ?: "")
-    }
-
     fun errorMessage() = if (!errors.isNullOrEmpty()) errors.let { "Kall til $source feiler: $errors" } else null
+
+    companion object {
+        suspend fun <T : ResponseWithErrors> createFromHttpError(httpResponse: HttpResponse, classRef: KClass<T>): T {
+            val errorMessage =
+                " Status fra ${httpResponse.request.url} er ${httpResponse.status} ${httpResponse.bodyAsText()}"
+            val constructor = classRef.primaryConstructor
+            if (constructor != null) {
+                val params = constructor.parameters
+                val args = params.map { parameter ->
+                    when {
+                        parameter.name != "errors" -> parameter.type.default()
+                        parameter.name == "errors" && parameter.type == String::class -> errorMessage
+                        parameter.name == "errors" && parameter.getListTypeOrNull() == String::class.starProjectedType -> listOf(
+                            errorMessage
+                        )
+
+                        else -> throw IllegalArgumentException("unexpected Ktype for parameter errors: ${parameter.type}")
+                    }
+                }.toTypedArray()
+                return constructor.call(*args)
+            } else throw IllegalArgumentException("${classRef.simpleName} does not have a primary constructor")
+        }
+
+
+        private fun KType.default(): Any? = when {
+            this.isMarkedNullable -> null
+            this == String::class.starProjectedType -> ""
+            this == Int::class.starProjectedType -> 0
+            this.isSubtypeOf(List::class.starProjectedType) -> {
+                val elementType = this.arguments.first().type ?: throw IllegalArgumentException("List type argument not found")
+                if (elementType == String::class.starProjectedType) {
+                    emptyList<String>()
+                } else {
+                    throw IllegalArgumentException("No default value defined for list of type $elementType")
+                }
+            }
+            else -> throw IllegalArgumentException("No default value defined for parameter of type $this")
+        }
+
+
+        private fun KParameter.getListTypeOrNull() = if (type.arguments.isNotEmpty()) type.arguments[0].type else null
+    }
 }
+
 
 class SafResponse(
     sakstemakoder: List<String>? = null,
     errors: List<String>? = null,
-    response: HttpResponse? = null,
-    bodyAsText: String?= null
-) : ResponseWithErrors(errors?.joinToString(";"), response, bodyAsText) {
+) : ResponseWithErrors(errors?.joinToString(";")) {
     val sakstemakoder = sakstemakoder ?: emptyList()
     override val source: String = "SAF"
 }
@@ -26,10 +72,8 @@ class SafResponse(
 class OppfolgingResponse(
     underOppfolging: Boolean? = false,
     error: String? = null,
-    response: HttpResponse? = null,
-    bodyAsText: String?= null
 ) :
-    ResponseWithErrors(error, response, bodyAsText) {
+    ResponseWithErrors(error) {
     val underOppfolging: Boolean = underOppfolging ?: false
     override val source = "Oppfølgingapi"
 }
@@ -37,9 +81,7 @@ class OppfolgingResponse(
 class MeldekortResponse(
     meldekortApiResponse: NullOrJsonNode? = null,
     errors: String? = null,
-    response: HttpResponse? = null,
-    bodyAsText: String?= null
-) : ResponseWithErrors(errors, response, bodyAsText) {
+) : ResponseWithErrors(errors) {
     //TODO
     override val source = "meldekort"
     val harMeldekort: Boolean =
@@ -59,26 +101,27 @@ class MeldekortResponse(
 class ArbeidsøkerResponse(
     val erArbeidssoker: Boolean = false,
     val erStandard: Boolean = false,
-    errors: String? = null,
-    response: HttpResponse? = null,
-    bodyAsText: String?= null
-) : ResponseWithErrors(errors, response, bodyAsText) {
+    errors: String? = null
+) : ResponseWithErrors(errors) {
     override val source = "aia-backend"
 }
 
 class PdlResponse(
-    val alder: Int = 0,
-    errors: String? = null,
-    response: HttpResponse? = null
-) : ResponseWithErrors(errors, response) {
-    override val source = "aia-backend"
+    val fødselsdato: LocalDate? = null,
+    val fødselsår: Int,
+    errors: List<String>? = null,
+) : ResponseWithErrors(errors?.joinToString(";")) {
+    override val source = "pdl"
+    fun calculateAge() = when {
+        fødselsdato != null -> ChronoUnit.YEARS.between(fødselsdato, LocalDate.now()).toInt()
+        else -> LocalDate.now().year - fødselsår
+    }
 }
 
-fun errorDetails(exception: Exception) {
+fun errorDetails(exception: Exception) =
     exception.stackTrace.firstOrNull()?.let { stacktraceElement ->
         """
                    Origin: ${stacktraceElement.fileName ?: "---"} ${stacktraceElement.methodName ?: "----"} linenumber:${stacktraceElement.lineNumber}
                    melding: "${exception::class.simpleName} ${exception.message?.let { ":$it" }}"
                 """.trimIndent()
     } ?: "${exception::class.simpleName} ${exception.message?.let { ":$it" }}"
-}

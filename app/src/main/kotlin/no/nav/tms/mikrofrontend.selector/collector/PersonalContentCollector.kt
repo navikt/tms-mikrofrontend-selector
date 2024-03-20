@@ -2,6 +2,7 @@ package no.nav.tms.mikrofrontend.selector.collector
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -15,7 +16,7 @@ import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
 class PersonalContentCollector(
     val repository: PersonRepository,
     val manifestStorage: ManifestsStorage,
-    val servicesFetcher: ServicesFetcher,
+    val externalContentFecther: ExternalContentFecther,
     val produktkortCounter: ProduktkortCounter
 ) {
     suspend fun getContent(user: TokenXUser, innloggetnivå: Int): PersonalContentResponse {
@@ -29,11 +30,11 @@ class PersonalContentCollector(
 
     suspend fun asyncCollector(user: TokenXUser): PersonalContentFactory {
         return coroutineScope {
-            val safResponse = async { servicesFetcher.fetchSakstema(user) }
-            val arbeidsøkerResponse = async { servicesFetcher.fetchArbeidsøker(user) }
-            val oppfolgingResponse = async { servicesFetcher.fetchOppfolging(user) }
-            val meldekortResponse = async { servicesFetcher.fetchMeldekort(user) }
-            val pdlResponse = async { servicesFetcher.fetchPersonOpplysninger(user) }
+            val safResponse = async { externalContentFecther.fetchSakstema(user) }
+            val arbeidsøkerResponse = async { externalContentFecther.fetchArbeidsøker(user) }
+            val oppfolgingResponse = async { externalContentFecther.fetchOppfolging(user) }
+            val meldekortResponse = async { externalContentFecther.fetchMeldekort(user) }
+            val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
             return@coroutineScope PersonalContentFactory(
                 arbeidsøkerResponse = arbeidsøkerResponse.await(),
                 safResponse = safResponse.await(),
@@ -68,7 +69,7 @@ class PersonalContentFactory(
             aiaStandard = arbeidsøkerResponse.erStandard && arbeidsøkerResponse.erArbeidssoker,
             oppfolgingContent = oppfolgingResponse.underOppfolging,
             meldekort = meldekortResponse.harMeldekort,
-            aktuelt = Akutelt.getAktueltContent(0,safResponse.sakstemakoder,manifestMap)
+            aktuelt = Akutelt.getAktueltContent(pdlResponse.calculateAge(), safResponse.sakstemakoder, manifestMap)
         ).apply {
             errors = listOf(
                 arbeidsøkerResponse,
@@ -101,9 +102,11 @@ open class MicrofrontendsDefinition(
 ) {
     companion object {
         fun create(id: String, manifestMap: Map<String, String>) = manifestMap[id]
-            .takeUnless { it.isNullOrEmpty() }
+            .takeUnless {
+                it.isNullOrEmpty()
+            }
             ?.let { url ->
-                MicrofrontendsDefinition(id,url)
+                MicrofrontendsDefinition(id, url)
             }
     }
 }

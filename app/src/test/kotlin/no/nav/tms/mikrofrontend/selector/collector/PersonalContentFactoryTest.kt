@@ -1,6 +1,7 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import assert
+import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -8,6 +9,7 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 class PersonalContentFactoryTest {
     private val mockErrorUrl = Url("https://test.feil")
@@ -95,13 +97,13 @@ class PersonalContentFactoryTest {
     }
 
     @Test
-    fun `skal ha produkkort og aia standard og 207 pga meldekort`() {
+     fun `skal ha produkkort og aia standard og 207 pga meldekort`() = runBlocking {
         testFactory(
             arbeidsøkerResponse = ArbeidsøkerResponse(
                 erArbeidssoker = true,
                 erStandard = true,
             ),
-            meldekortResponse = MeldekortResponse(response = mockHttpResponse)
+            meldekortResponse = ResponseWithErrors.createFromHttpError(mockHttpResponse, MeldekortResponse::class)
 
         ).build(
             microfrontends = Microfrontends(),
@@ -132,7 +134,7 @@ class PersonalContentFactoryTest {
                 level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5
             ),
             innloggetnivå = 4,
-            manifestMap = emptyMap()
+            manifestMap = mapOf("regefrontend" to "https://micro.moc")
         ).assert {
             oppfolgingContent shouldBe true
             offerStepup shouldBe false
@@ -141,6 +143,7 @@ class PersonalContentFactoryTest {
             oppfolgingContent shouldBe true
             resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends.size shouldBe 5
+
         }
 
     }
@@ -176,14 +179,15 @@ private fun testFactory(
     arbeidsøkerResponse: ArbeidsøkerResponse = ArbeidsøkerResponse(false, false),
     safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
     meldekortResponse: MeldekortResponse = MeldekortResponse(NullOrJsonNode.initObjectMapper("{meldekort:0}")),
-    oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false)
+    oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false),
+    pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"),1988)
 ) =
     PersonalContentFactory(
         arbeidsøkerResponse = arbeidsøkerResponse,
         safResponse = safResponse,
         meldekortResponse = meldekortResponse,
         oppfolgingResponse = oppfolgingResponse,
-        pdlResponse = PdlResponse(0) //TODO
+        pdlResponse = pdlResponse
     )
 
 private fun microfrontendMocck(

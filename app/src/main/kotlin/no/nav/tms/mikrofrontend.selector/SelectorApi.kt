@@ -16,7 +16,7 @@ import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import nav.no.tms.common.metrics.installTmsApiMetrics
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
-import no.nav.tms.mikrofrontend.selector.collector.ServicesFetcher
+import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
 import no.nav.tms.token.support.tokenx.validation.tokenX
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
@@ -48,7 +48,7 @@ internal fun Application.selectorApi(
 
                 }
 
-                is ServicesFetcher.ApiException -> {
+                is ExternalContentFecther.ApiException -> {
                     log.warn { cause.message }
                     call.respond(HttpStatusCode.ServiceUnavailable)
                 }

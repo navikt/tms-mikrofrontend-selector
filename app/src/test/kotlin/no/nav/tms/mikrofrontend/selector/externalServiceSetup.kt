@@ -33,11 +33,12 @@ abstract class RouteProvider(
     }
 }
 
-class SafRoute(
-    private val sakstemaer: List<String> = emptyList(),
-    errorMsg: String? = null
-) : RouteProvider(path = "graphql", Routing::post) {
-    private val errors = errorMsg?.let {
+abstract class GraphQlRouteProvider(
+    errorMsg: String?,
+    path: String,
+    statusCode: HttpStatusCode = OK,
+) : RouteProvider(path, Routing::post, statusCode) {
+    val errors = errorMsg?.let {
         """
                   "errors": [
                                   {
@@ -59,20 +60,27 @@ class SafRoute(
                                 ],  
                 """.trimIndent()
     } ?: ""
+    abstract val data: String
 
     override fun content(): String = """
         {
-          $errors  
-          "data": {
-            "dokumentoversiktSelvbetjening": {
-              "tema": ${
-        sakstemaer.joinToString(prefix = "[", postfix = "]") { """{ "kode": "$it" }""".trimIndent() }
-    }
-            }
-          }
+        $errors
+        "data": $data
         }
-    ""${'"'}.trimIndent()
-""".trimIndent()
+    """.trimIndent()
+}
+
+class SafRoute(
+    sakstemaer: List<String> = emptyList(),
+    errorMsg: String? = null
+) : GraphQlRouteProvider(errorMsg = errorMsg, path = "graphql") {
+
+    override val data: String = """{
+            "dokumentoversiktSelvbetjening": {
+              "tema": ${sakstemaer.joinToString(prefix = "[", postfix = "]") { """{ "kode": "$it" }""".trimIndent() }}
+            }
+          }""".trimIndent()
+
 }
 
 class MeldekortRoute(private val harMeldekort: Boolean = false) :
@@ -123,7 +131,24 @@ class ArbeidsøkerRoute(private val erArbeidsøker: Boolean = false, private val
           "erStandard": $erStandard
         }
     """.trimIndent()
+}
 
+class PdlRoute(
+    fødselsdato: String = "1978-05-05",
+    fødselssår: Int = 1978,
+    errorMsg: String? = null
+) :
+    GraphQlRouteProvider(errorMsg = errorMsg, path = "pdl/graphql") {
+    override val data: String = """
+         {
+           "hentPerson": {
+             "foedsel": {
+               "foedselsaar": $fødselssår,
+               "foedselsdato": "$fødselsdato"
+             }
+           }
+         }
+    """.trimIndent()
 }
 
 

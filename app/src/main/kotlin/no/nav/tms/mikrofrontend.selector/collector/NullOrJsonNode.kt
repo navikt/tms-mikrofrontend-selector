@@ -6,6 +6,7 @@ import com.nfeld.jsonpathkt.extension.read
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.statement.*
 import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.redactedMessage
+import java.lang.NullPointerException
 
 class NullOrJsonNode private constructor(jsonString: String, val debugLog: Boolean = false) {
     val log = KotlinLogging.logger { }
@@ -18,7 +19,7 @@ class NullOrJsonNode private constructor(jsonString: String, val debugLog: Boole
         throw JsonPathParseException(e = e, jsonString = jsonString, debugLog = debugLog)
     }
 
-    fun hasContent()=parsedJsonPath?.let { !it.isEmpty || it.isNull }?:false
+    fun hasContent() = parsedJsonPath?.let { !it.isEmpty || it.isNull } ?: false
     fun isSimplePath(path: String) = path.matches(Regex(keyRegex))
     inline fun <reified T : Any> getFromPath(path: String): T? =
         getWithExceptionHandler<T>("\$.$path")
@@ -75,7 +76,14 @@ class NullOrJsonNode private constructor(jsonString: String, val debugLog: Boole
             parsedJsonPath?.read<T>(path)
         } catch (e: Exception) {
             throw JsonPathParseException(e, debugLog, "$path ${parsedJsonPath?.toPrettyString()?.redactedMessage()}")
+        } catch (nullpointer: NullPointerException) {
+            throw JsonPathParseException(
+                nullpointer,
+                debugLog,
+                "$path ${parsedJsonPath?.toPrettyString()?.redactedMessage()}"
+            )
         }
+
 
     private inline fun <reified T : Any> resolveFunction(path: String): T? =
         if (isSimplePath(path))
@@ -91,13 +99,6 @@ class NullOrJsonNode private constructor(jsonString: String, val debugLog: Boole
             getFromPathOrException(path)
         }
 
-    private inline fun <reified T : Any> resolveListFunction(path: String): List<T>? =
-        if (isSimplePath(path))
-            getAllValuesForKey<T>(path)
-        else {
-            getAllValuesForPath<T>(path)
-        }
-
     inline fun <reified T : Any> list(path: String): List<T>? =
         if (isSimplePath(path))
             getAllValuesForKey<T>(path)
@@ -105,15 +106,21 @@ class NullOrJsonNode private constructor(jsonString: String, val debugLog: Boole
             getAllValuesForPath<T>(path)
         }
 
-    fun isNotNull(key:String) =getFromKey<Any>(key) != null
+    fun isNotNull(key: String) = getFromKey<Any>(key) != null
     fun boolean(path: String) = resolveExceptionFunction<Boolean>(path)
-    fun booleanOrNull(path: String) = resolveFunction<Boolean>(path)
     fun string(path: String) = resolveExceptionFunction<String>(path)
     fun stringOrNull(path: String) = resolveFunction<String>(path)
     fun int(path: String) = resolveExceptionFunction<Int>(path)
     fun intOrNull(path: String) = resolveFunction<Int>(path)
 
     fun logNotFound(path: String, jsonNode: JsonNode?) {
+        val keys = mutableSetOf<String>()
+        jsonNode?.fields()?.forEach { entry ->
+            keys.add(entry.key)
+        }
+
+        //legge inn forslag om debug er på?
+        print(keys)
         log.debug { "Fant ikke '$path' i json: ${jsonNode?.toPrettyString()?.redactedMessage(debugLog) ?: "tom json"}" }
     }
 

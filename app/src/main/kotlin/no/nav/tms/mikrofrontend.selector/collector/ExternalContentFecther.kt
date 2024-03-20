@@ -3,12 +3,12 @@ package no.nav.tms.mikrofrontend.selector.collector
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
+import java.time.LocalDate
 
-class ServicesFetcher(
+class ExternalContentFecther(
     val safUrl: String,
     val httpClient: HttpClient,
     val oppfølgingBaseUrl: String,
@@ -19,6 +19,7 @@ class ServicesFetcher(
 ) {
 
     val log = KotlinLogging.logger { }
+
     fun query(ident: String) = """ {
         "query": "query(${'$'}ident: String!) {
             dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
@@ -36,13 +37,6 @@ class ServicesFetcher(
         }
     """.compactJson()
 
-    private fun String.compactJson(): String =
-        trimIndent()
-            .replace("\r", " ")
-            .replace("\n", " ")
-            .replace("\\s+".toRegex(), " ")
-
-
     suspend fun fetchSakstema(user: TokenXUser): SafResponse = withErrorHandling {
         httpClient.post {
             url("$safUrl/graphql")
@@ -52,7 +46,8 @@ class ServicesFetcher(
         }
             .let { response ->
                 if (response.status != HttpStatusCode.OK) {
-                    SafResponse(response = response, bodyAsText = response.bodyAsText())
+                    ResponseWithErrors.createFromHttpError(response, SafResponse::class)
+
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     SafResponse(
@@ -71,7 +66,7 @@ class ServicesFetcher(
 
         }.let { response ->
             if (response.status != HttpStatusCode.OK)
-                OppfolgingResponse(response = response, bodyAsText = response.bodyAsText())
+                ResponseWithErrors.createFromHttpError(response, OppfolgingResponse::class)
             else
                 OppfolgingResponse(
                     underOppfolging = response.bodyAsNullOrJsonNode()?.boolean("underOppfolging")
@@ -86,7 +81,7 @@ class ServicesFetcher(
             header("Content-Type", "application/json")
         }.let { response ->
             if (response.status != HttpStatusCode.OK)
-                ArbeidsøkerResponse(response = response, bodyAsText = response.bodyAsText())
+                ResponseWithErrors.createFromHttpError(response, ArbeidsøkerResponse::class)
             else
                 response.bodyAsNullOrJsonNode().let { jsonNode ->
                     ArbeidsøkerResponse(
@@ -104,11 +99,7 @@ class ServicesFetcher(
             header("Content-Type", "application/json")
         }.let { response ->
             if (response.status != HttpStatusCode.OK)
-                MeldekortResponse(
-                    response = response,
-                    errors = "Kall til meldekortstatus feiler med ${response.status}",
-                    bodyAsText = response.bodyAsText()
-                )
+                ResponseWithErrors.createFromHttpError(response, MeldekortResponse::class)
             else
                 response.bodyAsNullOrJsonNode().let {
                     MeldekortResponse(meldekortApiResponse = response.bodyAsNullOrJsonNode())
@@ -117,23 +108,27 @@ class ServicesFetcher(
         }
     }
 
-    suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = TODO()/*
-        httpClient.get("$meldekortUrl/api/person/meldekortstatus") {
-            header("Authorization", "Bearer ${tokenFetcher.meldekortToken(user)}")
+    suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling {
+        httpClient.post {
+            url("$pdlUrl/graphql")
+            header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
             header("Content-Type", "application/json")
-        }.let { response ->
-            if (response.status != HttpStatusCode.OK)
-                MeldekortResponse(
-                    response = response,
-                    errors = "Kall til meldekortstatus feiler med ${response.status}",
-                    bodyAsText = response.bodyAsText()
-                )
-            else
-                response.bodyAsNullOrJsonNode().let {
-                    MeldekortResponse(meldekortApiResponse = response.bodyAsNullOrJsonNode())
+            setBody(query(user.ident))
+        }
+            .let { response ->
+                if (response.status != HttpStatusCode.OK) {
+                    ResponseWithErrors.createFromHttpError(response, PdlResponse::class)
+                } else {
+                    val jsonResponse = response.bodyAsNullOrJsonNode()
+                    PdlResponse(
+                        fødselsdato = jsonResponse?.getFromKey<LocalDate>("data.hentPerson.foedsel.foedselsdato"),
+                        fødselsår = jsonResponse?.int("data.hentPerson.foedsel.foedselsaar")
+                            ?: 0, //TODO fiks guaranteed jsonResponse
+                        errors = jsonResponse?.list<String>("errors..message") ?: emptyList(),
+                    )
                 }
-
-        }*/
+            }
+    }
 
     private suspend fun <T> withErrorHandling(function: suspend () -> T) =
         try {
@@ -150,3 +145,26 @@ class ServicesFetcher(
         """.trimMargin()
         )
 }
+
+private class HentAlder(ident: String) {
+    val query = """
+        query(${'$'}ident: ID!) {
+            hentPerson(ident: ${'$'}ident) {
+                foedsel {
+                    foedselsdato,
+                    foedselsaar,
+                }
+            }
+        }
+    """.compactJson()
+
+    val variables = mapOf(
+        "ident" to ident
+    )
+}
+
+private fun String.compactJson(): String =
+    trimIndent()
+        .replace("\r", " ")
+        .replace("\n", " ")
+        .replace("\\s+".toRegex(), " ")
