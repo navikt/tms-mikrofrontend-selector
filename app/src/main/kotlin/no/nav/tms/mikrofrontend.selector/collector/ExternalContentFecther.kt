@@ -19,7 +19,7 @@ class ExternalContentFecther(
 
     val log = KotlinLogging.logger { }
 
-    fun query(ident: String) = """ {
+    private fun safQuery(ident: String) = """ {
         "query": "query(${'$'}ident: String!) {
             dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
                 tema {
@@ -41,7 +41,7 @@ class ExternalContentFecther(
             url("$safUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
             header("Content-Type", "application/json")
-            setBody(query(user.ident))
+            setBody(safQuery(user.ident))
         }
             .let { response ->
                 if (response.status != HttpStatusCode.OK) {
@@ -112,7 +112,7 @@ class ExternalContentFecther(
             url("$pdlUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
             header("Content-Type", "application/json")
-            setBody(query(user.ident))
+            setBody(HentAlder(user.ident))
         }
             .let { response ->
                 if (response.status != HttpStatusCode.OK) {
@@ -120,7 +120,7 @@ class ExternalContentFecther(
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     PdlResponse(
-                        fødselsdato = jsonResponse?.localdateOrNull("data.hentPerson.foedsel.foedselsdato"),
+                        fødselsdato = jsonResponse?.localDateOrNull("data.hentPerson.foedsel.foedselsdato"),
                         fødselsår = jsonResponse?.int("data.hentPerson.foedsel.foedselsaar")
                             ?: 0, //TODO fiks guaranteed jsonResponse
                         errors = jsonResponse?.listOrNull<String>("errors..message") ?: emptyList(),
