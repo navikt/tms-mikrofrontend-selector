@@ -13,8 +13,8 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
+import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
