@@ -14,29 +14,29 @@ class JsonPathParseException(e: Exception? = null, debugLog: Boolean = false, js
     }
 }
 
-class JsonPathSearchException(jsonPath: String, jsonNode: JsonNode?, debugLog: Boolean = false) :
-    IllegalArgumentException(
-        "Failed to find $jsonPath in ${
-            jsonNode?.toPrettyString()?.redactedMessage(debugLog)
-        }. Possible keys are ${jsonNode.keys()}"
-    ) {
+class JsonPathSearchException(
+    jsonPath: String,
+    jsonNode: JsonNode?,
+    originalJson: JsonNode,
+    debugLog: Boolean = false
+) :
+    IllegalArgumentException(createErrorMessage(jsonPath, jsonNode, originalJson, debugLog )) {
 
     companion object {
         private fun createErrorMessage(
             jsonPath: String,
             jsonNode: JsonNode?,
-            completeJson: JsonNode,
+            originalJsonNode: JsonNode,
             debugLog: Boolean
-        ) {
-            when {
-                jsonNode == null -> "$jsonPath does not exists in . Possible keys are ${completeJson.keys()}"
+        ) = when {
+                jsonNode == null -> "Failed to find $jsonPath in ${originalJsonNode.toPrettyString()?.redactedMessage(debugLog)}. Possible keys are ${originalJsonNode.keys()}"
                 jsonNode.isObject -> """$jsonPath can not be converted to simple value because it is an object in ${
                     jsonNode.toPrettyString().redactedMessage(debugLog)
                 } . Possible keys are ${jsonNode.keys()}""".trimIndent()
-                jsonNode.isArray -> """$jsonPath returns an Array from ${jsonNode.toPrettyString()} """
-            }
-
+                jsonNode.isArray -> """$jsonPath returns an Array from ${jsonNode.toPrettyString().redactedMessage()}. Possible keys are ${jsonNode.keys()} """.trimIndent()
+            else -> "Failed to find $jsonPath in ${jsonNode.toPrettyString().redactedMessage()}. Possible keys are ${originalJsonNode.keys()}".trimIndent()
         }
+
     }
 }
 

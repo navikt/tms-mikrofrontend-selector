@@ -28,6 +28,7 @@ class JsonPathInterpreterTest {
                 "levelTwoIntValue": 2,
                 "levelTwoObject": {
                   "level3BooelanValue": true,
+                  "listWithElements": [{ "id": 2 }, { "id": 3 }, { "id": 4 }],
                   "level3List": [1,2,3,4,5,6,7,8,9,10],
                   "level3Object": {
                     "level4StringValue": "Hurra!"
@@ -73,7 +74,7 @@ class JsonPathInterpreterTest {
         jsonNode.assert {
             require(this != null)
             string("levelOneString") shouldBe "nmbr1!"
-            string("level_one") shouldNotBe null
+            assertThrows<JsonPathSearchException> { string("level_one") }
             listOrNull<String>("level_one.levelTwoList").assert {
                 require(this != null)
                 size shouldBe 1
@@ -81,10 +82,13 @@ class JsonPathInterpreterTest {
             }
             listOrNull<Int>("level_one.levelTwoObject.level3List")
             string("level_one.levelTwoObject.level3Object.level4StringValue") shouldBe "Hurra!"
-            listOrNull<String>("empty_path") shouldBe emptyList()
+            list<String>("empty_list") shouldBe emptyList()
             string("level4StringValue") shouldBe "Hurra!"
             string("level3Object.level4StringValue") shouldBe "Hurra!"
-            listOrNull<String>("duplicateValue")!!.size shouldBe 3
+            getAll<Int>("listWithElements").assert {
+                size shouldBe 1
+                first().size shouldBe 3
+            }
         }
     }
 
@@ -101,7 +105,6 @@ class JsonPathInterpreterTest {
             }
             string("level4StringValue") shouldBe "Hurra!"
             string("level3Object.level4StringValue") shouldBe "Hurra!"
-            listOrNull<String>("duplicateValue")!!.size shouldBe 3
         }
     }
 
@@ -121,16 +124,15 @@ class JsonPathInterpreterTest {
             string("level3Object.level4StringValue") shouldBe "Hurra!"
             stringOrNull("level3Object.level4StringValue") shouldBe "Hurra!"
             assertThrows<MultipleValuesInJsonPathSearchException> {
-                string("duplicateValue")
+                string("listWithElements..id")
+            }
+            getAll<Int>("listWithElements..id").assert {
+                size shouldBe 1
+                first() shouldBe listOf(1, 2, 3)
             }
             assertThrows<JsonPathSearchException> { string("notakey") }
             stringOrNull("notakey") shouldBe null
         }
     }
 
-
-    @Test
-    fun  `tadda`(){
-        jsonNode?.getSuggestions("level4StringValue")
-    }
 }
