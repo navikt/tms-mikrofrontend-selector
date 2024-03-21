@@ -137,12 +137,10 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
      * @param key any single or nested key in the json structure
      */
     inline fun <reified T : Any> getAllValuesForKey(key: String): List<T>? =
-        getWithExceptionHandler<JsonNode>("\$..$key").let { jsonPathResult ->
+        getWithExceptionHandler<List<T>>("\$..$key").also { jsonPathResult ->
             if (jsonPathResult == null) {
                 logNotFound(key, jsonNode)
             }
-            else log.debug { "I getallValuesForKey ${jsonPathResult.toPrettyString()}" }
-            jsonPathResult?.read<List<T>>("$")
         }
 
     /**
@@ -178,12 +176,7 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
      * Get the first value of a valid jsonpath, key or nested key in the json
      * structure. For null safe values use [getOrException]
      */
-    inline fun <reified T : Any> getOrNull(path: String): T? =
-        if (isSimplePath(path))
-            getFromKey<T>(path)
-        else {
-            getFromPath(path)
-        }
+    inline fun <reified T : Any> getOrNull(path: String): T? = getFromKey<T>(path)
 
     /**
      * Get the first value of a valid jsonpath, key or nested key in the
@@ -191,11 +184,8 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
      * [list]
      */
     private inline fun <reified T : Any> getOrException(path: String): T =
-        if (isSimplePath(path))
             getFromKeyOrException(path)
-        else {
-            getFromPathOrException(path)
-        }
+
 
     /**
      * Get all values of a valid jsonpath, key or nested key in the
@@ -215,12 +205,9 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
     /**
      * TODO: write this
      */
-    fun <T> getAll(path: String): List<List<T>> =
-        if (isSimplePath(path))
-            getAllValuesForKey<List<T>>(path) ?: throw JsonPathSearchException(jsonPath = path, jsonNode = null, originalJson = jsonNode)
-        else {
-            getAllValuesForPath<List<T>>(path) ?: throw JsonPathSearchException(jsonPath = path, jsonNode = null, originalJson = jsonNode)
-        }
+    inline fun <reified T:Any> getAll(path: String): List<T> =
+            getAllValuesForKey<T>(path) ?: throw JsonPathSearchException(jsonPath = path, jsonNode = null, originalJson = jsonNode)
+
 
     /**
      * Get all values of a valid jsonpath, key or nested key in the

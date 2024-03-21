@@ -1,6 +1,7 @@
 package no.nav.tms.mikrofrontend.selector.collector.json
 
 import assert
+import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
@@ -85,10 +86,6 @@ class JsonPathInterpreterTest {
             list<String>("empty_list") shouldBe emptyList()
             string("level4StringValue") shouldBe "Hurra!"
             string("level3Object.level4StringValue") shouldBe "Hurra!"
-            getAll<Int>("listWithElements").assert {
-                size shouldBe 1
-                first().size shouldBe 3
-            }
         }
     }
 
@@ -126,13 +123,23 @@ class JsonPathInterpreterTest {
             assertThrows<MultipleValuesInJsonPathSearchException> {
                 string("listWithElements..id")
             }
-            getAll<Int>("listWithElements..id").assert {
-                size shouldBe 1
-                first() shouldBe listOf(1, 2, 3)
-            }
             assertThrows<JsonPathSearchException> { string("notakey") }
             stringOrNull("notakey") shouldBe null
         }
     }
 
+    @Test
+    fun `finner alle resultater for path`(){
+        jsonNode.assert {
+            require(this!=null)
+            getAll<Int>("listWithElements..id").assert {
+                size shouldBe 3
+                this shouldBe listOf(2,3,4)
+            }
+            getAll<List<JsonNode>>("listWithElements").assert {
+                size shouldBe 1
+                first().size shouldBe 3
+            }
+        }
+    }
 }
