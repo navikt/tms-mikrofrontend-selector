@@ -50,8 +50,8 @@ class ExternalContentFecther(
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     SafResponse(
-                        sakstemakoder = jsonResponse?.listOrNull<String>("data.dokumentoversiktSelvbetjening.tema..kode"),
-                        errors = jsonResponse?.listOrNull<String>("errors..message")
+                        sakstemakoder = jsonResponse?.getAll<String>("data.dokumentoversiktSelvbetjening.tema..kode"),
+                        errors = jsonResponse?.getAll<String>("errors..message")
                     )
                 }
             }

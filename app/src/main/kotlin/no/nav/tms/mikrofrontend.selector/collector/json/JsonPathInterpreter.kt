@@ -9,7 +9,8 @@ import java.lang.NullPointerException
 import java.time.LocalDate
 
 /**
- * Handles jsonpath queries for a string contaning valid json. Wrapperclass JsonPathKtlibrary for https://github.com/codeniko/JsonPathKt
+ * Handles jsonpath queries for a string contaning valid json. Wrapperclass
+ * JsonPathKtlibrary for https://github.com/codeniko/JsonPathKt
  *
  * @property debugLog set true for verbose output
  * @property jsonNode
@@ -179,49 +180,44 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
     inline fun <reified T : Any> getOrNull(path: String): T? = getFromKey<T>(path)
 
     /**
-     * Get the first value of a valid jsonpath, key or nested key in the
-     * json structure. For nullable values use [getOrNull] For all values use
-     * [list]
+     * Get the first value of a valid jsonpath, key or nested key in the json
+     * structure. For nullable values use [getOrNull] For all values use [list]
      */
     private inline fun <reified T : Any> getOrException(path: String): T =
-            getFromKeyOrException(path)
+        getFromKeyOrException(path)
 
 
     /**
-     * Get all values of a valid jsonpath, key or nested key in the
-     * json structure. For null safe values use [list] For single values use
+     * Get all values of a valid jsonpath, key or nested key in the json
+     * structure. For null safe values use [list] For single values use
      * [getOrException]
      */
     inline fun <reified T : Any> listOrNull(path: String): List<T>? =
-        if (isSimplePath(path)) {
-            log.debug { "I listOrNullKey" }
-            getFromKey<List<T>>(path)
-        }
-        else {
-            log.debug { "I listOrNullPath" }
-            getFromPath<List<T>>(path)
-        }
+        getFromKey<List<T>>(path)
 
-    /**
-     * TODO: write this
-     */
-    inline fun <reified T:Any> getAll(path: String): List<T> =
-            getAllValuesForKey<T>(path) ?: throw JsonPathSearchException(jsonPath = path, jsonNode = null, originalJson = jsonNode)
+    /** TODO: write this */
+    inline fun <reified T : Any> getAll(path: String): List<T> =
+        getAllValuesForKey<T>(path) ?: throw JsonPathSearchException(
+            jsonPath = path,
+            jsonNode = null,
+            originalJson = jsonNode
+        )
 
 
     /**
-     * Get all values of a valid jsonpath, key or nested key in the
-     * json structure. For nullable values use [listOrNull] For single values
-     * use [getOrNull]
+     * Get all values of a valid jsonpath, key or nested key in the json
+     * structure. For nullable values use [listOrNull] For single values use
+     * [getOrNull]
      *
      * @throws JsonPathSearchException
      */
     inline fun <reified T : Any> list(path: String): List<T> =
-        if (isSimplePath(path))
-            getFromKey<List<T>>(path) ?: throw JsonPathSearchException(jsonPath = path, jsonNode = null, originalJson = jsonNode)
-        else {
-            getFromPath<List<T>>(path) ?: throw JsonPathSearchException(jsonPath = path, jsonNode = null, originalJson = jsonNode)
-        }
+        getFromKey<List<T>>(path) ?: throw JsonPathSearchException(
+            jsonPath = path,
+            jsonNode = null,
+            originalJson = jsonNode
+        )
+
 
     fun isNotNull(key: String) = getOrNull<Any>(key) != null
     fun boolean(path: String) = getOrException<Boolean>(path)

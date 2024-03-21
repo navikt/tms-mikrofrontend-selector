@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
 class JsonPathInterpreterTest {
@@ -81,7 +82,12 @@ class JsonPathInterpreterTest {
                 size shouldBe 1
                 first() shouldBe "liststuff"
             }
+            listOrNull<String>("nolist") shouldBe null
+            assertThrows<JsonPathSearchException> { list<String>("levelone")  }
             listOrNull<Int>("level_one.levelTwoObject.level3List")
+            assertThrows<MultipleValuesInJsonPathSearchException> {
+                list<Int>("listWithElements..id")
+            }
             string("level_one.levelTwoObject.level3Object.level4StringValue") shouldBe "Hurra!"
             list<String>("empty_list") shouldBe emptyList()
             string("level4StringValue") shouldBe "Hurra!"
