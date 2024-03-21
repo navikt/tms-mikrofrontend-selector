@@ -47,7 +47,7 @@ class ExternalContentFecther(
         }
             .let { response ->
                 if (response.status != HttpStatusCode.OK) {
-                    ResponseWithErrors.createFromHttpError(response, SafResponse::class)
+                    ResponseWithErrors.createFromHttpError(response)
 
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
@@ -92,7 +92,7 @@ class ExternalContentFecther(
         }
             .let { response ->
                 if (response.status != HttpStatusCode.OK) {
-                    ResponseWithErrors.createFromHttpError(response, PdlResponse::class)
+                    ResponseWithErrors.createFromHttpError(response)
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     PdlResponse(
@@ -125,10 +125,10 @@ class ExternalContentFecther(
             header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
         }.let { response ->
             if (response.status != HttpStatusCode.OK)
-                ResponseWithErrors.createFromHttpError(response, T::class)
+                ResponseWithErrors.createFromHttpError(response)
             else
                 response.bodyAsNullOrJsonNode()?.let(map)
-                    ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText(), T::class)
+                    ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText())
         }
     } catch (e: Exception) {
         throw ApiException(e)

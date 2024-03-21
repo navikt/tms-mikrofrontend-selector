@@ -7,18 +7,13 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkClass
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class PersonalContentFactoryTest {
-    private val mockErrorUrl = Url("https://test.feil")
-    private val mockHttpResponse = mockk<HttpResponse>().apply {
-        every { status } returns HttpStatusCode.InternalServerError
-        every { request.url } returns mockErrorUrl
-    }
-
     @Test
     fun `Skal være tom`() {
         testFactory().build(
@@ -98,13 +93,13 @@ class PersonalContentFactoryTest {
     }
 
     @Test
-     fun `skal ha produkkort og aia standard og 207 pga meldekort`() = runBlocking {
+     fun `skal ha produkkort og aia standard og 207 pga meldekort`(): Unit = runBlocking {
         testFactory(
             arbeidsøkerResponse = ArbeidsøkerResponse(
                 erArbeidssoker = true,
                 erStandard = true,
             ),
-            meldekortResponse = ResponseWithErrors.createFromHttpError(mockHttpResponse, MeldekortResponse::class)
+            meldekortResponse = MeldekortResponse(errors = "Feil som skjedde")
 
         ).build(
             microfrontends = Microfrontends(),
