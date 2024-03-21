@@ -2,6 +2,7 @@ package no.nav.tms.mikrofrontend.selector.collector
 
 import io.ktor.client.statement.*
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
+import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.redactedMessage
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.reflect.KClass
@@ -40,8 +41,28 @@ abstract class ResponseWithErrors(private val errors: String? = null) {
             } else throw IllegalArgumentException("${classRef.simpleName} does not have a primary constructor")
         }
 
+        suspend inline fun <reified T : ResponseWithErrors> errorInJsonResponse(textInBody:String, classRef: KClass<T>): T {
+            val errorMessage =
+                "responsbody inneholder ikke json: ${textInBody.redactedMessage()}"
+            val constructor = T::class.primaryConstructor
+            return constructor?.let {
+                val args = it.parameters.map { parameter ->
+                    when {
+                        parameter.name != "errors" -> parameter.type.default()
+                        parameter.name == "errors" && parameter.type == String::class -> errorMessage
+                        parameter.name == "errors" && parameter.getListTypeOrNull() == String::class.starProjectedType -> listOf(
+                            errorMessage
+                        )
 
-        private fun KType.default(): Any? = when {
+                        else -> throw IllegalArgumentException("unexpected Ktype for parameter errors: ${parameter.type}")
+                    }
+                }.toTypedArray()
+               constructor.call(*args)
+            } ?: throw IllegalArgumentException("${classRef.simpleName} does not have a primary constructor")
+        }
+
+
+        fun KType.default(): Any? = when {
             this.isMarkedNullable -> null
             this == String::class.starProjectedType -> ""
             this == Int::class.starProjectedType -> 0
@@ -57,7 +78,7 @@ abstract class ResponseWithErrors(private val errors: String? = null) {
         }
 
 
-        private fun KParameter.getListTypeOrNull() = if (type.arguments.isNotEmpty()) type.arguments[0].type else null
+        fun KParameter.getListTypeOrNull() = if (type.arguments.isNotEmpty()) type.arguments[0].type else null
     }
 }
 

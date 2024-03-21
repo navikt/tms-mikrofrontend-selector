@@ -3,7 +3,9 @@ package no.nav.tms.mikrofrontend.selector.collector
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
+import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
 
@@ -57,55 +59,29 @@ class ExternalContentFecther(
             }
     }
 
-    suspend fun fetchOppfolging(user: TokenXUser): OppfolgingResponse = withErrorHandling {
-        httpClient.get("$oppfølgingBaseUrl/api/niva3/underoppfolging") {
-            header("Authorization", "Bearer ${tokenFetcher.oppfolgingToken(user)}")
-            header("Content-Type", "application/json")
-            header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
+    suspend fun fetchOppfolging(user: TokenXUser): OppfolgingResponse = getResponseAsJsonPath(
+        token = tokenFetcher.oppfolgingToken(user),
+        url = "$oppfølgingBaseUrl/api/niva3/underoppfolging",
+        map = { OppfolgingResponse(underOppfolging = it.boolean("underOppfolging")) }
+    )
 
-        }.let { response ->
-            if (response.status != HttpStatusCode.OK)
-                ResponseWithErrors.createFromHttpError(response, OppfolgingResponse::class)
-            else
-                OppfolgingResponse(
-                    underOppfolging = response.bodyAsNullOrJsonNode()?.boolean("underOppfolging")
-                )
+
+    suspend fun fetchArbeidsøker(user: TokenXUser): ArbeidsøkerResponse = getResponseAsJsonPath(
+        token = tokenFetcher.aiaToken(user),
+        url = "$aiaBackendUrl/aia-backend/er-arbeidssoker",
+        map = { jsonPath ->
+            ArbeidsøkerResponse(
+                erArbeidssoker = jsonPath.boolean("erArbeidssoker"),
+                erStandard = jsonPath.boolean("erStandard")
+            )
         }
-    }
+    )
 
-
-    suspend fun fetchArbeidsøker(user: TokenXUser): ArbeidsøkerResponse = withErrorHandling {
-        httpClient.get("$aiaBackendUrl/aia-backend/er-arbeidssoker") {
-            header("Authorization", "Bearer ${tokenFetcher.aiaToken(user)}")
-            header("Content-Type", "application/json")
-        }.let { response ->
-            if (response.status != HttpStatusCode.OK)
-                ResponseWithErrors.createFromHttpError(response, ArbeidsøkerResponse::class)
-            else
-                response.bodyAsNullOrJsonNode().let { jsonNode ->
-                    ArbeidsøkerResponse(
-                        erArbeidssoker = jsonNode?.boolean("erArbeidssoker") ?: false,
-                        erStandard = jsonNode?.boolean("erStandard") ?: false
-                    )
-                }
-
-        }
-    }
-
-    suspend fun fetchMeldekort(user: TokenXUser): MeldekortResponse = withErrorHandling {
-        httpClient.get("$meldekortUrl/api/person/meldekortstatus") {
-            header("Authorization", "Bearer ${tokenFetcher.meldekortToken(user)}")
-            header("Content-Type", "application/json")
-        }.let { response ->
-            if (response.status != HttpStatusCode.OK)
-                ResponseWithErrors.createFromHttpError(response, MeldekortResponse::class)
-            else
-                response.bodyAsNullOrJsonNode().let {
-                    MeldekortResponse(meldekortApiResponse = response.bodyAsNullOrJsonNode())
-                }
-
-        }
-    }
+    suspend fun fetchMeldekort(user: TokenXUser): MeldekortResponse = getResponseAsJsonPath(
+        token = tokenFetcher.meldekortToken(user),
+        url = "$meldekortUrl/api/person/meldekortstatus",
+        map = { jsonPath -> MeldekortResponse(meldekortApiResponse = jsonPath) }
+    )
 
     suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling {
         httpClient.post {
@@ -135,6 +111,29 @@ class ExternalContentFecther(
         } catch (e: Exception) {
             throw ApiException(e)
         }
+
+
+    private suspend inline fun <reified T : ResponseWithErrors> getResponseAsJsonPath(
+        token: String,
+        url: String,
+        crossinline map: (JsonPathInterpreter) -> T
+    ): T = try {
+        httpClient.get {
+            url(url)
+            header("Authorization", "Bearer $token")
+            header("Content-Type", "application/json")
+            header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
+        }.let { response ->
+            if (response.status != HttpStatusCode.OK)
+                ResponseWithErrors.createFromHttpError(response, T::class)
+            else
+                response.bodyAsNullOrJsonNode()?.let(map)
+                    ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText(), T::class)
+        }
+    } catch (e: Exception) {
+        throw ApiException(e)
+    }
+
 
     class ApiException(e: Exception) :
         Exception(

@@ -166,13 +166,13 @@ internal class ApiTest {
             status shouldBe HttpStatusCode.OK
             bodyAsNullOrJsonNode(true).assert {
                 require(this != null)
-                getFromKey<List<JsonNode>>("microfrontends").assert {
+                getOrNull<List<JsonNode>>("microfrontends").assert {
                     require(this != null)
                     size shouldBe expectedMicrofrontends.size
                 }
-                getAllValuesForPath<String>("microfrontends..url")
-                getFromKeyOrException<List<String>>("produktkort").size shouldBe 1
-                getFromKeyOrException<List<String>>("aktuelt").size shouldBe 0
+                getAll<String>("microfrontends..url")
+                getOrException<List<String>>("produktkort").size shouldBe 1
+                getOrException<List<String>>("aktuelt").size shouldBe 0
                 boolean("aiaStandard") shouldBe false
                 boolean("oppfolgingContent") shouldBe false
                 boolean("meldekort") shouldBe true
@@ -219,7 +219,6 @@ internal class ApiTest {
                 listOrNull<JsonNode>("microfrontends")?.size shouldBe 3
                 boolean("offerStepup") shouldBe false
                 list<String>("produktkort").assert {
-                    require(this != null)
                     size shouldBe 2
                     this shouldBe expectedProduktkort
                 }
