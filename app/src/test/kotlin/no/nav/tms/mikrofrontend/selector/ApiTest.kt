@@ -13,10 +13,10 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
+import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
@@ -90,7 +90,7 @@ internal class ApiTest {
             status shouldBe HttpStatusCode.OK
             bodyAsNullOrJsonNode(true).assert {
                 require(this != null)
-                getFromKey<List<JsonNode>>("microfrontends").assert {
+                listOrNull<JsonNode>("microfrontends").assert {
                     require(this != null)
                     size shouldBe 2
                     this.find {
@@ -108,9 +108,8 @@ internal class ApiTest {
 
                     }
                 }
-                getAllValuesForPath<String>("microfrontends..url")
 
-                getFromKey<List<JsonNode>>("aktuelt").assert {
+                listOrNull<JsonNode>("aktuelt").assert {
                     require(this != null)
                     size shouldBe 1
                     this.find {
@@ -217,9 +216,9 @@ internal class ApiTest {
             status shouldBe HttpStatusCode.OK
             bodyAsNullOrJsonNode().assert {
                 require(this != null)
-                getFromKeyOrException<List<JsonNode>>("microfrontends").size shouldBe 3
-                getFromKeyOrException<Boolean>("offerStepup") shouldBe false
-                getAllValuesForPath<String>("produktkort").assert {
+                listOrNull<JsonNode>("microfrontends")?.size shouldBe 3
+                boolean("offerStepup") shouldBe false
+                list<String>("produktkort").assert {
                     require(this != null)
                     size shouldBe 2
                     this shouldBe expectedProduktkort

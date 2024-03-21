@@ -1,6 +1,7 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import io.ktor.client.statement.*
+import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.reflect.KClass
@@ -79,7 +80,7 @@ class OppfolgingResponse(
 }
 
 class MeldekortResponse(
-    meldekortApiResponse: NullOrJsonNode? = null,
+    meldekortApiResponse: JsonPathInterpreter? = null,
     errors: String? = null,
 ) : ResponseWithErrors(errors) {
     //TODO

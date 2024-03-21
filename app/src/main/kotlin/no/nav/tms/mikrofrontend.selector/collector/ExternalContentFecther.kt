@@ -4,9 +4,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsNullOrJsonNode
+import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
-import java.time.LocalDate
 
 class ExternalContentFecther(
     val safUrl: String,
@@ -51,8 +50,8 @@ class ExternalContentFecther(
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     SafResponse(
-                        sakstemakoder = jsonResponse?.list<String>("data.dokumentoversiktSelvbetjening.tema..kode"),
-                        errors = jsonResponse?.list<String>("errors..message")
+                        sakstemakoder = jsonResponse?.listOrNull<String>("data.dokumentoversiktSelvbetjening.tema..kode"),
+                        errors = jsonResponse?.listOrNull<String>("errors..message")
                     )
                 }
             }
@@ -121,10 +120,10 @@ class ExternalContentFecther(
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     PdlResponse(
-                        fødselsdato = jsonResponse?.getFromKey<LocalDate>("data.hentPerson.foedsel.foedselsdato"),
+                        fødselsdato = jsonResponse?.localdateOrNull("data.hentPerson.foedsel.foedselsdato"),
                         fødselsår = jsonResponse?.int("data.hentPerson.foedsel.foedselsaar")
                             ?: 0, //TODO fiks guaranteed jsonResponse
-                        errors = jsonResponse?.list<String>("errors..message") ?: emptyList(),
+                        errors = jsonResponse?.listOrNull<String>("errors..message") ?: emptyList(),
                     )
                 }
             }

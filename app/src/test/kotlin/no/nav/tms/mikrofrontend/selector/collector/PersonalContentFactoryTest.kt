@@ -7,6 +7,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -127,7 +128,7 @@ class PersonalContentFactoryTest {
         testFactory(
             arbeidsøkerResponse = ArbeidsøkerResponse(erArbeidssoker = true, erStandard = true),
             safResponse = SafResponse(sakstemakoder = listOf("DAG"), errors = emptyList()),
-            meldekortResponse = MeldekortResponse(NullOrJsonNode.initObjectMapper("{}")),
+            meldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
             oppfolgingResponse = OppfolgingResponse(underOppfolging = true),
         ).build(
             microfrontends = microfrontendMocck(
@@ -178,7 +179,7 @@ private operator fun MicrofrontendsDefinition.times(i: Int): List<Microfrontends
 private fun testFactory(
     arbeidsøkerResponse: ArbeidsøkerResponse = ArbeidsøkerResponse(false, false),
     safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
-    meldekortResponse: MeldekortResponse = MeldekortResponse(NullOrJsonNode.initObjectMapper("{meldekort:0}")),
+    meldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{meldekort:0}")),
     oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false),
     pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"),1988)
 ) =
