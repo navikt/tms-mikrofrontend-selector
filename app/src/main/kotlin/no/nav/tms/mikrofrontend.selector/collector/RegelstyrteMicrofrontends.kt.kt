@@ -18,7 +18,7 @@ class Pensjon(
     manifestMap: Map<String, String>,
     val alder: Int,
     val sakstemaer: List<String>
-) : RegelstyrtMicrofrontend("pensjonMf", manifestMap) {
+) : RegelstyrtMicrofrontend("pensjonskalkulator-microfrontend", manifestMap) {
 
     override fun skalVises(): Boolean {
         return alder > 40 && sakstemaer.none { it == ProduktkortVerdier.PEN.name } && definition != null

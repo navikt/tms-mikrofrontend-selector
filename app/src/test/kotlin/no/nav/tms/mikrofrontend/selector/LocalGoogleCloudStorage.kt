@@ -88,7 +88,7 @@ class LocalGCPStorage {
 
 
     companion object {
-        val pensjonMf = Pair("pensjonMf", "https://cdn.pensjon/manifest.json")
+        val pensjonMf = Pair("pensjonskalkulator-microfrontend", "https://cdn.pensjon/manifest.json")
 
         const val testBucketName = "test-bucket"
         const val testProjectId = "test-project"
