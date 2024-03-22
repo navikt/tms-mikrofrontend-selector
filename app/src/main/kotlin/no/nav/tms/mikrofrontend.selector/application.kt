@@ -29,7 +29,7 @@ fun main() {
         aiaBackendUrl = environment.aiaUrl,
         meldekortUrl = environment.meldekortUrl,
         safUrl = environment.safUrl,
-        pdlUrl = "TODO",
+        pdlUrl = environment.pdlApiUrl,
         tokenFetcher = TokenFetcher(
             tokendingsService = TokendingsServiceBuilder.buildTokendingsService(),
             meldekortClientId = environment.meldekortClientId,
