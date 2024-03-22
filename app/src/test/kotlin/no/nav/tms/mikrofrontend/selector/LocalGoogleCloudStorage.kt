@@ -1,8 +1,8 @@
 package no.nav.tms.mikrofrontend.selector
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.cloud.NoCredentials
 import com.google.cloud.storage.*
+import no.nav.tms.mikrofrontend.selector.collector.Pensjon
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage.Companion.manifestFileName
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.utility.DockerImageName
@@ -57,9 +57,12 @@ class GoogleCloudStorageTestContainer : GenericContainer<GoogleCloudStorageTestC
 
 
 class LocalGCPStorage {
-    fun updateManifest(expectedMicrofrontends: MutableMap<String, String>) {
 
-        val contents = expectedMicrofrontends.map { """"${it.key}":"${it.value}"""" }.joinToString(
+    fun updateManifest(expectedMicrofrontends: MutableMap<String, String>) {
+        val toStorage = expectedMicrofrontends.toMutableMap()
+        toStorage[pensjonMf.first] = pensjonMf.second
+
+        val contents = toStorage.map { """"${it.key}":"${it.value}"""" }.joinToString(
             prefix = "{",
             postfix = "}",
             separator = ","
@@ -86,6 +89,8 @@ class LocalGCPStorage {
 
 
     companion object {
+        val pensjonMf = Pair(Pensjon.id, "https://cdn.pensjon/manifest.json")
+
         const val testBucketName = "test-bucket"
         const val testProjectId = "test-project"
         val instance by lazy {

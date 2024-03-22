@@ -48,6 +48,7 @@ dependencies {
     implementation(TmsCommonLib.observability)
     implementation(GoogleCloud.storage)
     implementation(Kotlinx.coroutines)
+    implementation(Kotlin.reflect)
     implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
 
 
