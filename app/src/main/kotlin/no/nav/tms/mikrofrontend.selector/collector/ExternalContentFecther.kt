@@ -38,7 +38,7 @@ class ExternalContentFecther(
         }
     """.compactJson()
 
-    suspend fun fetchSakstema(user: TokenXUser): SafResponse = withErrorHandling("$safUrl/graphql") {
+    suspend fun fetchSakstema(user: TokenXUser): SafResponse = withErrorHandling("SAF","$safUrl/graphql") {
         httpClient.post {
             url("$safUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
@@ -60,6 +60,7 @@ class ExternalContentFecther(
     }
 
     suspend fun fetchOppfolging(user: TokenXUser): OppfolgingResponse = getResponseAsJsonPath(
+        tjeneste = "Oppfølging",
         token = tokenFetcher.oppfolgingToken(user),
         url = "$oppfølgingBaseUrl/api/niva3/underoppfolging",
         map = { OppfolgingResponse(underOppfolging = it.boolean("underOppfolging")) }
@@ -67,6 +68,7 @@ class ExternalContentFecther(
 
 
     suspend fun fetchArbeidsøker(user: TokenXUser): ArbeidsøkerResponse = getResponseAsJsonPath(
+        tjeneste = "aia-backend",
         token = tokenFetcher.aiaToken(user),
         url = "$aiaBackendUrl/aia-backend/er-arbeidssoker",
         map = { jsonPath ->
@@ -78,15 +80,16 @@ class ExternalContentFecther(
     )
 
     suspend fun fetchMeldekort(user: TokenXUser): MeldekortResponse = getResponseAsJsonPath(
+        tjeneste = "meldekort",
         token = tokenFetcher.meldekortToken(user),
         url = "$meldekortUrl/api/person/meldekortstatus",
         map = { jsonPath -> MeldekortResponse(meldekortApiResponse = jsonPath) }
     )
 
-    suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling("$pdlUrl/graphql") {
+    suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling("pdl","$pdlUrl/graphql") {
         httpClient.post {
             url("$pdlUrl/graphql")
-            header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
+            header("Authorization", "Bearer ${tokenFetcher.pdlToken(user)}")
             header("Content-Type", "application/json")
             setBody(HentAlder(user.ident))
         }
@@ -97,7 +100,7 @@ class ExternalContentFecther(
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     PdlResponse(
                         fødselsdato = jsonResponse?.localDateOrNull("data.hentPerson.foedsel.foedselsdato"),
-                        fødselsår = jsonResponse?.int("data.hentPerson.foedsel.foedselsaar")
+                        fødselsår = jsonResponse?.intOrNull("data.hentPerson.foedsel.foedselsaar")?:0
                             ?: 0, //TODO fiks guaranteed jsonResponse
                         errors = jsonResponse?.listOrNull<String>("errors..message") ?: emptyList(),
                     )
@@ -105,17 +108,18 @@ class ExternalContentFecther(
             }
     }
 
-    private suspend fun <T> withErrorHandling(url:String, function: suspend () -> T) =
+    private suspend fun <T> withErrorHandling(tjeneste: String,url:String, function: suspend () -> T) =
         try {
             function()
         } catch (e: Exception) {
-            throw ApiException(url,e)
+            throw ApiException(tjeneste,url,e)
         }
 
 
     private suspend inline fun <reified T : ResponseWithErrors> getResponseAsJsonPath(
         token: String,
         url: String,
+        tjeneste: String,
         crossinline map: (JsonPathInterpreter) -> T
     ): T = try {
         httpClient.get {
@@ -131,14 +135,14 @@ class ExternalContentFecther(
                     ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText())
         }
     } catch (e: Exception) {
-        throw ApiException(url,e)
+        throw ApiException(tjeneste, url, e)
     }
 
 
-    class ApiException(url: String,e: Exception) :
+    class ApiException(tjeneste:String,url: String,e: Exception) :
         Exception(
             """
-            |Kall til eksterne feiler: Url: $url ${errorDetails(e)}. 
+            |Kall til ekstern tjeneste $tjeneste feiler. Url: $url ${errorDetails(e)}. 
            
         """.trimMargin()
         )
