@@ -5,7 +5,7 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class RegelstyrteMicrofrontendsTest {
-    private val manifestMapWithPensjon = mapOf("pensjonskalkulator-microfrontend" to "https://cdn.test/pensjonmf.js")
+    private val manifestMapWithPensjon = mapOf(Pensjon.id to "https://cdn.test/pensjonmf.js")
 
     @Test
     fun `pensjon skal vises hvis personen er over 40 år og ikke har sakstema pensjon`() {
