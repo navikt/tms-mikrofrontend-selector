@@ -1,6 +1,7 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import io.ktor.client.statement.*
+import no.nav.tms.mikrofrontend.selector.collector.ResponseWithErrors.Companion.default
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.redactedMessage
 import java.time.LocalDate
@@ -11,9 +12,10 @@ import kotlin.reflect.KType
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.starProjectedType
+import kotlin.reflect.full.withNullability
 
 
-abstract class ResponseWithErrors(private val errors: String? = null) {
+abstract class ResponseWithErrors(private val errors: String?) {
 
     abstract val source: String
 
@@ -40,8 +42,8 @@ abstract class ResponseWithErrors(private val errors: String? = null) {
                 val args = params.map { parameter ->
                     when {
                         parameter.name != "errors" -> parameter.type.default()
-                        parameter.name == "errors" && parameter.type == String::class -> errorMessage
-                        parameter.name == "errors" && parameter.getListTypeOrNull() == String::class.starProjectedType -> listOf(
+                        parameter.name == "errors" && parameter.type.isOfType(String::class.starProjectedType) -> errorMessage
+                        parameter.name == "errors" && parameter.type.isListType(String::class.starProjectedType) -> listOf(
                             errorMessage
                         )
 
@@ -50,6 +52,23 @@ abstract class ResponseWithErrors(private val errors: String? = null) {
                 }.toTypedArray()
                 constructor.call(*args)
             } ?: throw IllegalArgumentException("$className does not have a primary constructor")
+
+        private fun KType.isListType(starProjectedType: KType): Boolean {
+            if (!this.isSubtypeOf(List::class.starProjectedType)
+                && !this.isSubtypeOf(
+                    List::class.starProjectedType.withNullability(true)
+                )
+            )
+                return false
+            val elementType =
+                this.arguments.first().type ?: throw IllegalArgumentException("List type argument not found")
+            return elementType == starProjectedType || elementType == starProjectedType.withNullability(true)
+        }
+
+        private fun KType.isOfType(starProjectedType: KType) =
+            this == starProjectedType || this == starProjectedType.withNullability(true)
+
+
         private fun KType.default(): Any? = when {
             this.isMarkedNullable -> null
             this == String::class.starProjectedType -> ""
@@ -66,7 +85,7 @@ abstract class ResponseWithErrors(private val errors: String? = null) {
 
             else -> throw IllegalArgumentException("No default value defined for parameter of type $this")
         }
-        private fun KParameter.getListTypeOrNull() = if (type.arguments.isNotEmpty()) type.arguments[0].type else null
+
     }
 }
 
@@ -109,10 +128,12 @@ class MeldekortResponse(
 }
 
 class ArbeidsøkerResponse(
-    val erArbeidssoker: Boolean = false,
-    val erStandard: Boolean = false,
+    val erArbeidssoker: Boolean? = null,
+    val erStandard: Boolean? = null,
     errors: String? = null
 ) : ResponseWithErrors(errors) {
+    fun isStandardInnsats(): Boolean = erArbeidssoker == true && erStandard == true
+
     override val source = "aia-backend"
 }
 

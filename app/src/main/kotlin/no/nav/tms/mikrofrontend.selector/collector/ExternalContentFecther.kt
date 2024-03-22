@@ -38,7 +38,7 @@ class ExternalContentFecther(
         }
     """.compactJson()
 
-    suspend fun fetchSakstema(user: TokenXUser): SafResponse = withErrorHandling {
+    suspend fun fetchSakstema(user: TokenXUser): SafResponse = withErrorHandling("$safUrl/graphql") {
         httpClient.post {
             url("$safUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
@@ -71,8 +71,8 @@ class ExternalContentFecther(
         url = "$aiaBackendUrl/aia-backend/er-arbeidssoker",
         map = { jsonPath ->
             ArbeidsøkerResponse(
-                erArbeidssoker = jsonPath.boolean("erArbeidssoker"),
-                erStandard = jsonPath.boolean("erStandard")
+                erArbeidssoker = jsonPath.booleanOrNull("erArbeidssoker"),
+                erStandard = jsonPath.booleanOrNull("erStandard")
             )
         }
     )
@@ -83,7 +83,7 @@ class ExternalContentFecther(
         map = { jsonPath -> MeldekortResponse(meldekortApiResponse = jsonPath) }
     )
 
-    suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling {
+    suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling("$pdlUrl/graphql") {
         httpClient.post {
             url("$pdlUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
@@ -105,11 +105,11 @@ class ExternalContentFecther(
             }
     }
 
-    private suspend fun <T> withErrorHandling(function: suspend () -> T) =
+    private suspend fun <T> withErrorHandling(url:String, function: suspend () -> T) =
         try {
             function()
         } catch (e: Exception) {
-            throw ApiException(e)
+            throw ApiException(url,e)
         }
 
 
@@ -131,14 +131,14 @@ class ExternalContentFecther(
                     ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText())
         }
     } catch (e: Exception) {
-        throw ApiException(e)
+        throw ApiException(url,e)
     }
 
 
-    class ApiException(e: Exception) :
+    class ApiException(url: String,e: Exception) :
         Exception(
             """
-            |Kall til eksterne tjenester feiler: ${errorDetails(e)}. 
+            |Kall til eksterne feiler: Url: $url ${errorDetails(e)}. 
            
         """.trimMargin()
         )

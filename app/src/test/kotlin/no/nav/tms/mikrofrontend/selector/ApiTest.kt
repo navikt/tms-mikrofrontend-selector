@@ -325,6 +325,36 @@ internal class ApiTest {
             }
         }
 
+    @Test
+    fun `Svarer med 207 når eksterne tjenester feiler`()=
+        testApplication {
+            val testident2 = "12345678912"
+
+            initSelectorApi(testident = testident2)
+            initExternalServices(
+                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
+                MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
+                OppfolgingRoute(false, ovverideContent = ""),
+                PdlRoute("2000-05-05", 2000),
+                ArbeidsøkerRoute(ovverideContent = "{}")
+            )
+
+            gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
+
+            testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
+
+            client.get("/microfrontends").assert {
+                status shouldBe HttpStatusCode.MultiStatus
+                objectMapper.readTree(bodyAsText()).assert {
+                    this["microfrontends"].size() shouldBe 1
+                    this["produktkort"].size() shouldBe 0
+                    this["aktuelt"].size() shouldBe 0
+                    this["offerStepup"].asBoolean() shouldBe false
+                }
+
+            }
+        }
+
 
     fun ApplicationTestBuilder.initSelectorApi(
         testident: String,

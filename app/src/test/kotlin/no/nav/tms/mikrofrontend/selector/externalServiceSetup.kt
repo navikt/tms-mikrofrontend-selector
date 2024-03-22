@@ -83,8 +83,12 @@ class SafRoute(
 
 }
 
-class MeldekortRoute(private val harMeldekort: Boolean = false) :
-    RouteProvider(path = "api/person/meldekortstatus", routeMethodFunction = Routing::get) {
+class MeldekortRoute(private val harMeldekort: Boolean = false, httpStatusCode: HttpStatusCode = OK) :
+    RouteProvider(
+        path = "api/person/meldekortstatus",
+        routeMethodFunction = Routing::get,
+        statusCode = httpStatusCode
+    ) {
 
     //TODO
     override fun content(): String = if (harMeldekort)
@@ -112,10 +116,10 @@ class MeldekortRoute(private val harMeldekort: Boolean = false) :
 }
 
 
-class OppfolgingRoute(private val underOppfølging: Boolean = false) :
+class OppfolgingRoute(private val underOppfølging: Boolean = false, val ovverideContent: String? = null) :
     RouteProvider(path = "api/niva3/underoppfolging", routeMethodFunction = Routing::get) {
     //TODO: sjekk route i proxy
-    override fun content(): String = """
+    override fun content(): String = ovverideContent ?: """
         {
           "underOppfolging": $underOppfølging
         }
@@ -123,9 +127,13 @@ class OppfolgingRoute(private val underOppfølging: Boolean = false) :
 
 }
 
-class ArbeidsøkerRoute(private val erArbeidsøker: Boolean = false, private val erStandard: Boolean = false) :
+class ArbeidsøkerRoute(
+    private val erArbeidsøker: Boolean = false,
+    private val erStandard: Boolean = false,
+    val ovverideContent: String? = null
+) :
     RouteProvider(path = "aia-backend/er-arbeidssoker", routeMethodFunction = Routing::get) {
-    override fun content(): String = """
+    override fun content(): String = ovverideContent ?: """
         {
           "erArbeidssoker": $erArbeidsøker,
           "erStandard": $erStandard
