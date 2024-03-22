@@ -2,7 +2,6 @@ package no.nav.tms.mikrofrontend.selector.collector
 
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 
-
 abstract class ContentRule {
     abstract fun applyRule(microfrontends: List<String>): Boolean
 }

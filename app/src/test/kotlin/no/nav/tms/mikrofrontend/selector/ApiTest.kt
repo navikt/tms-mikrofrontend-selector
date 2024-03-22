@@ -55,75 +55,76 @@ internal class ApiTest {
     }
 
     @Test
-    fun `Skal svare med liste over regelstyrte microfrontend Pensjon og kafkabaserte microfrontends`() = testApplication {
-        val testIdent = "12345678910"
-        val kafkastyrtDinOversikt = Pair("rm1", "https://cdn.test/rm1.json")
-        val kafkastyrtDinOversikt2= Pair("rm2", "https://cdn.test/rm2.json")
+    fun `Skal svare med liste over regelstyrte microfrontend Pensjon og kafkabaserte microfrontends`() =
+        testApplication {
+            val testIdent = "12345678910"
+            val kafkastyrtDinOversikt = Pair("rm1", "https://cdn.test/rm1.json")
+            val kafkastyrtDinOversikt2 = Pair("rm2", "https://cdn.test/rm2.json")
 
-        initSelectorApi(testident = testIdent)
-        initExternalServices(
-            SafRoute(sakstemaer = listOf("DAG")),
-            MeldekortRoute(harMeldekort = true),
-            OppfolgingRoute(false),
-            ArbeidsøkerRoute(),
-            PdlRoute(fødselssår = 1960)
-        )
-
-        gcpStorage.updateManifest(mutableMapOf(kafkastyrtDinOversikt,kafkastyrtDinOversikt2))
-
-        testRapid.sendTestMessage(
-            currentVersionMessage(
-                messageRequirements = EnableMessage,
-                ident = testIdent,
-                microfrontendId = kafkastyrtDinOversikt.first
+            initSelectorApi(testident = testIdent)
+            initExternalServices(
+                SafRoute(sakstemaer = listOf("DAG")),
+                MeldekortRoute(harMeldekort = true),
+                OppfolgingRoute(false),
+                ArbeidsøkerRoute(),
+                PdlRoute(fødselssår = 1960)
             )
-        )
-        testRapid.sendTestMessage(
-            currentVersionMessage(
-                messageRequirements = EnableMessage,
-                ident = testIdent,
-                microfrontendId = kafkastyrtDinOversikt2.first
-            )
-        )
 
-        client.get("/microfrontends").assert {
-            status shouldBe HttpStatusCode.OK
-            bodyAsNullOrJsonNode(true).assert {
-                require(this != null)
-                listOrNull<JsonNode>("microfrontends").assert {
+            gcpStorage.updateManifest(mutableMapOf(kafkastyrtDinOversikt, kafkastyrtDinOversikt2))
+
+            testRapid.sendTestMessage(
+                currentVersionMessage(
+                    messageRequirements = EnableMessage,
+                    ident = testIdent,
+                    microfrontendId = kafkastyrtDinOversikt.first
+                )
+            )
+            testRapid.sendTestMessage(
+                currentVersionMessage(
+                    messageRequirements = EnableMessage,
+                    ident = testIdent,
+                    microfrontendId = kafkastyrtDinOversikt2.first
+                )
+            )
+
+            client.get("/microfrontends").assert {
+                status shouldBe HttpStatusCode.OK
+                bodyAsNullOrJsonNode(true).assert {
                     require(this != null)
-                    size shouldBe 2
-                    this.find {
-                        it["microfrontend_id"].asText() == kafkastyrtDinOversikt.first
-                    }.assert {
+                    listOrNull<JsonNode>("microfrontends").assert {
                         require(this != null)
-                        this["url"].asText() shouldBe kafkastyrtDinOversikt.second
+                        size shouldBe 2
+                        this.find {
+                            it["microfrontend_id"].asText() == kafkastyrtDinOversikt.first
+                        }.assert {
+                            require(this != null)
+                            this["url"].asText() shouldBe kafkastyrtDinOversikt.second
 
+                        }
+                        this.find {
+                            it["microfrontend_id"].asText() == kafkastyrtDinOversikt.first
+                        }.assert {
+                            require(this != null)
+                            this["url"].asText() shouldBe kafkastyrtDinOversikt.second
+
+                        }
                     }
-                    this.find {
-                        it["microfrontend_id"].asText() == kafkastyrtDinOversikt.first
-                    }.assert {
-                        require(this != null)
-                        this["url"].asText() shouldBe kafkastyrtDinOversikt.second
 
+                    listOrNull<JsonNode>("aktuelt").assert {
+                        require(this != null)
+                        size shouldBe 1
+                        this.find {
+                            it["microfrontend_id"].asText() == LocalGCPStorage.pensjonMf.first
+                        }.assert {
+                            require(this != null)
+                            this["url"].asText() shouldBe LocalGCPStorage.pensjonMf.second
+                        }
                     }
                 }
 
-                listOrNull<JsonNode>("aktuelt").assert {
-                    require(this != null)
-                    size shouldBe 1
-                    this.find {
-                        it["microfrontend_id"].asText() == LocalGCPStorage.pensjonMf.first
-                    }.assert {
-                        require(this != null)
-                        this["url"].asText() shouldBe LocalGCPStorage.pensjonMf.second
-                    }
-                }
             }
 
         }
-
-    }
 
     @Test
     fun `Skal svare med liste over mikrofrontends,meldekort og manifest med for loa-high`() = testApplication {
@@ -219,6 +220,7 @@ internal class ApiTest {
                 listOrNull<JsonNode>("microfrontends")?.size shouldBe 3
                 boolean("offerStepup") shouldBe false
                 list<String>("produktkort").assert {
+
                     size shouldBe 2
                     this shouldBe expectedProduktkort
                 }
@@ -326,7 +328,7 @@ internal class ApiTest {
         }
 
     @Test
-    fun `Svarer med 207 når eksterne tjenester feiler`()=
+    fun `Svarer med 207 når eksterne tjenester feiler`() =
         testApplication {
             val testident2 = "12345678912"
 
@@ -355,7 +357,6 @@ internal class ApiTest {
             }
         }
 
-
     fun ApplicationTestBuilder.initSelectorApi(
         testident: String,
         levelOfAssurance: LevelOfAssurance = LEVEL_4
@@ -367,6 +368,7 @@ internal class ApiTest {
                     repository = personRepository,
                     manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
                     externalContentFecther = ExternalContentFecther(
+
                         safUrl = testHost,
                         httpClient = apiClient,
                         oppfølgingBaseUrl = testHost,
@@ -378,7 +380,7 @@ internal class ApiTest {
                             coEvery { meldekortToken(any()) } returns "<meldekort>"
                             coEvery { safToken(any()) } returns "<saf>"
                             coEvery { aiaToken(any()) } returns "<aia>"
-                            coEvery { pdlToken(any(),) } returns "<pdl>"
+                            coEvery { pdlToken(any()) } returns "<pdl>"
                         },
                     ),
                     produktkortCounter = testproduktkortCounter

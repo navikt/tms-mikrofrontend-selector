@@ -3,17 +3,16 @@ package no.nav.tms.mikrofrontend.selector.collector
 import assert
 import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkClass
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class PersonalContentFactoryTest {
+    private val mockErrorUrl = Url("https://test.feil")
     @Test
     fun `Skal være tom`() {
         testFactory().build(
@@ -139,7 +138,6 @@ class PersonalContentFactoryTest {
             oppfolgingContent shouldBe true
             resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends.size shouldBe 5
-
         }
 
     }
@@ -170,6 +168,7 @@ class PersonalContentFactoryTest {
 
 private operator fun MicrofrontendsDefinition.times(i: Int): List<MicrofrontendsDefinition> =
     (1..i).map { MicrofrontendsDefinition(id = "$id$it", url = "$url$it") }
+
 
 private fun testFactory(
     arbeidsøkerResponse: ArbeidsøkerResponse = ArbeidsøkerResponse(false, false),

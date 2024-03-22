@@ -1,13 +1,11 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import io.ktor.client.statement.*
-import no.nav.tms.mikrofrontend.selector.collector.ResponseWithErrors.Companion.default
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.redactedMessage
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.reflect.KFunction
-import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.primaryConstructor
@@ -92,7 +90,7 @@ abstract class ResponseWithErrors(private val errors: String?) {
 
 class SafResponse(
     sakstemakoder: List<String>? = null,
-    errors: List<String>? = null,
+    errors: List<String>? = null
 ) : ResponseWithErrors(errors?.joinToString(";")) {
     val sakstemakoder = sakstemakoder ?: emptyList()
     override val source: String = "SAF"
@@ -101,8 +99,7 @@ class SafResponse(
 class OppfolgingResponse(
     underOppfolging: Boolean? = false,
     error: String? = null,
-) :
-    ResponseWithErrors(error) {
+) : ResponseWithErrors(error) {
     val underOppfolging: Boolean = underOppfolging ?: false
     override val source = "Oppfølgingapi"
 }
@@ -156,3 +153,5 @@ fun errorDetails(exception: Exception) =
                    melding: "${exception::class.simpleName} ${exception.message?.let { ":$it" }}"
                 """.trimIndent()
     } ?: "${exception::class.simpleName} ${exception.message?.let { ":$it" }}"
+
+

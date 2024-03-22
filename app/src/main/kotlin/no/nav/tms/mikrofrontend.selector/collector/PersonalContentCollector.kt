@@ -2,11 +2,9 @@ package no.nav.tms.mikrofrontend.selector.collector
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import no.nav.tms.mikrofrontend.selector.collector.Produktkort.Companion.ids
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
@@ -64,7 +62,7 @@ class PersonalContentFactory(
                 .resolveProduktkort(
                     koder = safResponse.sakstemakoder,
                     microfrontends = microfrontends
-                ).ids(),
+                ).map { it.id },
             offerStepup = microfrontends?.offerStepup(innloggetnivå) ?: false,
             aiaStandard = arbeidsøkerResponse.isStandardInnsats(),
             oppfolgingContent = oppfolgingResponse.underOppfolging,

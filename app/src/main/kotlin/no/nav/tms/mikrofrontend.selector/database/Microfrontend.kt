@@ -13,7 +13,6 @@ import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.toDbNode
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
 import org.postgresql.util.PGobject
 
-private val objectMapper = jacksonObjectMapper()
 
 class Microfrontends(initialJson: String? = null) {
     private val log = KotlinLogging.logger { }
@@ -29,7 +28,6 @@ class Microfrontends(initialJson: String? = null) {
 
     companion object {
         val microfrontendMapper = jacksonObjectMapper()
-        fun emptyApiResponse(): String = """{ "microfrontends":[], "offerStepup": false }"""
     }
 
     fun addMicrofrontend(packet: JsonMessage): Boolean =
@@ -68,9 +66,7 @@ class Microfrontends(initialJson: String? = null) {
     fun getDefinitions(innloggetnivå: Int, manifestMap: Map<String, String>): List<MicrofrontendsDefinition> =
         newData
             .filter { Sensitivitet.fromJsonNode(it["sensitivitet"]) <= innloggetnivå }
-            .mapNotNull {
-                MicrofrontendsDefinition.create(it["microfrontend_id"].asText(),manifestMap)
-            }
+            .mapNotNull { MicrofrontendsDefinition.create(it["microfrontend_id"].asText(),manifestMap) }
 
     fun offerStepup(innloggetnivå: Int): Boolean =
         newData.any { Sensitivitet.fromJsonNode(it["sensitivitet"]) > innloggetnivå }

@@ -61,7 +61,6 @@ abstract class GraphQlRouteProvider(
                 """.trimIndent()
     } ?: ""
     abstract val data: String
-
     override fun content(): String = """
         {
         $errors
@@ -80,7 +79,6 @@ class SafRoute(
               "tema": ${sakstemaer.joinToString(prefix = "[", postfix = "]") { """{ "kode": "$it" }""".trimIndent() }}
             }
           }""".trimIndent()
-
 }
 
 class MeldekortRoute(private val harMeldekort: Boolean = false, httpStatusCode: HttpStatusCode = OK) :
@@ -89,8 +87,6 @@ class MeldekortRoute(private val harMeldekort: Boolean = false, httpStatusCode: 
         routeMethodFunction = Routing::get,
         statusCode = httpStatusCode
     ) {
-
-    //TODO
     override fun content(): String = if (harMeldekort)
         """{
           "antallGjenstaaendeFeriedager": 0,

@@ -9,13 +9,11 @@
             <pattern>%logger{5}[%-5level]%msg%n</pattern>
         </encoder>
     </appender>
-
     <appender name="secureLog" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%logger{5}[%-5level]%msg%n</pattern>
         </encoder>
     </appender>
-
     <root level="DEBUG">
         <appender-ref ref="stdout"/>
         <!--appender-ref ref="secureLog"/-->
