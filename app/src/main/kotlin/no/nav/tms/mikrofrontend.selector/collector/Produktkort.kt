@@ -4,7 +4,7 @@ import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 
 
 abstract class ProduktkortRegel {
-    abstract fun applyRule(ident: String, microfrontends: List<String>): Boolean
+    abstract fun applyRule(microfrontends: List<String>): Boolean
 }
 
 class Produktkort(
@@ -13,8 +13,8 @@ class Produktkort(
     val rules: List<ProduktkortRegel> = emptyList()
 ) {
 
-    fun skalVises(ident: String, microfrontends: List<String>) =
-        rules.all { it.applyRule(ident, microfrontends) }
+    fun skalVises(microfrontends: List<String>) =
+        rules.all { it.applyRule(microfrontends) }
 
     companion object {
         fun List<Produktkort>.ids() = this.map { it.id }
@@ -33,12 +33,12 @@ enum class ProduktkortVerdier(val produktkort: Produktkort) {
 
     companion object {
         private val values = ProduktkortVerdier.entries.map { it.name }
-        fun resolveProduktkort(koder: List<String>, ident: String, microfrontends: Microfrontends?): List<Produktkort> =
+        fun resolveProduktkort(koder: List<String>,microfrontends: Microfrontends?): List<Produktkort> =
             koder.mapNotNull { kode ->
                 if (values.contains(kode)) {
                     ProduktkortVerdier.valueOf(kode).produktkort
                         .let {
-                            if (it.skalVises(ident, microfrontends?.ids() ?: emptyList())) {
+                            if (it.skalVises( microfrontends?.ids() ?: emptyList())) {
                                 it
                             } else null
                         }

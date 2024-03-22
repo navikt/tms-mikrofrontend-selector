@@ -2,30 +2,28 @@ package no.nav.tms.mikrofrontend.selector
 
 import LocalPostgresDatabase
 import assert
+import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.matchers.shouldBe
-import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
-import no.nav.tms.mikrofrontend.selector.collector.SakstemaFetcher
+import no.nav.tms.mikrofrontend.selector.collector.ServicesFetcher
+import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
-import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
-import no.nav.tms.token.support.tokendings.exchange.TokendingsService
 import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance
-import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.*
+import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.LEVEL_3
+import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.LEVEL_4
 import no.nav.tms.token.support.tokenx.validation.mock.tokenXMock
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
@@ -43,10 +41,6 @@ internal class ApiTest {
         counter = counter
     )
     private val gcpStorage = LocalGCPStorage.instance
-    private val testUrl = "http://test.nav.no"
-    private val tokenDingsServiceMock =
-        mockk<TokendingsService>().also { coEvery { it.exchangeToken(any(), any()) } returns "dummyToken" }
-    private val produktkortCounter = ProduktkortCounter()
 
     @BeforeAll
     fun setup() {
@@ -61,19 +55,21 @@ internal class ApiTest {
     }
 
     @Test
-    fun `Skal svare med liste over mikrofrontends og manifest med nivå 4`() = testApplication {
+    fun `Skal svare med liste over mikrofrontends,meldekort og manifest med for loa-high`() = testApplication {
         val testIdent = "12345678910"
         val expectedMicrofrontends = mutableMapOf(
             "mk1" to "https://cdn.test/mk1.json",
             "mk2" to "https://cdn.test/mk2.json",
             "mk3" to "https://cdn.test/mk1.json",
         )
-        val apiClient = createClient { configureJackson() }
-        application { initSelectorApi(apiClient = apiClient, testident = testIdent) }
 
-        initSaf {
-            listOf("DAG").safResponse()
-        }
+        initSelectorApi(testident = testIdent)
+        initExternalServices(
+            SafRoute(sakstemaer = listOf("DAG")),
+            MeldekortRoute(harMeldekort = true),
+            OppfolgingRoute(false),
+            ArbeidsøkerRoute()
+        )
 
         expectedMicrofrontends.keys.forEach {
             testRapid.sendTestMessage(
@@ -96,17 +92,18 @@ internal class ApiTest {
 
         client.get("/microfrontends").assert {
             status shouldBe HttpStatusCode.OK
-            objectMapper.readTree(bodyAsText()).assert {
-                this["microfrontends"].toList().assert {
+            bodyAsNullOrJsonNode(true).assert {
+                require(this != null)
+                getFromKey<List<JsonNode>>("microfrontends").assert {
+                    require(this != null)
                     size shouldBe expectedMicrofrontends.size
-                    forEach { jsonMicrofrontend ->
-                        val microfrontendUrl = expectedMicrofrontends[jsonMicrofrontend["microfrontend_id"].asText()]
-                        require(microfrontendUrl != null)
-                        jsonMicrofrontend["url"].asText() shouldBe microfrontendUrl
-                    }
                 }
-                this["produktkort"].toList().size shouldBe 1
-                this["offerStepup"].asBoolean() shouldBe false
+                getAllValuesForPath<String>("microfrontends..url")
+                getFromKeyOrException<List<String>>("produktkort").size shouldBe 1
+                boolean("aiaStandard") shouldBe false
+                boolean("oppfolgingContent") shouldBe false
+                boolean("meldekort") shouldBe true
+                boolean("offerStepup") shouldBe false
             }
         }
     }
@@ -119,12 +116,15 @@ internal class ApiTest {
             "mk2" to "https://cdn.test/mk2.json",
             "mk3" to "https://cdn.test/mk1.json",
         )
-        val apiClient = createClient { configureJackson() }
         val expectedProduktkort = listOf("DAG", "PEN")
 
-        application { initSelectorApi(apiClient = apiClient, testident = testIdent) }
-
-        initSaf { expectedProduktkort.safResponse() }
+        initSelectorApi(testident = testIdent)
+        initExternalServices(
+            SafRoute(expectedProduktkort),
+            MeldekortRoute(),
+            OppfolgingRoute(false),
+            ArbeidsøkerRoute()
+        )
 
         expectedMicrofrontends.keys.forEach {
             testRapid.sendTestMessage(
@@ -140,12 +140,14 @@ internal class ApiTest {
 
         client.get("/microfrontends").assert {
             status shouldBe HttpStatusCode.OK
-            objectMapper.readTree(bodyAsText()).assert {
-                this["microfrontends"].toList().size shouldBe 3
-                this["offerStepup"].asBoolean() shouldBe false
-                this["produktkort"].assert {
-                    this.size() shouldBe 2
-                    this.map { produktkortId -> produktkortId.asText() } shouldBe expectedProduktkort
+            bodyAsNullOrJsonNode().assert {
+                require(this != null)
+                getFromKeyOrException<List<JsonNode>>("microfrontends").size shouldBe 3
+                getFromKeyOrException<Boolean>("offerStepup") shouldBe false
+                getAllValuesForPath<String>("produktkort").assert {
+                    require(this != null)
+                    size shouldBe 2
+                    this shouldBe expectedProduktkort
                 }
             }
         }
@@ -160,13 +162,14 @@ internal class ApiTest {
                 "mk2" to "https://cdn.test/mk2.json",
                 "mk3" to "https://cdn.test/mk1.json",
             )
-            val apiClient = createClient { configureJackson() }
 
-            application { initSelectorApi(apiClient = apiClient, testident = testIdent, levelOfAssurance = LEVEL_3) }
-
-            initSaf {
-                emptyList<String>().safResponse()
-            }
+            initSelectorApi(testident = testIdent, levelOfAssurance = LEVEL_3)
+            initExternalServices(
+                SafRoute(),
+                MeldekortRoute(),
+                OppfolgingRoute(),
+                ArbeidsøkerRoute()
+            )
 
             nivå4Mikrofrontends.keys.forEach {
                 testRapid.sendTestMessage(legacyMessagev2(it, testIdent))
@@ -200,13 +203,14 @@ internal class ApiTest {
     fun `Skal svare med tom liste for personer som ikke har noen mikrofrontends eller produktkort`() =
         testApplication {
             val testident2 = "12345678912"
-            val apiClient = createClient { configureJackson() }
 
-            application { initSelectorApi(apiClient = apiClient, testident = testident2) }
-
-            initSaf {
-                emptyList<String>().safResponse()
-            }
+            initSelectorApi(testident = testident2)
+            initExternalServices(
+                SafRoute(),
+                MeldekortRoute(),
+                OppfolgingRoute(false),
+                ArbeidsøkerRoute()
+            )
 
             client.get("/microfrontends").assert {
                 status shouldBe HttpStatusCode.OK
@@ -223,41 +227,14 @@ internal class ApiTest {
     fun `Skal svare med multistatus når saf feiler`() =
         testApplication {
             val testident2 = "12345678912"
-            val apiClient = createClient { configureJackson() }
 
-            application { initSelectorApi(apiClient = apiClient, testident = testident2) }
-
-            initSaf {
-                //language=JSON
-                """
-                              {
-                                "errors": [
-                                  {
-                                    "message": "Fant ikke journalpost i fagarkivet. journalpostId=999999999",
-                                    "locations": [
-                                      {
-                                        "line": 2,
-                                        "column": 3
-                                      }
-                                    ],
-                                    "path": [
-                                      "journalpost"
-                                    ],
-                                    "extensions": {
-                                      "code": "not_found",
-                                      "classification": "ExecutionAborted"
-                                    }
-                                  }
-                                ],
-                                "data": {
-                                  "dokumentoversiktSelvbetjening": {
-                                    "tema": null
-                                  }
-                                }
-                              }
-                                """.trimIndent()
-
-            }
+            initSelectorApi(testident = testident2)
+            initExternalServices(
+                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
+                MeldekortRoute(),
+                OppfolgingRoute(false),
+                ArbeidsøkerRoute()
+            )
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
@@ -274,65 +251,42 @@ internal class ApiTest {
             }
         }
 
-    fun Application.initSelectorApi(
-        apiClient: HttpClient,
+
+    fun ApplicationTestBuilder.initSelectorApi(
         testident: String,
         levelOfAssurance: LevelOfAssurance = LEVEL_4
     ) {
-        selectorApi(
-            PersonalContentCollector(
-                repository = personRepository,
-                manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
-                sakstemaFetcher = SakstemaFetcher(
-                    safUrl = testUrl,
-                    safClientId = "clientId",
-                    httpClient = apiClient,
-                    tokendingsService = tokenDingsServiceMock,
+        val apiClient = createClient { configureJackson() }
+        application {
+            selectorApi(
+                PersonalContentCollector(
+                    repository = personRepository,
+                    manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
+                    servicesFetcher = ServicesFetcher(
+                        safUrl = testHost,
+                        httpClient = apiClient,
+                        oppfølgingBaseUrl = testHost,
+                        aiaBackendUrl = testHost,
+                        meldekortUrl = testHost,
+                        tokenFetcher = mockk<TokenFetcher>().apply {
+                            coEvery { oppfolgingToken(any()) } returns "<oppfolging>"
+                            coEvery { meldekortToken(any()) } returns "<meldekort>"
+                            coEvery { safToken(any()) } returns "<saf>"
+                            coEvery { aiaToken(any()) } returns "<aia>"
+                        },
+                    ),
+                    produktkortCounter = testproduktkortCounter
                 ),
-                produktkortCounter = produktkortCounter
-            ),
-        ) {
-            authentication {
-                tokenXMock {
-                    alwaysAuthenticated = true
-                    setAsDefault = true
-                    staticUserPid = testident
-                    staticLevelOfAssurance = levelOfAssurance
-                }
-            }
-        }
-
-    }
-
-    fun ApplicationTestBuilder.initSaf(
-        provider: suspend () -> String
-    ) = externalServices {
-        hosts(testUrl) {
-            routing {
-                post("graphql") {
-                    call.respondText(
-                        contentType = ContentType.Application.Json,
-                        status = HttpStatusCode.OK,
-                        provider = provider
-                    )
+            ) {
+                authentication {
+                    tokenXMock {
+                        alwaysAuthenticated = true
+                        setAsDefault = true
+                        staticUserPid = testident
+                        staticLevelOfAssurance = levelOfAssurance
+                    }
                 }
             }
         }
     }
 }
-
-private fun List<String>.safResponse() = """
-    {
-      "data": {
-        "dokumentoversiktSelvbetjening": {
-          "tema": ${
-    joinToString(
-        prefix = "[",
-        postfix = "]"
-    ) { """{ "kode": "$it" }""".trimIndent() }
-}
-          }
-        }
-      }
-    }
-""".trimIndent()

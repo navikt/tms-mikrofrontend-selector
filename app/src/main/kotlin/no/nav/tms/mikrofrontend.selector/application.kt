@@ -6,14 +6,14 @@ import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidApplication.RapidApplicationConfig.Companion.fromEnv
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
-import no.nav.tms.mikrofrontend.selector.collector.SakstemaFetcher
+import no.nav.tms.mikrofrontend.selector.collector.ServicesFetcher
+import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.database.Flyway
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.database.PostgresDatabase
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
-import no.nav.tms.token.support.tokendings.exchange.TokendingsService
 import no.nav.tms.token.support.tokendings.exchange.TokendingsServiceBuilder
 
 fun main() {
@@ -23,18 +23,26 @@ fun main() {
         counter = MicrofrontendCounter()
     )
 
-    val sakstemaFetcher = SakstemaFetcher(
-        safUrl = environment.safUrl,
-        safClientId = environment.safClientId,
+    val servicesFetcher = ServicesFetcher(
         httpClient = HttpClient { configureJackson() },
-        tokendingsService = TokendingsServiceBuilder.buildTokendingsService(),
-    )
+        oppfølgingBaseUrl = environment.oppfolgingUrl,
+        aiaBackendUrl = environment.aiaUrl,
+        meldekortUrl =environment.meldekortUrl,
+        safUrl = environment.safUrl,
+        tokenFetcher = TokenFetcher(
+            tokendingsService = TokendingsServiceBuilder.buildTokendingsService(),
+            meldekortClientId = environment.meldekortClientId,
+            oppfølgingClientId = environment.oppfolgingClienId,
+            safClientId = environment.safClientId,
+            aiaClientId = environment.aiaClientId
+        )
+        )
 
     startRapid(
         environment = environment,
         manifestStorage = ManifestsStorage(environment.initGcpStorage(), environment.storageBucketName),
         personRepository = personRepository,
-        sakstemaFetcher = sakstemaFetcher
+        servicesFetcher = servicesFetcher
     )
 }
 
@@ -42,7 +50,7 @@ private fun startRapid(
     environment: Environment,
     manifestStorage: ManifestsStorage,
     personRepository: PersonRepository,
-    sakstemaFetcher: SakstemaFetcher
+    servicesFetcher: ServicesFetcher
 ) {
     RapidApplication.Builder(fromEnv(environment.rapidConfig()))
         .withKtorModule {
@@ -51,7 +59,7 @@ private fun startRapid(
                 PersonalContentCollector(
                     repository = personRepository,
                     manifestStorage = manifestStorage,
-                    sakstemaFetcher = sakstemaFetcher,
+                    servicesFetcher = servicesFetcher,
                     produktkortCounter = ProduktkortCounter()
                 )
             )

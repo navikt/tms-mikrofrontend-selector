@@ -47,6 +47,9 @@ dependencies {
     implementation(TmsCommonLib.metrics)
     implementation(TmsCommonLib.observability)
     implementation(GoogleCloud.storage)
+    implementation(Kotlinx.coroutines)
+    implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
+
 
 
     testImplementation(Junit.api)

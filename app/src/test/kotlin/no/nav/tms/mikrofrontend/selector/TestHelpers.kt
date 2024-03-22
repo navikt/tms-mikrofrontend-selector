@@ -2,12 +2,16 @@ package no.nav.tms.mikrofrontend.selector
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.mockk.coEvery
+import io.mockk.mockk
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.MessageRequirements
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
+import no.nav.tms.token.support.tokendings.exchange.TokendingsService
 
 internal val objectMapper = jacksonObjectMapper().apply {
     registerModule(JavaTimeModule())
@@ -117,3 +121,7 @@ private fun MessageRequirements.addRequiredAndInterestedIn(jsonMessage: JsonMess
     interestedInLegacyKeys(jsonMessage)
     interestedInCurrentVersionKeys(jsonMessage)
 }
+
+val testproduktkortCounter = ProduktkortCounter()
+val tokendingsmockk =
+    mockk<TokendingsService>().also { coEvery { it.exchangeToken(any(), any()) } returns "dummyToken" }
