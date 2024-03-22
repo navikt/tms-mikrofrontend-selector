@@ -49,7 +49,7 @@ internal fun Application.selectorApi(
                 }
 
                 is ExternalContentFecther.ApiException -> {
-                    log.warn { cause.message }
+                    log.warn { "${cause::class.simpleName}: ${cause.message}" }
                     call.respond(HttpStatusCode.ServiceUnavailable)
                 }
 
