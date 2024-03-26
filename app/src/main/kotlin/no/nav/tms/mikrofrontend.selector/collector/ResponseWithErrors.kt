@@ -90,10 +90,10 @@ abstract class ResponseWithErrors(private val errors: String?) {
 
 
 class SafResponse(
-    sakstemakoder: List<SafDokument>? = null,
+    safDokumenter: List<SafDokument>? = null,
     errors: List<String>? = null
 ) : ResponseWithErrors(errors?.joinToString(";")) {
-    val dokumenter = sakstemakoder ?: emptyList()
+    val dokumenter = safDokumenter ?: emptyList()
     override val source: String = "SAF"
     class SafDokument(val sakstemakode: String, val sistEndret: LocalDateTime)
 }

@@ -1,29 +1,29 @@
 produktkort:
-  - navn: Pensjon
-    sakstemakoder:
+  - id: PEN
+    includeIfSakstema:
       - PEN
-  - navn: Dagpenger
-    sakstemakoder:
+  - id: DAG
+    includeIfSakstema:
       - DAG
-    ukerEtterSisteDokument: 5
-  - navn: Foreldrepenger
-    sakstemakoder:
+    ukerEtterSisteDokument:
+      kode: DAG
+      antallUker: 5
+  - id: FOR
+    includeIfSakstema:
       - FOR
-    ukerEtterSisteDokument: 104
-  - navn: Hjelpemidler
-    sakstemakoder:
+  - id: HJE
+    includeIfSakstema:
       - HJE
-  - navn: Sosialhjelp
-    sakstemakoder:
+  - id: KOM
+    includeIfSakstema:
       - KOM
-  - navn: Uføretrygd
-    sakstemakoder:
+  - id: UFO
+    includeIfSakstema:
       - UFO
-  - navn: Sykefravær
-    id: SYK
-    sakstemakoder:
-          - SYK
-          - SYM
+  - id: SYK
+    includeIfSakstema:
+      - SYK
+      - SYM
 aktuelt:
   - id: "pensjonskalkulator-microfrontend"
     excludeIfSakstema:

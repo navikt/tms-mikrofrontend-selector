@@ -7,7 +7,7 @@ import no.nav.tms.mikrofrontend.selector.collector.MicrofrontendsDefinition
 class RegelstyrtMicrofrontend(
     id: String,
     manifestMap: Map<String, String>,
-    val contentRules: MutableList<ContentRule> = mutableListOf()
+    var contentRules: MutableList<ContentRule> = mutableListOf()
 ) {
     private val log = KotlinLogging.logger { }
     val definition = MicrofrontendsDefinition.create(id, manifestMap).also {

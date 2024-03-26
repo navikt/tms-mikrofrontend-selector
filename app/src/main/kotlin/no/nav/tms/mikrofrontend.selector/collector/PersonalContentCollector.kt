@@ -69,7 +69,7 @@ class PersonalContentFactory(
             meldekort = meldekortResponse.harMeldekort,
             aktuelt = ContentDefinition.getAktueltContent(
                 pdlResponse.calculateAge(),
-                safResponse.dokumenter.map { it.sakstemakode },
+                safResponse.dokumenter,
                 manifestMap
             )
         ).apply {

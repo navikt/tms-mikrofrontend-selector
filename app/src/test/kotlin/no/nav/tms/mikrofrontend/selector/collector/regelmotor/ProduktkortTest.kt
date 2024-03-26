@@ -23,7 +23,6 @@ class ProduktkortTest {
             .first()
             .assert {
                 id shouldBe "PEN"
-                navn shouldBe "Pensjon"
                 skalVises() shouldBe true
             }
 
@@ -37,28 +36,26 @@ class ProduktkortTest {
             .first()
             .assert {
                 id shouldBe "DAG"
-                navn shouldBe "Dagpenger"
                 skalVises() shouldBe true
             }
     }
 
     @ParameterizedTest
     @CsvSource(
-        "DAG, Dagpenger, DAG",
-        "FOR, Foreldrepenger, FOR",
-        "HJE, Hjelpemidler, HJE",
-        "KOM, Sosialhjelp, KOM",
-        "PEN, Pensjon, PEN",
-        "UFO, Uføretrygd, UFO",
-        "SYK, Sykefravær, SYK",
-        "SYM, Sykefravær, SYK"
+        "DAG, DAG",
+        "FOR, FOR",
+        "HJE, HJE",
+        "KOM, KOM",
+        "PEN, PEN",
+        "UFO, UFO",
+        "SYK, SYK",
+        "SYM, SYK"
     )
-    fun `skal mappes til riktige koder og navn`(kode: String, forventetNavn: String, forventetKode: String) {
+    fun `skal mappes til riktige koder og navn`(kode: String, forventetKode: String) {
         ContentDefinition.getProduktkort(
             listOf(SafDokument(kode, LocalDateTime.now()))
         ).first().assert {
             id shouldBe forventetKode
-            navn shouldBe forventetNavn
         }
     }
     @Test

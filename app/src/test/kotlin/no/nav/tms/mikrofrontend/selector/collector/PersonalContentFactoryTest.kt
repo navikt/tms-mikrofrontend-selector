@@ -123,7 +123,7 @@ class PersonalContentFactoryTest {
         testFactory(
             arbeidsøkerResponse = ArbeidsøkerResponse(erArbeidssoker = true, erStandard = true),
             safResponse = SafResponse(
-                sakstemakoder = listOf(SafResponse.SafDokument("DAG", LocalDateTime.now())),
+                safDokumenter = listOf(SafResponse.SafDokument("DAG", LocalDateTime.now())),
                 errors = emptyList()
             ),
             meldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
