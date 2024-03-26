@@ -4,6 +4,7 @@ import io.ktor.client.statement.*
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.redactedMessage
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.reflect.KFunction
 import kotlin.reflect.KType
@@ -89,11 +90,12 @@ abstract class ResponseWithErrors(private val errors: String?) {
 
 
 class SafResponse(
-    sakstemakoder: List<String>? = null,
+    sakstemakoder: List<SafDokument>? = null,
     errors: List<String>? = null
 ) : ResponseWithErrors(errors?.joinToString(";")) {
-    val sakstemakoder = sakstemakoder ?: emptyList()
+    val dokumenter = sakstemakoder ?: emptyList()
     override val source: String = "SAF"
+    class SafDokument(val sakstemakode: String, val sistEndret: LocalDateTime)
 }
 
 class OppfolgingResponse(
@@ -153,5 +155,3 @@ fun errorDetails(exception: Exception) =
                    melding: "${exception::class.simpleName} ${exception.message?.let { ":$it" }}"
                 """.trimIndent()
     } ?: "${exception::class.simpleName} ${exception.message?.let { ":$it" }}"
-
-

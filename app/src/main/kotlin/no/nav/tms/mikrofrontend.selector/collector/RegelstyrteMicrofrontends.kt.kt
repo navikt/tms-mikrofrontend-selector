@@ -21,7 +21,7 @@ class Pensjon(
 ) : RegelstyrtMicrofrontend(id, manifestMap) {
 
     override fun skalVises(): Boolean {
-        return alder > 40 && sakstemaer.none { it == ProduktkortVerdier.PEN.name } && definition != null
+        return alder > 40 && sakstemaer.none { it == "PEN" } && definition != null
     }
 
     companion object {

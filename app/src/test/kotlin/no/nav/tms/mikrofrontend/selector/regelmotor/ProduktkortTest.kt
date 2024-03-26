@@ -2,20 +2,47 @@ package no.nav.tms.mikrofrontend.selector.regelmotor
 
 import assert
 import io.kotest.matchers.shouldBe
-import no.nav.tms.mikrofrontend.selector.collector.ProduktkortVerdier
+import no.nav.tms.mikrofrontend.selector.collector.Produktfactory
+import no.nav.tms.mikrofrontend.selector.collector.Produktfactory.IsInPeriodContentRule
+import no.nav.tms.mikrofrontend.selector.collector.SafResponse.SafDokument
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import java.time.LocalDateTime
 
 class ProduktkortTest {
     @Test
-    fun `avgjør om et dagpenge produktkort skal vises eller ikke`() {
-        ProduktkortVerdier.resolveProduktkort(
-            koder = listOf("DAG"), microfrontends = null
-        )
+    fun `avgjør om ett produktkort skal vises eller ikke`() {
+
+        Produktfactory.getProduktkort(listOf(
+            SafDokument(
+                sakstemakode = "PEN",
+                sistEndret = LocalDateTime.now()
+            )
+        ))
+            .also { it.size shouldBe 1 }
             .first()
-            .skalVises( emptyList()) shouldBe true
+            .assert {
+                id shouldBe "PEN"
+                navn shouldBe "Pensjon"
+                skalVises() shouldBe true
+            }
+
+        Produktfactory.getProduktkort(listOf(
+            SafDokument(
+                sakstemakode = "DAG",
+                sistEndret = LocalDateTime.now()
+            )
+        ))
+            .also { it.size shouldBe 1 }
+            .first()
+            .assert {
+                id shouldBe "DAG"
+                navn shouldBe "Dagpenger"
+                skalVises() shouldBe true
+            }
     }
+
     @ParameterizedTest
     @CsvSource(
         "DAG, Dagpenger, DAG",
@@ -27,32 +54,24 @@ class ProduktkortTest {
         "SYK, Sykefravær, SYK",
         "SYM, Sykefravær, SYK"
     )
-    fun `skal mappes til riktige koder og navn`(kode: String, forventetNavn: String, forventetKode: String){
-        ProduktkortVerdier.resolveProduktkort(
-            koder = listOf(kode),  microfrontends = null
+    fun `skal mappes til riktige koder og navn`(kode: String, forventetNavn: String, forventetKode: String) {
+        Produktfactory.getProduktkort(
+            listOf(SafDokument(kode, LocalDateTime.now()))
         ).first().assert {
             id shouldBe forventetKode
             navn shouldBe forventetNavn
         }
     }
-
     @Test
-    fun `slår sammen like produktkort`(){
-        ProduktkortVerdier.resolveProduktkort(
-            koder = listOf("SYK","SYM"),  microfrontends = null
-        ).assert {
-            size shouldBe 1
-            first().assert {
-                id shouldBe "SYK"
-                navn shouldBe "Sykefravær"
-            }
-        }
+    fun `skal ikke legge til produktkort for ukjente verdier`() {
+        Produktfactory.getProduktkort(
+            listOf(SafDokument("ABC", LocalDateTime.now()))
+        ).size shouldBe 0
     }
 
     @Test
-    fun `skal ikke legge til produktkort for ukjente verdier`() {
-        ProduktkortVerdier.resolveProduktkort(
-            koder = listOf("ABC"),  microfrontends = null
-        ).size shouldBe 0
+    fun `periode etter siste dokument`() {
+        IsInPeriodContentRule(3, LocalDateTime.now()).applyRule() shouldBe true
+        IsInPeriodContentRule(3, LocalDateTime.now().minusWeeks(4)).applyRule() shouldBe false
     }
 }

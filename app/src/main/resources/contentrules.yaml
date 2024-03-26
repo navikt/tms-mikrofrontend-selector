@@ -1,0 +1,26 @@
+produktkort:
+  - navn: Pensjon
+    sakstemakoder:
+      - PEN
+  - navn: Dagpenger
+    sakstemakoder:
+      - DAG
+    ukerEtterSisteDokument: 5
+  - navn: Foreldrepenger
+    sakstemakoder:
+      - FOR
+    ukerEtterSisteDokument: 104
+  - navn: Hjelpemidler
+    sakstemakoder:
+      - HJE
+  - navn: Sosialhjelp
+    sakstemakoder:
+      - KOM
+  - navn: Uføretrygd
+    sakstemakoder:
+      - UFO
+  - navn: Sykefravær
+    id: SYK
+    sakstemakoder:
+          - SYK
+          - SYM

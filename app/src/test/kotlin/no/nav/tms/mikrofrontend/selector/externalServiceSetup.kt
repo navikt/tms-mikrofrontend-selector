@@ -8,6 +8,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.ktor.util.pipeline.*
 import kotlinx.coroutines.delay
+import java.time.LocalDateTime
 
 
 const val testHost = "http://test.nav.no"
@@ -76,7 +77,14 @@ class SafRoute(
 
     override val data: String = """{
             "dokumentoversiktSelvbetjening": {
-              "tema": ${sakstemaer.joinToString(prefix = "[", postfix = "]") { """{ "kode": "$it" }""".trimIndent() }}
+              "tema": ${sakstemaer.joinToString(prefix = "[", postfix = "]") { 
+                  """ { "kode": "$it",  
+                        "journalposter": {
+                            "relevanteDatoer": {
+                                "dato": "${LocalDateTime.now()}"
+                            }
+                        }
+                      }""".trimIndent() }}
             }
           }""".trimIndent()
 }

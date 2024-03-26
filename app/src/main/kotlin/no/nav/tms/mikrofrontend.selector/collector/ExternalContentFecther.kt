@@ -1,10 +1,13 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.nfeld.jsonpathkt.extension.read
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import no.nav.tms.mikrofrontend.selector.collector.SafResponse.SafDokument
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
@@ -21,29 +24,12 @@ class ExternalContentFecther(
 
     val log = KotlinLogging.logger { }
 
-    private fun safQuery(ident: String) = """ {
-        "query": "query(${'$'}ident: String!) {
-            dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
-                tema {
-                    kode
-                    journalposter{
-                        relevanteDatoer {
-                            dato
-                        }
-                    }
-                }
-              }
-           }",
-          "variables": {"ident" : "$ident"}
-        }
-    """.compactJson()
-
-    suspend fun fetchSakstema(user: TokenXUser): SafResponse = withErrorHandling("SAF","$safUrl/graphql") {
+    suspend fun fetchSakstema(user: TokenXUser): SafResponse = withErrorHandling("SAF", "$safUrl/graphql") {
         httpClient.post {
             url("$safUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
             header("Content-Type", "application/json")
-            setBody(safQuery(user.ident))
+            setBody(hentSafDokumenter(user.ident))
         }
             .let { response ->
                 if (response.status != HttpStatusCode.OK) {
@@ -52,7 +38,7 @@ class ExternalContentFecther(
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     SafResponse(
-                        sakstemakoder = jsonResponse?.getAll<String>("data.dokumentoversiktSelvbetjening.tema..kode"),
+                        sakstemakoder = jsonResponse?.safDokument("data.dokumentoversiktSelvbetjening.tema"),
                         errors = jsonResponse?.getAll<String>("errors..message")
                     )
                 }
@@ -86,7 +72,7 @@ class ExternalContentFecther(
         map = { jsonPath -> MeldekortResponse(meldekortApiResponse = jsonPath) }
     )
 
-    suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling("pdl","$pdlUrl/graphql") {
+    suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling("pdl", "$pdlUrl/graphql") {
         httpClient.post {
             url("$pdlUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.pdlToken(user)}")
@@ -100,18 +86,18 @@ class ExternalContentFecther(
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     PdlResponse(
                         fødselsdato = jsonResponse?.localDateOrNull("data.hentPerson.foedsel.foedselsdato"),
-                        fødselsår = jsonResponse?.intOrNull("data.hentPerson.foedsel.foedselsaar")?:0,
+                        fødselsår = jsonResponse?.intOrNull("data.hentPerson.foedsel.foedselsaar") ?: 0,
                         errors = jsonResponse?.listOrNull<String>("errors..message") ?: emptyList(),
                     )
                 }
             }
     }
 
-    private suspend fun <T> withErrorHandling(tjeneste: String,url:String, function: suspend () -> T) =
+    private suspend fun <T> withErrorHandling(tjeneste: String, url: String, function: suspend () -> T) =
         try {
             function()
         } catch (e: Exception) {
-            throw ApiException(tjeneste,url,e)
+            throw ApiException(tjeneste, url, e)
         }
 
 
@@ -138,7 +124,7 @@ class ExternalContentFecther(
     }
 
 
-    class ApiException(tjeneste:String,url: String,e: Exception) :
+    class ApiException(tjeneste: String, url: String, e: Exception) :
         Exception(
             """
             |Kall til ekstern tjeneste $tjeneste feiler. Url: $url ${errorDetails(e)}. 
@@ -156,6 +142,25 @@ private class HentAlder(ident: String) {
                     foedselsaar,
                 }
             }
+        }
+    """.compactJson()
+}
+
+private class hentSafDokumenter(ident: String) {
+    private fun safQuery(ident: String) = """ {
+        "query": "query(${'$'}ident: String!) {
+            dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
+                tema {
+                    kode
+                    journalposter{
+                        relevanteDatoer {
+                            dato
+                        }
+                    }
+                }
+              }
+           }",
+          "variables": {"ident" : "$ident"}
         }
     """.compactJson()
 

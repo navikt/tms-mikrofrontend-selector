@@ -222,7 +222,7 @@ internal class ApiTest {
                 list<String>("produktkort").assert {
 
                     size shouldBe 2
-                    this shouldBe expectedProduktkort
+                    this.sorted() shouldBe expectedProduktkort.sorted()
                 }
             }
         }

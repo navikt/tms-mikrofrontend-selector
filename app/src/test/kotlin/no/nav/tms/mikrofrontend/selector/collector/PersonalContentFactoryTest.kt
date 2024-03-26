@@ -10,9 +10,10 @@ import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class PersonalContentFactoryTest {
-    private val mockErrorUrl = Url("https://test.feil")
+
     @Test
     fun `Skal være tom`() {
         testFactory().build(
@@ -33,7 +34,7 @@ class PersonalContentFactoryTest {
     @Test
     fun `skal ha microfrontends og produktkort innlogingsnivå 4`() {
         testFactory(
-            safResponse = SafResponse(listOf("DAG"), emptyList())
+            safResponse = SafResponse(listOf(SafResponse.SafDokument("DAG", LocalDateTime.now())), emptyList())
         ).build(
             microfrontends = microfrontendMocck(level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5),
             innloggetnivå = 4,
@@ -92,7 +93,7 @@ class PersonalContentFactoryTest {
     }
 
     @Test
-     fun `skal ha produkkort og aia standard og 207 pga meldekort`(): Unit = runBlocking {
+    fun `skal ha produkkort og aia standard og 207 pga meldekort`(): Unit = runBlocking {
         testFactory(
             arbeidsøkerResponse = ArbeidsøkerResponse(
                 erArbeidssoker = true,
@@ -121,7 +122,10 @@ class PersonalContentFactoryTest {
         //TODO
         testFactory(
             arbeidsøkerResponse = ArbeidsøkerResponse(erArbeidssoker = true, erStandard = true),
-            safResponse = SafResponse(sakstemakoder = listOf("DAG"), errors = emptyList()),
+            safResponse = SafResponse(
+                sakstemakoder = listOf(SafResponse.SafDokument("DAG", LocalDateTime.now())),
+                errors = emptyList()
+            ),
             meldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
             oppfolgingResponse = OppfolgingResponse(underOppfolging = true),
         ).build(
@@ -146,7 +150,10 @@ class PersonalContentFactoryTest {
     fun `skal ha microfrontends og produktkort innloggingsnivå 3`() {
         //er både aia og oppfolging og meldekort nivå 4? Hva med produktkort?
         testFactory(
-            safResponse = SafResponse(listOf("DAG"), emptyList())
+            safResponse = SafResponse(
+                listOf(SafResponse.SafDokument("DAG", LocalDateTime.now())),
+                emptyList()
+            )
         ).build(
             microfrontendMocck(
                 level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5,
@@ -175,7 +182,7 @@ private fun testFactory(
     safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
     meldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{meldekort:0}")),
     oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false),
-    pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"),1988)
+    pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"), 1988)
 ) =
     PersonalContentFactory(
         arbeidsøkerResponse = arbeidsøkerResponse,
