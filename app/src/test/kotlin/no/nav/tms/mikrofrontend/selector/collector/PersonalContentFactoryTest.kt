@@ -182,7 +182,7 @@ private operator fun MicrofrontendsDefinition.times(i: Int): List<Microfrontends
     (1..i).map { this.copy(id = "$id$it", url = "$url$it") }
 
 private fun testFactory(
-    arbeidsøkerResponse: ArbeidsøkerResponse = ArbeidsøkerResponse(false, false, brukNyAia = false),
+    arbeidsøkerResponse: ArbeidsøkerResponse = ArbeidsøkerResponse(false, false, false),
     safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
     meldekortResponse: MeldekortResponse = MeldekortResponse(NullOrJsonNode.initObjectMapper("{meldekort:0}")),
     oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false)
