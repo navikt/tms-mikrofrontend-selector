@@ -67,7 +67,6 @@ class ServicesFetcher(
             header("Authorization", "Bearer ${tokenFetcher.oppfolgingToken(user)}")
             header("Content-Type", "application/json")
             header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
-
         }.let { response ->
             if (response.status != HttpStatusCode.OK)
                 OppfolgingResponse(response = response, bodyAsText = response.bodyAsText())
@@ -90,7 +89,8 @@ class ServicesFetcher(
                 response.bodyAsNullOrJsonNode().let { jsonNode ->
                     ArbeidsøkerResponse(
                         erArbeidssoker = jsonNode?.boolean("erArbeidssoker") ?: false,
-                        erStandard = jsonNode?.boolean("erStandard") ?: false
+                        erStandard = jsonNode?.boolean("erStandard") ?: false,
+                        brukNyAia = jsonNode?.boolean("brukNyAia") ?: false
                     )
                 }
 

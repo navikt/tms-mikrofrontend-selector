@@ -20,7 +20,7 @@ class PersonalContentCollector(
 ) {
     suspend fun getContent(user: TokenXUser, innloggetnivå: Int): PersonalContentResponse {
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
-        return asyncCollector(user).build(microfrontends,innloggetnivå,manifestStorage.getManifestBucketContent()).also {
+        return asyncCollector(user).build(microfrontends,innloggetnivå, manifestStorage.getManifestBucketContent()).also {
             produktkortCounter.countProduktkort(it.produktkort)
         }
     }
@@ -62,6 +62,7 @@ class PersonalContentFactory(
                 ).ids(),
             offerStepup = microfrontends?.offerStepup(innloggetnivå)?:false,
             aiaStandard = arbeidsøkerResponse.erStandard && arbeidsøkerResponse.erArbeidssoker,
+            brukNyAia = arbeidsøkerResponse.brukNyAia,
             oppfolgingContent = oppfolgingResponse.underOppfolging,
             meldekort = meldekortResponse.harMeldekort
         ).apply {
@@ -79,6 +80,7 @@ class PersonalContentResponse(
     val produktkort: List<String>,
     val offerStepup: Boolean,
     val aiaStandard: Boolean,
+    val brukNyAia: Boolean,
     val oppfolgingContent: Boolean,
     val meldekort: Boolean
 ) {

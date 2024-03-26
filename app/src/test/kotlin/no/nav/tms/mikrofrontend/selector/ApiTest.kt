@@ -55,7 +55,7 @@ internal class ApiTest {
     }
 
     @Test
-    fun `Skal svare med liste over mikrofrontends,meldekort og manifest med for loa-high`() = testApplication {
+    fun `Skal svare med liste over mikrofrontends, meldekort og manifest med for loa-high`() = testApplication {
         val testIdent = "12345678910"
         val expectedMicrofrontends = mutableMapOf(
             "mk1" to "https://cdn.test/mk1.json",
@@ -101,6 +101,7 @@ internal class ApiTest {
                 getAllValuesForPath<String>("microfrontends..url")
                 getFromKeyOrException<List<String>>("produktkort").size shouldBe 1
                 boolean("aiaStandard") shouldBe false
+                boolean("brukNyAia") shouldBe false
                 boolean("oppfolgingContent") shouldBe false
                 boolean("meldekort") shouldBe true
                 boolean("offerStepup") shouldBe false

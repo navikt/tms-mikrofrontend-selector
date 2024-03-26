@@ -115,12 +115,13 @@ class OppfolgingRoute(private val underOppfølging: Boolean = false) :
 
 }
 
-class ArbeidsøkerRoute(private val erArbeidsøker: Boolean = false, private val erStandard: Boolean = false) :
+class ArbeidsøkerRoute(private val erArbeidsøker: Boolean = false, private val erStandard: Boolean = false, private val brukNyAia: Boolean = false) :
     RouteProvider(path = "aia-backend/er-arbeidssoker", routeMethodFunction = Routing::get) {
     override fun content(): String = """
         {
           "erArbeidssoker": $erArbeidsøker,
-          "erStandard": $erStandard
+          "erStandard": $erStandard,
+          "brukNyAia": $brukNyAia
         }
     """.trimIndent()
 

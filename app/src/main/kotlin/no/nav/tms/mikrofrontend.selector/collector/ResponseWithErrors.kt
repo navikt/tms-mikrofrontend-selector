@@ -59,6 +59,7 @@ class MeldekortResponse(
 class ArbeidsøkerResponse(
     val erArbeidssoker: Boolean = false,
     val erStandard: Boolean = false,
+    val brukNyAia: Boolean = false,
     errors: String? = null,
     response: HttpResponse? = null,
     bodyAsText: String?= null
