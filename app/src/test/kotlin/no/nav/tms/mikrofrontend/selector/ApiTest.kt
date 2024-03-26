@@ -114,10 +114,10 @@ internal class ApiTest {
                         require(this != null)
                         size shouldBe 1
                         this.find {
-                            it["microfrontend_id"].asText() == LocalGCPStorage.pensjonMf.first
+                            it["microfrontend_id"].asText() == "pensjonskalkulator-microfrontend"
                         }.assert {
                             require(this != null)
-                            this["url"].asText() shouldBe LocalGCPStorage.pensjonMf.second
+                            this["url"].asText() shouldBe "https://cdn.pensjon/manifest.json"
                         }
                     }
                 }

@@ -1,13 +1,10 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.nfeld.jsonpathkt.extension.read
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import no.nav.tms.mikrofrontend.selector.collector.SafResponse.SafDokument
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
@@ -29,7 +26,7 @@ class ExternalContentFecther(
             url("$safUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
             header("Content-Type", "application/json")
-            setBody(hentSafDokumenter(user.ident))
+            setBody(HentSafDokumenter(user.ident))
         }
             .let { response ->
                 if (response.status != HttpStatusCode.OK) {
@@ -38,7 +35,7 @@ class ExternalContentFecther(
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     SafResponse(
-                        sakstemakoder = jsonResponse?.safDokument("data.dokumentoversiktSelvbetjening.tema"),
+                        sakstemakoder = jsonResponse?.safDokument(),
                         errors = jsonResponse?.getAll<String>("errors..message")
                     )
                 }
@@ -146,7 +143,7 @@ private class HentAlder(ident: String) {
     """.compactJson()
 }
 
-private class hentSafDokumenter(ident: String) {
+private class HentSafDokumenter(ident: String) {
     private fun safQuery(ident: String) = """ {
         "query": "query(${'$'}ident: String!) {
             dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {

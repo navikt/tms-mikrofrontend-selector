@@ -24,3 +24,8 @@ produktkort:
     sakstemakoder:
           - SYK
           - SYM
+aktuelt:
+  - id: "pensjonskalkulator-microfrontend"
+    excludeIfSakstema:
+      - PEN
+    eldreEnn: 40

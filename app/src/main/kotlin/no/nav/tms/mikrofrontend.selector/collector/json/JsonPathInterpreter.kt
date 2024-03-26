@@ -182,7 +182,7 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
             initPathInterpreter(bodyAsText(), debugLog)
     }
 
-    fun safDokument(path: String) =
+    fun safDokument() =
         jsonNode.read<JsonNode>("\$.data.dokumentoversiktSelvbetjening.tema")?.map {
             SafDokument(
                 sakstemakode = it.read<String>("$.kode")?:throw JsonPathSearchException(

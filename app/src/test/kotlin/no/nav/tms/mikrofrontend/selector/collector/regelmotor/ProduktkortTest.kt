@@ -1,9 +1,8 @@
-package no.nav.tms.mikrofrontend.selector.regelmotor
+package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 
 import assert
 import io.kotest.matchers.shouldBe
-import no.nav.tms.mikrofrontend.selector.collector.Produktfactory
-import no.nav.tms.mikrofrontend.selector.collector.Produktfactory.IsInPeriodContentRule
+
 import no.nav.tms.mikrofrontend.selector.collector.SafResponse.SafDokument
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -14,7 +13,7 @@ class ProduktkortTest {
     @Test
     fun `avgjør om ett produktkort skal vises eller ikke`() {
 
-        Produktfactory.getProduktkort(listOf(
+        ContentDefinition.getProduktkort(listOf(
             SafDokument(
                 sakstemakode = "PEN",
                 sistEndret = LocalDateTime.now()
@@ -28,7 +27,7 @@ class ProduktkortTest {
                 skalVises() shouldBe true
             }
 
-        Produktfactory.getProduktkort(listOf(
+        ContentDefinition.getProduktkort(listOf(
             SafDokument(
                 sakstemakode = "DAG",
                 sistEndret = LocalDateTime.now()
@@ -55,7 +54,7 @@ class ProduktkortTest {
         "SYM, Sykefravær, SYK"
     )
     fun `skal mappes til riktige koder og navn`(kode: String, forventetNavn: String, forventetKode: String) {
-        Produktfactory.getProduktkort(
+        ContentDefinition.getProduktkort(
             listOf(SafDokument(kode, LocalDateTime.now()))
         ).first().assert {
             id shouldBe forventetKode
@@ -64,14 +63,8 @@ class ProduktkortTest {
     }
     @Test
     fun `skal ikke legge til produktkort for ukjente verdier`() {
-        Produktfactory.getProduktkort(
+        ContentDefinition.getProduktkort(
             listOf(SafDokument("ABC", LocalDateTime.now()))
         ).size shouldBe 0
-    }
-
-    @Test
-    fun `periode etter siste dokument`() {
-        IsInPeriodContentRule(3, LocalDateTime.now()).applyRule() shouldBe true
-        IsInPeriodContentRule(3, LocalDateTime.now().minusWeeks(4)).applyRule() shouldBe false
     }
 }

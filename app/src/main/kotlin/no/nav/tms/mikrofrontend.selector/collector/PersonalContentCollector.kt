@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
+import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ProduktkortDefinition
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
@@ -58,15 +60,14 @@ class PersonalContentFactory(
     ): PersonalContentResponse =
         PersonalContentResponse(
             microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestMap) ?: emptyList(),
-            produktkort = Produktfactory.getProduktkort(
+            produktkort = ContentDefinition.getProduktkort(
                 safResponse.dokumenter
-
             ).filter { it.skalVises() }.map { it.id },
             offerStepup = microfrontends?.offerStepup(innloggetnivå) ?: false,
             aiaStandard = arbeidsøkerResponse.isStandardInnsats(),
             oppfolgingContent = oppfolgingResponse.underOppfolging,
             meldekort = meldekortResponse.harMeldekort,
-            aktuelt = Akutelt.getAktueltContent(
+            aktuelt = ContentDefinition.getAktueltContent(
                 pdlResponse.calculateAge(),
                 safResponse.dokumenter.map { it.sakstemakode },
                 manifestMap

@@ -2,7 +2,7 @@ package no.nav.tms.mikrofrontend.selector
 
 import com.google.cloud.NoCredentials
 import com.google.cloud.storage.*
-import no.nav.tms.mikrofrontend.selector.collector.Pensjon
+import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage.Companion.manifestFileName
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.utility.DockerImageName
@@ -60,7 +60,7 @@ class LocalGCPStorage {
 
     fun updateManifest(expectedMicrofrontends: MutableMap<String, String>) {
         val toStorage = expectedMicrofrontends.toMutableMap()
-        toStorage[pensjonMf.first] = pensjonMf.second
+        toStorage.putAll(akuteltMicrofrontends)
 
         val contents = toStorage.map { """"${it.key}":"${it.value}"""" }.joinToString(
             prefix = "{",
@@ -89,7 +89,9 @@ class LocalGCPStorage {
 
 
     companion object {
-        val pensjonMf = Pair(Pensjon.id, "https://cdn.pensjon/manifest.json")
+        val akuteltMicrofrontends = ContentDefinition.aktueltDefinitions.map {
+            Pair(it.id, "https://cdn.pensjon/manifest.json")
+        }
 
         const val testBucketName = "test-bucket"
         const val testProjectId = "test-project"
