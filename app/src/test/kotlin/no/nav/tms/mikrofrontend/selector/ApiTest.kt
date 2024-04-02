@@ -285,7 +285,8 @@ internal class ApiTest {
                 SafRoute(),
                 MeldekortRoute(),
                 OppfolgingRoute(false),
-                ArbeidsøkerRoute()
+                ArbeidsøkerRoute(),
+                PdlRoute()
             )
 
             client.get("/microfrontends").assert {

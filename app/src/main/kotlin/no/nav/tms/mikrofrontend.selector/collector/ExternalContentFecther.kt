@@ -98,10 +98,9 @@ class ExternalContentFecther(
                     ResponseWithErrors.createFromHttpError(response)
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
-                    log.info { "JsonResponse: ${jsonResponse?.jsonNode ?: "emptyjson"} " }
                     PdlResponse(
-                        fødselsdato = jsonResponse?.localDateOrNull("data.hentPerson.foedsel.foedselsdato"),
-                        fødselsår = jsonResponse?.intOrNull("data.hentPerson.foedsel.foedselsaar"),
+                        fødselsdato = jsonResponse?.localDateOrNull("foedselsdato"),
+                        fødselsår = jsonResponse?.intOrNull("foedselsaar"),
                         errors = jsonResponse?.getAll<String>("errors..message") ?: emptyList(),
                     )
                 }

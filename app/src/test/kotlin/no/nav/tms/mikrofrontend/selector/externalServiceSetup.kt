@@ -146,11 +146,13 @@ class PdlRoute(
     override val data: String = if(errorMsg==null) """
          {
            "hentPerson": {
-             "foedsel": {
-               "foedselsaar": $fødselssår,
-               "foedselsdato": "$fødselsdato"
-             }
-           }
+      "foedsel": [
+        {
+          "foedselsdato": "$fødselsdato",
+          "foedselsaar": $fødselssår
+        }
+      ]
+    }
          }
     """.trimIndent() else "{}"
 }
