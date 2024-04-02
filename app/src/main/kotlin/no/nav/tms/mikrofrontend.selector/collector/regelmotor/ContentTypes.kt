@@ -18,10 +18,14 @@ class RegelstyrtMicrofrontend(
     fun skalVises() = contentRules.all { it.skalVises() }
 }
 
-class RegelstyrteMicrofrontendDefinitions(
+class Produktkort(
     val id: String,
-    val exludeIfSakstema: List<String>?,
-    val olderThanRule: Int?
-)
+    var rules: MutableList<ContentRule> = mutableListOf()
+) {
+    fun skalVises() =
+        rules.all { it.skalVises() }
+}
+
+
 
 

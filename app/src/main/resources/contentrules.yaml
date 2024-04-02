@@ -28,4 +28,4 @@ aktuelt:
   - id: "pensjonskalkulator-microfrontend"
     excludeIfSakstema:
       - PEN
-    eldreEnn: 40
+    olderThan: 40

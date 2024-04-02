@@ -15,7 +15,7 @@ class ContentRulesDefinition(
     val includeIfSakstema: List<String>?,
     val exludeIfSakstema: List<String>?,
     val olderThanRule: Int?,
-    val ukerEtterSisteDokument: UkeEtterSisteDokument?
+    val ukerEtterSisteDokument: UkerEtterSisteDokument?
 ) {
 
     fun createRules(safDokumenter: List<SafDokument>, alder: Int?) = mutableListOf<ContentRule>().apply {
@@ -64,7 +64,7 @@ class ContentRulesDefinition(
                         } else sakstema
                     },
                     ukerEtterSisteDokument = it.read<JsonNode>("$.ukerEtterSisteDokument")?.let {
-                        UkeEtterSisteDokument(
+                        UkerEtterSisteDokument(
                             it.read<Int>("$.antallUker")
                                 ?: throw IllegalArgumentException("Antall uker må være definert for ukerEtterSisteDokumentRegler"),
                             it.read<String>("$.kode")
@@ -72,12 +72,12 @@ class ContentRulesDefinition(
                         )
                     },
                     exludeIfSakstema = it.read<List<String>>("$.excludeIfSakstema"),
-                    olderThanRule = it.read<Int>("$.eldreEnn")
+                    olderThanRule = it.read<Int>("$.olderThan")
                 )
             }
     }
 
-    class UkeEtterSisteDokument(val antallUker: Int, val sakstemakode: String)
+    class UkerEtterSisteDokument(val antallUker: Int, val sakstemakode: String)
 }
 
 class OlderThanContentRule(val shouldBeOlderThan: Int, val ageOfUser: Int) : ContentRule {

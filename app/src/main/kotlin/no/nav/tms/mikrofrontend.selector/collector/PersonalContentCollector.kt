@@ -6,7 +6,6 @@ import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
-import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ProduktkortDefinition
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter

@@ -8,21 +8,21 @@ import no.nav.tms.mikrofrontend.selector.collector.SafResponse.SafDokument
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentRulesDefinition.Companion.parseContentRuleDefinitions
 
 object ContentDefinition {
-    private val yamlObjectMapper =
+    private fun yamlObjectMapper() =
         ObjectMapper(YAMLFactory()).apply {
             registerModule(
                 KotlinModule.Builder().build()
             )
         }
+
     private val contentYaml =
         object {}::class.java.getResource("/contentrules.yaml")?.readText().let { yaml ->
-            yamlObjectMapper.readTree(yaml) ?: throw IllegalArgumentException("contentrules.yaml finnes ikke")
+            yamlObjectMapper().readTree(yaml) ?: throw IllegalArgumentException("contentrules.yaml finnes ikke")
         }
 
     private val produktkortDefinitions = contentYaml.parseContentRuleDefinitions("produktkort", true)
 
-    val aktueltDefinitions =
-        contentYaml.parseContentRuleDefinitions("aktuelt", false)
+    private val aktueltDefinitions = contentYaml.parseContentRuleDefinitions("aktuelt", false)
 
     fun getAktueltContent(
         alder: Int,
@@ -30,10 +30,7 @@ object ContentDefinition {
         manifestMap: Map<String, String>
     ): List<MicrofrontendsDefinition> =
         aktueltDefinitions.map {
-            RegelstyrtMicrofrontend(
-                id = it.id,
-                manifestMap = manifestMap,
-            ).apply {
+            RegelstyrtMicrofrontend(id = it.id, manifestMap = manifestMap).apply {
                 contentRules = it.createRules(safDokument, alder)
             }
         }.filter { it.skalVises() }.mapNotNull { it.definition }

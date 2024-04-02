@@ -89,9 +89,7 @@ class LocalGCPStorage {
 
 
     companion object {
-        val akuteltMicrofrontends = ContentDefinition.aktueltDefinitions.map {
-            Pair(it.id, "https://cdn.pensjon/manifest.json")
-        }
+        val akuteltMicrofrontends = mapOf("pensjonskalkulator-microfrontend" to "https://cdn.pensjon/manifest.json")
 
         const val testBucketName = "test-bucket"
         const val testProjectId = "test-project"
