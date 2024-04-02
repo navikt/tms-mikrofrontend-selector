@@ -144,7 +144,7 @@ private class HentAlder(ident: String) {
 }
 
 private class HentSafDokumenter(ident: String) {
-    private fun safQuery(ident: String) = """ {
+    private fun query(ident: String) = """ {
         "query": "query(${'$'}ident: String!) {
             dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
                 tema {
