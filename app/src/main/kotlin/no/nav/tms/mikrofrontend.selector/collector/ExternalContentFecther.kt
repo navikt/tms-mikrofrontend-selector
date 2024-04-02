@@ -100,7 +100,7 @@ class ExternalContentFecther(
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     PdlResponse(
                         fødselsdato = jsonResponse?.localDateOrNull("data.hentPerson.foedsel.foedselsdato"),
-                        fødselsår = jsonResponse?.intOrNull("data.hentPerson.foedsel.foedselsaar")?:0,
+                        fødselsår = jsonResponse?.intOrNull("data.hentPerson.foedsel.foedselsaar"),
                         errors = jsonResponse?.listOrNull<String>("errors..message") ?: emptyList(),
                     )
                 }

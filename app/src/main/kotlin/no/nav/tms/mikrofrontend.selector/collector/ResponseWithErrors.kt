@@ -138,13 +138,14 @@ class ArbeidsøkerResponse(
 
 class PdlResponse(
     val fødselsdato: LocalDate? = null,
-    val fødselsår: Int,
+    val fødselsår: Int?,
     errors: List<String>? = null,
 ) : ResponseWithErrors(errors?.joinToString(";")) {
     override val source = "pdl"
     fun calculateAge() = when {
         fødselsdato != null -> ChronoUnit.YEARS.between(fødselsdato, LocalDate.now()).toInt()
-        else -> LocalDate.now().year - fødselsår
+        fødselsår != null -> LocalDate.now().year - fødselsår
+        else -> 0
     }.also { log.info { "fødselsdato: $fødselsdato fødselsår: $fødselsår kalkulert dato: $it" }}
 }
 

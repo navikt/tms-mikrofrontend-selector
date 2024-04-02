@@ -74,7 +74,7 @@ internal fun Application.selectorApi(
                 get() {
                     val user = TokenXUserFactory.createTokenXUser(call)
                     val content = personalContentCollector.getContent(user, user.loginLevel)
-                    content.errors?.let {
+                    content.errors?.takeIf { it.isNotEmpty() }?.let {
                         log.warn { it }
                     }
                     call.respond(
