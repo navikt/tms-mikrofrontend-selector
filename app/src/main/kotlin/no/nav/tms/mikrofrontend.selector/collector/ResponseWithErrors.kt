@@ -146,7 +146,7 @@ class PdlResponse(
         fødselsdato != null -> ChronoUnit.YEARS.between(fødselsdato, LocalDate.now()).toInt()
         fødselsår != null -> LocalDate.now().year - fødselsår
         else -> 0
-    }.also { log.info { "fødselsdato: $fødselsdato fødselsår: $fødselsår kalkulert dato: $it" }}
+    }
 }
 
 fun errorDetails(exception: Exception) =

@@ -73,7 +73,8 @@ class PersonalContentFactory(
                 arbeidsøkerResponse,
                 safResponse,
                 meldekortResponse,
-                oppfolgingResponse
+                oppfolgingResponse,
+                pdlResponse
             ).mapNotNull { it.errorMessage() }.joinToString()
         }
 }

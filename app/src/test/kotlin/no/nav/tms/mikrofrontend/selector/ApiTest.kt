@@ -367,7 +367,7 @@ internal class ApiTest {
                 SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 OppfolgingRoute(false, ovverideContent = ""),
-                PdlRoute(errorMsg = "Kallet feilet"),
+                PdlRoute(errorMsg = "Kall til PDL feilet"),
                 ArbeidsøkerRoute(ovverideContent = "{}")
             )
 
