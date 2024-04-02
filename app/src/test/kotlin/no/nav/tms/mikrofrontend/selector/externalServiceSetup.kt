@@ -143,7 +143,7 @@ class PdlRoute(
     errorMsg: String? = null
 ) :
     GraphQlRouteProvider(errorMsg = errorMsg, path = "pdl/graphql") {
-    override val data: String = """
+    override val data: String = if(errorMsg==null) """
          {
            "hentPerson": {
              "foedsel": {
@@ -152,7 +152,7 @@ class PdlRoute(
              }
            }
          }
-    """.trimIndent()
+    """.trimIndent() else "{}"
 }
 
 

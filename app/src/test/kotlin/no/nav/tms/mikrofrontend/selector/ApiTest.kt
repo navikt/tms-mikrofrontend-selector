@@ -357,6 +357,33 @@ internal class ApiTest {
             }
         }
 
+    @Test
+    fun `Retunerer ikke pensjons microfrontend når kallet til PDL feiler`() =
+        testApplication {
+            val testident2 = "12345678912"
+
+            initSelectorApi(testident = testident2)
+            initExternalServices(
+                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
+                MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
+                OppfolgingRoute(false, ovverideContent = ""),
+                PdlRoute(errorMsg = "Kallet feilet"),
+                ArbeidsøkerRoute(ovverideContent = "{}")
+            )
+
+            gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
+
+            testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
+
+            client.get("/microfrontends").assert {
+                status shouldBe HttpStatusCode.MultiStatus
+                objectMapper.readTree(bodyAsText()).assert {
+                    this["aktuelt"].size() shouldBe 0
+                }
+            }
+        }
+
+
     fun ApplicationTestBuilder.initSelectorApi(
         testident: String,
         levelOfAssurance: LevelOfAssurance = LEVEL_4

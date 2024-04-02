@@ -1,5 +1,6 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.statement.*
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.redactedMessage
@@ -12,6 +13,7 @@ import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.full.withNullability
 
+val log = KotlinLogging.logger{}
 
 abstract class ResponseWithErrors(private val errors: String?) {
 
@@ -143,7 +145,7 @@ class PdlResponse(
     fun calculateAge() = when {
         fødselsdato != null -> ChronoUnit.YEARS.between(fødselsdato, LocalDate.now()).toInt()
         else -> LocalDate.now().year - fødselsår
-    }
+    }.also { log.info { "fødselsdato: $fødselsdato fødselsår: $fødselsår kalkulert dato: $it" }}
 }
 
 fun errorDetails(exception: Exception) =

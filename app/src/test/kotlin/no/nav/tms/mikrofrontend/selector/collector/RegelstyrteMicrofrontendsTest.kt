@@ -31,5 +31,14 @@ class RegelstyrteMicrofrontendsTest {
             alder = 41,
             listOf("PEN"),
             manifestMapWithPensjon).size shouldBe 0
+        Akutelt.getAktueltContent(
+            alder = 39,
+            listOf("PEN"),
+            manifestMapWithPensjon).size shouldBe 0
+
+        Akutelt.getAktueltContent(
+            alder = 39,
+            listOf(),
+            manifestMapWithPensjon).size shouldBe 0
     }
 }
