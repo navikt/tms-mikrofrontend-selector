@@ -8,17 +8,17 @@ import java.time.LocalDateTime
 class ContentRuleTest {
     @Test
     fun `periode etter siste dokument`() {
-        LastDocumentAfterContentRule(
+        WeeksSinceLastDocumentContentRule(
             sakstemakode = "DAG",
             periodInWeeks = 3,
             safDokumenter = listOf("DAG".safTestDokument(LocalDateTime.now()))
         ).skalVises() shouldBe true
-        LastDocumentAfterContentRule(
+        WeeksSinceLastDocumentContentRule(
             sakstemakode = "DAG",
             periodInWeeks = 3,
             safDokumenter = listOf("DAG".safTestDokument(LocalDateTime.now().minusWeeks(4)))
         ).skalVises() shouldBe false
-        LastDocumentAfterContentRule(
+        WeeksSinceLastDocumentContentRule(
             sakstemakode = "DAG",
             periodInWeeks = 3,
             safDokumenter = listOf("DAG".safTestDokument(LocalDateTime.now().minusWeeks(3)))
@@ -26,9 +26,9 @@ class ContentRuleTest {
     }
     @Test
     fun `bruker er eldre enn`() {
-        OlderThanContentRule(shouldBeOlderThan = 40, ageOfUser = 39).skalVises() shouldBe false
-        OlderThanContentRule(shouldBeOlderThan = 40, ageOfUser = 40).skalVises() shouldBe false
-        OlderThanContentRule(shouldBeOlderThan = 40, ageOfUser = 41).skalVises() shouldBe true
+        UsersAgeOverContentRule(shouldBeOlderThan = 40, ageOfUser = 39).skalVises() shouldBe false
+        UsersAgeOverContentRule(shouldBeOlderThan = 40, ageOfUser = 40).skalVises() shouldBe false
+        UsersAgeOverContentRule(shouldBeOlderThan = 40, ageOfUser = 41).skalVises() shouldBe true
     }
 
     @Test

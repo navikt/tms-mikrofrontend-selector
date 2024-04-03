@@ -5,7 +5,7 @@ produktkort:
   - id: DAG
     includeIfSakstema:
       - DAG
-    ukerEtterSisteDokument:
+    weeksSinceLastDocument:
       kode: DAG
       antallUker: 5
   - id: FOR
@@ -28,4 +28,4 @@ aktuelt:
   - id: "pensjonskalkulator-microfrontend"
     excludeIfSakstema:
       - PEN
-    olderThan: 40
+    usersAgeOver: 40
