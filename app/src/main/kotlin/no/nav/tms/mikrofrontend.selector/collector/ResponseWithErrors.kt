@@ -13,7 +13,7 @@ import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.full.withNullability
 
-val log = KotlinLogging.logger{}
+val log = KotlinLogging.logger {}
 
 abstract class ResponseWithErrors(private val errors: String?) {
 
@@ -127,13 +127,15 @@ class MeldekortResponse(
 }
 
 class ArbeidsøkerResponse(
-    val erArbeidssoker: Boolean? = null,
-    val erStandard: Boolean? = null,
-    errors: String? = null
+    val erArbeidssoker: Boolean = false,
+    val erStandard: Boolean = false,
+    val brukNyAia: Boolean = false,
+    errors: String? = null,
+    response: HttpResponse? = null,
+    bodyAsText: String? = null
 ) : ResponseWithErrors(errors) {
-    fun isStandardInnsats(): Boolean = erArbeidssoker == true && erStandard == true
-
     override val source = "aia-backend"
+    fun isStandardInnsats(): Boolean = erArbeidssoker == true && erStandard == true
 }
 
 class PdlResponse(
@@ -156,5 +158,4 @@ fun errorDetails(exception: Exception) =
                    melding: "${exception::class.simpleName} ${exception.message?.let { ":$it" }}"
                 """.trimIndent()
     } ?: "${exception::class.simpleName} ${exception.message?.let { ":$it" }}"
-
 

@@ -24,6 +24,7 @@ class PersonalContentFactoryTest {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
             aiaStandard shouldBe false
+            brukNyAia shouldBe false
             oppfolgingContent shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends shouldBe emptyList()
@@ -43,18 +44,20 @@ class PersonalContentFactoryTest {
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG")
             aiaStandard shouldBe false
+            brukNyAia shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends.size shouldBe 5
         }
     }
 
     @Test
-    fun `skal ha aia-standard, og returstatus 207 pga SAF`() {
+    fun `skal ha aia-standard, ny-aia og returstatus 207 pga SAF`() {
         testFactory(
             safResponse = SafResponse(emptyList(), listOf("Saf feilet fordi det gikk feil")),
             arbeidsøkerResponse = ArbeidsøkerResponse(
                 erArbeidssoker = true,
                 erStandard = true,
+                brukNyAia = true
             )
         ).build(
             microfrontends = Microfrontends(),
@@ -65,6 +68,7 @@ class PersonalContentFactoryTest {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
             aiaStandard shouldBe true
+            brukNyAia shouldBe true
             oppfolgingContent shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.MultiStatus
             this.microfrontends shouldBe emptyList()
@@ -85,6 +89,7 @@ class PersonalContentFactoryTest {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
             aiaStandard shouldBe false
+            brukNyAia shouldBe false
             oppfolgingContent shouldBe true
             this.resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends shouldBe emptyList()
@@ -92,11 +97,12 @@ class PersonalContentFactoryTest {
     }
 
     @Test
-     fun `skal ha produkkort og aia standard og 207 pga meldekort`(): Unit = runBlocking {
+    fun `skal ha produkkort og aia-standard og 207 pga meldekort`() {
         testFactory(
             arbeidsøkerResponse = ArbeidsøkerResponse(
                 erArbeidssoker = true,
                 erStandard = true,
+                brukNyAia = false
             ),
             meldekortResponse = MeldekortResponse(errors = "Feil som skjedde")
 
@@ -109,6 +115,7 @@ class PersonalContentFactoryTest {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
             aiaStandard shouldBe true
+            brukNyAia shouldBe false
             oppfolgingContent shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.MultiStatus
             this.microfrontends shouldBe emptyList()
@@ -117,10 +124,10 @@ class PersonalContentFactoryTest {
     }
 
     @Test
-    fun `skal ha produkkort, aiastandard, oppfolging, meldekort og microfrontends`() {
+    fun `skal ha produkkort, aia-standard, ny-aia, oppfolging, meldekort og microfrontends`() {
         //TODO
         testFactory(
-            arbeidsøkerResponse = ArbeidsøkerResponse(erArbeidssoker = true, erStandard = true),
+            arbeidsøkerResponse = ArbeidsøkerResponse(erArbeidssoker = true, erStandard = true, brukNyAia = true),
             safResponse = SafResponse(sakstemakoder = listOf("DAG"), errors = emptyList()),
             meldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
             oppfolgingResponse = OppfolgingResponse(underOppfolging = true),
@@ -135,6 +142,7 @@ class PersonalContentFactoryTest {
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG")
             aiaStandard shouldBe true
+            brukNyAia shouldBe true
             oppfolgingContent shouldBe true
             resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends.size shouldBe 5
@@ -159,6 +167,7 @@ class PersonalContentFactoryTest {
             offerStepup shouldBe true
             produktkort shouldBe listOf("DAG")
             aiaStandard shouldBe false
+            brukNyAia shouldBe false
             oppfolgingContent shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends.size shouldBe 2
@@ -171,7 +180,7 @@ private operator fun MicrofrontendsDefinition.times(i: Int): List<Microfrontends
 
 
 private fun testFactory(
-    arbeidsøkerResponse: ArbeidsøkerResponse = ArbeidsøkerResponse(false, false),
+    arbeidsøkerResponse: ArbeidsøkerResponse = ArbeidsøkerResponse(false, false, false),
     safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
     meldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{meldekort:0}")),
     oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false),

@@ -65,6 +65,7 @@ class PersonalContentFactory(
                 ).map { it.id },
             offerStepup = microfrontends?.offerStepup(innloggetnivå) ?: false,
             aiaStandard = arbeidsøkerResponse.isStandardInnsats(),
+            brukNyAia = arbeidsøkerResponse.brukNyAia,
             oppfolgingContent = oppfolgingResponse.underOppfolging,
             meldekort = meldekortResponse.harMeldekort,
             aktuelt = Akutelt.getAktueltContent(pdlResponse.calculateAge(), safResponse.sakstemakoder, manifestMap)
@@ -84,6 +85,7 @@ class PersonalContentResponse(
     val produktkort: List<String>,
     val offerStepup: Boolean,
     val aiaStandard: Boolean,
+    val brukNyAia: Boolean,
     val oppfolgingContent: Boolean,
     val meldekort: Boolean,
     val aktuelt: List<MicrofrontendsDefinition>

@@ -175,6 +175,7 @@ internal class ApiTest {
                 getOrException<List<String>>("produktkort").size shouldBe 1
                 getOrException<List<String>>("aktuelt").size shouldBe 0
                 boolean("aiaStandard") shouldBe false
+                boolean("brukNyAia") shouldBe false
                 boolean("oppfolgingContent") shouldBe false
                 boolean("meldekort") shouldBe true
                 boolean("offerStepup") shouldBe false
