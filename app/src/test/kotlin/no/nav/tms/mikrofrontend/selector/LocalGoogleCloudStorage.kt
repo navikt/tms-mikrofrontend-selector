@@ -29,7 +29,7 @@ class GoogleCloudStorageTestContainer : GenericContainer<GoogleCloudStorageTestC
 
     override fun start() {
         super.start()
-        gcpHostUrl = "http://localhost:${this.firstMappedPort}"
+        gcpHostUrl = "http://${this.host}:${this.firstMappedPort}"
 
         updateExternalUrlWithContainerUrl(gcpHostUrl)
     }
