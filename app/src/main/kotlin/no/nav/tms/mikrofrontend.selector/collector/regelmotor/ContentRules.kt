@@ -10,12 +10,12 @@ interface ContentRule {
     fun skalVises(): Boolean
 }
 
-class ContentRulesDefinition(
+class ContentRulesFactory(
     val id: String,
     val includeIfSakstema: List<String>?,
     val exludeIfSakstema: List<String>?,
     val usersAgeOver: Int?,
-    val weeksSinceLastDocument: UkerEtterSisteDokument?
+    val weeksSinceLastDocument: WeeksSinceLastDocumentContentRule.WeeksAndSakstema?
 ) {
 
     fun createRules(safDokumenter: List<SafDokument>, alder: Int?) = mutableListOf<ContentRule>().apply {
@@ -54,52 +54,49 @@ class ContentRulesDefinition(
     }
 
     companion object {
-        fun JsonNode.parseContentRuleDefinitions(category: String, requireSakstemakode: Boolean) =
+        fun JsonNode.initContentRuleFactory(category: String, requireSakstemakode: Boolean) =
             this[category].toList().map {
-                ContentRulesDefinition(
+                ContentRulesFactory(
                     id = it.read<String>("$.id") ?: throw IllegalArgumentException("contentrules må ha en id"),
-                    includeIfSakstema = it.read<List<String>>("$.${IncludeIfSakstemaContentRule.ruleId}").let { sakstema ->
-                        if (requireSakstemakode && sakstema == null) {
-                            throw IllegalArgumentException("sakstemakoder er påkrevd for innhold av type $category")
-                        } else sakstema
-                    },
-                    weeksSinceLastDocument = it.read<JsonNode>("$.${WeeksSinceLastDocumentContentRule.ruleId}")?.let {
-                        UkerEtterSisteDokument(
-                            it.read<Int>("$.antallUker")
-                                ?: throw IllegalArgumentException("Antall uker må være definert for ukerEtterSisteDokumentRegler"),
-                            it.read<String>("$.kode")
-                                ?: throw IllegalArgumentException("kode må være definert for ukerEtterSisteDokumentRegler"),
-                        )
-                    },
+                    includeIfSakstema = IncludeIfSakstemaContentRule.getSakstemaIfDefined(it, requireSakstemakode, category),
+                    weeksSinceLastDocument = WeeksSinceLastDocumentContentRule.getParamsIfRuleDefined(it),
                     exludeIfSakstema = it.read<List<String>>("$.${ExcludeIfSakstemaContentRule.ruleId}"),
                     usersAgeOver = it.read<Int>("$.${UsersAgeOverContentRule.ruleId}")
                 )
             }
     }
-
-    class UkerEtterSisteDokument(val antallUker: Int, val sakstemakode: String)
 }
 
 class UsersAgeOverContentRule(val shouldBeOlderThan: Int, val ageOfUser: Int) : ContentRule {
     override fun skalVises(): Boolean = ageOfUser > shouldBeOlderThan
-    companion object{
+
+    companion object {
         const val ruleId = "usersAgeOver"
     }
 }
 
 class ExcludeIfSakstemaContentRule(val excludeList: List<String>, val sakstemaer: List<String>) : ContentRule {
     override fun skalVises(): Boolean = excludeList.intersect(sakstemaer.toSet()).isEmpty()
-    companion object{
+
+    companion object {
         const val ruleId = "excludeIfSakstema"
     }
 }
 
 open class IncludeIfSakstemaContentRule(val includeList: List<String>, val sakstemaer: List<String>) : ContentRule {
     override fun skalVises(): Boolean = includeList.intersect(sakstemaer.toSet()).isNotEmpty()
-    companion object{
+
+    companion object {
         const val ruleId = "includeIfSakstema"
+        fun getSakstemaIfDefined(jsonNode: JsonNode, requireSakstemakode: Boolean, category: String) =
+            jsonNode.read<List<String>>("$.$ruleId").let { sakstema ->
+                if (requireSakstemakode && sakstema == null) {
+                    throw IllegalArgumentException("sakstemakoder er påkrevd for innhold av type $category")
+                } else sakstema
+            }
     }
 }
+
 
 class WeeksSinceLastDocumentContentRule(
     val sakstemakode: String,
@@ -114,7 +111,17 @@ class WeeksSinceLastDocumentContentRule(
             )
         }
 
-    companion object{
+    companion object {
         const val ruleId = "weeksSinceLastDocument"
+        fun getParamsIfRuleDefined(jsonNode: JsonNode) = jsonNode.read<JsonNode>("$.$ruleId")?.let {
+            WeeksAndSakstema(
+                it.read<Int>("$.antallUker")
+                    ?: throw IllegalArgumentException("Antall uker må være definert for ukerEtterSisteDokumentRegler"),
+                it.read<String>("$.kode")
+                    ?: throw IllegalArgumentException("kode må være definert for ukerEtterSisteDokumentRegler"),
+            )
+        }
     }
+
+    class WeeksAndSakstema(val antallUker: Int, val sakstemakode: String)
 }

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import no.nav.tms.mikrofrontend.selector.collector.MicrofrontendsDefinition
 import no.nav.tms.mikrofrontend.selector.collector.SafResponse.SafDokument
-import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentRulesDefinition.Companion.parseContentRuleDefinitions
+import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentRulesFactory.Companion.initContentRuleFactory
 
 object ContentDefinition {
     private fun yamlObjectMapper() =
@@ -20,22 +20,22 @@ object ContentDefinition {
             yamlObjectMapper().readTree(yaml) ?: throw IllegalArgumentException("contentrules.yaml finnes ikke")
         }
 
-    private val produktkortDefinitions = contentYaml.parseContentRuleDefinitions("produktkort", true)
+    private val produktkortFactory = contentYaml.initContentRuleFactory("produktkort", true)
 
-    private val aktueltDefinitions = contentYaml.parseContentRuleDefinitions("aktuelt", false)
+    private val aktueltFactory = contentYaml.initContentRuleFactory("aktuelt", false)
 
     fun getAktueltContent(
         alder: Int,
         safDokument: List<SafDokument>,
         manifestMap: Map<String, String>
     ): List<MicrofrontendsDefinition> =
-        aktueltDefinitions.map {
+        aktueltFactory.map {
             RegelstyrtMicrofrontend(id = it.id, manifestMap = manifestMap).apply {
                 contentRules = it.createRules(safDokument, alder)
             }
         }.filter { it.skalVises() }.mapNotNull { it.definition }
 
-    fun getProduktkort(safDokument: List<SafDokument>) = produktkortDefinitions.map { definition ->
+    fun getProduktkort(safDokument: List<SafDokument>) = produktkortFactory.map { definition ->
         Produktkort(id = definition.id).apply {
             rules = definition.createRules(safDokumenter = safDokument, alder = null)
         }
