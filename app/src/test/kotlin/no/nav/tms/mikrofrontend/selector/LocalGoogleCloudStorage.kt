@@ -46,7 +46,7 @@ class GoogleCloudStorageTestContainer : GenericContainer<GoogleCloudStorageTestC
             .build()
         val response: HttpResponse<Void> = HttpClient.newBuilder().build()
             .send(req, BodyHandlers.discarding())
-        if (response.statusCode() !== 200) {
+        if (response.statusCode() != 200) {
             throw RuntimeException(
                 "error updating fake-gcs-server with external url, response status code " + response.statusCode() + " != 200"
             )
