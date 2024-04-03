@@ -127,12 +127,10 @@ class MeldekortResponse(
 }
 
 class ArbeidsøkerResponse(
-    val erArbeidssoker: Boolean = false,
-    val erStandard: Boolean = false,
-    val brukNyAia: Boolean = false,
-    errors: String? = null,
-    response: HttpResponse? = null,
-    bodyAsText: String? = null
+    val erArbeidssoker: Boolean?,
+    val erStandard: Boolean?,
+    val brukNyAia: Boolean?,
+    errors: String? = null
 ) : ResponseWithErrors(errors) {
     override val source = "aia-backend"
     fun isStandardInnsats(): Boolean = erArbeidssoker == true && erStandard == true

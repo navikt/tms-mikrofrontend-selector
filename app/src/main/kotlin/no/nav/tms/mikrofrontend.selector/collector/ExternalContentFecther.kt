@@ -74,7 +74,8 @@ class ExternalContentFecther(
         map = { jsonPath ->
             ArbeidsøkerResponse(
                 erArbeidssoker = jsonPath.booleanOrNull("erArbeidssoker"),
-                erStandard = jsonPath.booleanOrNull("erStandard")
+                erStandard = jsonPath.booleanOrNull("erStandard"),
+                brukNyAia = jsonPath.booleanOrNull("brukNyAia")
             )
         }
     )
