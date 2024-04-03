@@ -57,7 +57,8 @@ class ExternalContentFecther(
         map = { jsonPath ->
             ArbeidsøkerResponse(
                 erArbeidssoker = jsonPath.booleanOrNull("erArbeidssoker"),
-                erStandard = jsonPath.booleanOrNull("erStandard")
+                erStandard = jsonPath.booleanOrNull("erStandard"),
+                brukNyAia = jsonPath.booleanOrNull("brukNyAia")
             )
         }
     )
@@ -82,9 +83,9 @@ class ExternalContentFecther(
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     PdlResponse(
-                        fødselsdato = jsonResponse?.localDateOrNull("data.hentPerson.foedsel.foedselsdato"),
-                        fødselsår = jsonResponse?.intOrNull("data.hentPerson.foedsel.foedselsaar") ?: 0,
-                        errors = jsonResponse?.listOrNull<String>("errors..message") ?: emptyList(),
+                        fødselsdato = jsonResponse?.localDateOrNull("foedselsdato"),
+                        fødselsår = jsonResponse?.intOrNull("foedselsaar"),
+                        errors = jsonResponse?.getAll<String>("errors..message") ?: emptyList(),
                     )
                 }
             }

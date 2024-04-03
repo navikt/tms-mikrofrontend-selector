@@ -1,5 +1,6 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.statement.*
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.redactedMessage
@@ -13,6 +14,7 @@ import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.full.withNullability
 
+val log = KotlinLogging.logger {}
 
 abstract class ResponseWithErrors(private val errors: String?) {
 
@@ -127,24 +129,25 @@ class MeldekortResponse(
 }
 
 class ArbeidsøkerResponse(
-    val erArbeidssoker: Boolean? = null,
-    val erStandard: Boolean? = null,
-    errors: String? = null
+    val erArbeidssoker: Boolean?,
+    val erStandard: Boolean?,
+    val brukNyAia: Boolean?,
+    errors: String? = null,
 ) : ResponseWithErrors(errors) {
-    fun isStandardInnsats(): Boolean = erArbeidssoker == true && erStandard == true
-
     override val source = "aia-backend"
+    fun isStandardInnsats(): Boolean = erArbeidssoker == true && erStandard == true
 }
 
 class PdlResponse(
     val fødselsdato: LocalDate? = null,
-    val fødselsår: Int,
+    val fødselsår: Int?,
     errors: List<String>? = null,
 ) : ResponseWithErrors(errors?.joinToString(";")) {
     override val source = "pdl"
     fun calculateAge() = when {
         fødselsdato != null -> ChronoUnit.YEARS.between(fødselsdato, LocalDate.now()).toInt()
-        else -> LocalDate.now().year - fødselsår
+        fødselsår != null -> LocalDate.now().year - fødselsår
+        else -> 0
     }
 }
 

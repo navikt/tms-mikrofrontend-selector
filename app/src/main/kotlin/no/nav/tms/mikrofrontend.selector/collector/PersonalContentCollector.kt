@@ -64,6 +64,7 @@ class PersonalContentFactory(
             ).filter { it.skalVises() }.map { it.id },
             offerStepup = microfrontends?.offerStepup(innloggetnivå) ?: false,
             aiaStandard = arbeidsøkerResponse.isStandardInnsats(),
+            brukNyAia = arbeidsøkerResponse.brukNyAia == true,
             oppfolgingContent = oppfolgingResponse.underOppfolging,
             meldekort = meldekortResponse.harMeldekort,
             aktuelt = ContentDefinition.getAktueltContent(
@@ -76,7 +77,8 @@ class PersonalContentFactory(
                 arbeidsøkerResponse,
                 safResponse,
                 meldekortResponse,
-                oppfolgingResponse
+                oppfolgingResponse,
+                pdlResponse
             ).mapNotNull { it.errorMessage() }.joinToString()
         }
 }
@@ -86,6 +88,7 @@ class PersonalContentResponse(
     val produktkort: List<String>,
     val offerStepup: Boolean,
     val aiaStandard: Boolean,
+    val brukNyAia: Boolean,
     val oppfolgingContent: Boolean,
     val meldekort: Boolean,
     val aktuelt: List<MicrofrontendsDefinition>

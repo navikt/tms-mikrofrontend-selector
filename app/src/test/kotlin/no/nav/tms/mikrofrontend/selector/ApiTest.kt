@@ -175,6 +175,7 @@ internal class ApiTest {
                 getOrException<List<String>>("produktkort").size shouldBe 1
                 getOrException<List<String>>("aktuelt").size shouldBe 0
                 boolean("aiaStandard") shouldBe false
+                boolean("brukNyAia") shouldBe false
                 boolean("oppfolgingContent") shouldBe false
                 boolean("meldekort") shouldBe true
                 boolean("offerStepup") shouldBe false
@@ -285,7 +286,8 @@ internal class ApiTest {
                 SafRoute(),
                 MeldekortRoute(),
                 OppfolgingRoute(false),
-                ArbeidsøkerRoute()
+                ArbeidsøkerRoute(),
+                PdlRoute()
             )
 
             client.get("/microfrontends").assert {
@@ -356,6 +358,33 @@ internal class ApiTest {
 
             }
         }
+
+    @Test
+    fun `Retunerer ikke pensjons microfrontend når kallet til PDL feiler`() =
+        testApplication {
+            val testident2 = "12345678912"
+
+            initSelectorApi(testident = testident2)
+            initExternalServices(
+                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
+                MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
+                OppfolgingRoute(false, ovverideContent = ""),
+                PdlRoute(errorMsg = "Kall til PDL feilet"),
+                ArbeidsøkerRoute(ovverideContent = "{}")
+            )
+
+            gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
+
+            testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
+
+            client.get("/microfrontends").assert {
+                status shouldBe HttpStatusCode.MultiStatus
+                objectMapper.readTree(bodyAsText()).assert {
+                    this["aktuelt"].size() shouldBe 0
+                }
+            }
+        }
+
 
     fun ApplicationTestBuilder.initSelectorApi(
         testident: String,

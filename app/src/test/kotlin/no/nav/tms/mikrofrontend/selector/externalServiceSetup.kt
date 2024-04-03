@@ -134,13 +134,15 @@ class OppfolgingRoute(private val underOppfølging: Boolean = false, val ovverid
 class ArbeidsøkerRoute(
     private val erArbeidsøker: Boolean = false,
     private val erStandard: Boolean = false,
-    val ovverideContent: String? = null
+    val ovverideContent: String? = null,
+    private val brukNyAia: Boolean = false
 ) :
     RouteProvider(path = "aia-backend/er-arbeidssoker", routeMethodFunction = Routing::get) {
     override fun content(): String = ovverideContent ?: """
         {
           "erArbeidssoker": $erArbeidsøker,
-          "erStandard": $erStandard
+          "erStandard": $erStandard,
+          "brukNyAia": $brukNyAia
         }
     """.trimIndent()
 }
@@ -151,16 +153,18 @@ class PdlRoute(
     errorMsg: String? = null
 ) :
     GraphQlRouteProvider(errorMsg = errorMsg, path = "pdl/graphql") {
-    override val data: String = """
+    override val data: String = if (errorMsg == null) """
          {
            "hentPerson": {
-             "foedsel": {
-               "foedselsaar": $fødselssår,
-               "foedselsdato": "$fødselsdato"
-             }
-           }
+      "foedsel": [
+        {
+          "foedselsdato": "$fødselsdato",
+          "foedselsaar": $fødselssår
+        }
+      ]
+    }
          }
-    """.trimIndent()
+    """.trimIndent() else "{}"
 }
 
 
