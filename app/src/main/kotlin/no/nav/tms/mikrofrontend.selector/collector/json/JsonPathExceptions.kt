@@ -31,7 +31,7 @@ class JsonPathSearchException(
         ) = when {
                 jsonNode == null -> "Failed to find $jsonPath in ${originalJsonNode.toPrettyString()?.redactedMessage(debugLog)}. Possible keys are ${originalJsonNode.keys()}"
                 jsonNode.isObject -> """$jsonPath can not be converted to simple value because it is an object in ${
-                    jsonNode.toPrettyString().redactedMessage(debugLog)
+                    jsonNode.toPrettyString().redactedMessage(keepAll = true)
                 } . Possible keys are ${jsonNode.keys()}""".trimIndent()
                 jsonNode.isArray -> """$jsonPath returns an Array from ${jsonNode.toPrettyString().redactedMessage()}. Possible keys are ${jsonNode.keys()} """.trimIndent()
             else -> "Failed to find $jsonPath in ${jsonNode.toPrettyString().redactedMessage()}. Possible keys are ${originalJsonNode.keys()}".trimIndent()
