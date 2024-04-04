@@ -1,8 +1,14 @@
 package no.nav.tms.mikrofrontend.selector
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.nfeld.jsonpathkt.extension.read
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.ktor.http.*
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
@@ -20,10 +26,12 @@ abstract class RouteProvider(
         suspend PipelineContext<Unit, ApplicationCall>.(Unit) -> Unit
     ) -> Unit,
     private val statusCode: HttpStatusCode = OK,
+    private val assert: suspend (ApplicationCall) -> Unit = {}
 ) {
     abstract fun content(): String
     fun Routing.initRoute() {
         routeMethodFunction(path) {
+            assert(call)
             delay(1000)
             call.respondText(
                 contentType = ContentType.Application.Json,
@@ -38,7 +46,8 @@ abstract class GraphQlRouteProvider(
     errorMsg: String?,
     path: String,
     statusCode: HttpStatusCode = OK,
-) : RouteProvider(path, Routing::post, statusCode) {
+    assert: suspend (ApplicationCall) -> Unit = {},
+) : RouteProvider(path, Routing::post, statusCode, assert) {
     val errors = errorMsg?.let {
         """
                   "errors": [
@@ -72,19 +81,43 @@ abstract class GraphQlRouteProvider(
 
 class SafRoute(
     sakstemaer: List<String> = emptyList(),
-    errorMsg: String? = null
-) : GraphQlRouteProvider(errorMsg = errorMsg, path = "graphql") {
+    errorMsg: String? = null,
+    ident: String
+) : GraphQlRouteProvider(errorMsg = errorMsg, path = "graphql", assert = {
+    val safQuery: String =""" {
+    "query": "query(${'$'}ident: String!) {
+    dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
+    tema {
+    kode
+    journalposter{
+    relevanteDatoer {
+    dato
+    }
+    }
+    }
+    }
+    }",
+    "variables": {"ident" : "$ident"}
+    }
+    """.trimIndent()
+    val callBody = it.receiveText().let { objectMapper.readTree(it) }
+    callBody.read<String>("$.query") shouldNotBe null
+    callBody.read<String>("$.variables.ident") shouldBe ident
+}) {
 
     override val data: String = """{
             "dokumentoversiktSelvbetjening": {
-              "tema": ${sakstemaer.joinToString(prefix = "[", postfix = "]") { 
-                  """ { "kode": "$it",  
+              "tema": ${
+        sakstemaer.joinToString(prefix = "[", postfix = "]") {
+            """ { "kode": "$it",  
                         "journalposter": {
                             "relevanteDatoer": {
                                 "dato": "${LocalDateTime.now()}"
                             }
                         }
-                      }""".trimIndent() }}
+                      }""".trimIndent()
+        }
+    }
             }
           }""".trimIndent()
 }

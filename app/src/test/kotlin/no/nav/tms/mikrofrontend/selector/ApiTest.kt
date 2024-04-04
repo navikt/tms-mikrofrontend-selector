@@ -63,7 +63,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testIdent)
             initExternalServices(
-                SafRoute(sakstemaer = listOf("DAG")),
+                SafRoute(sakstemaer = listOf("DAG"), ident=testIdent),
                 MeldekortRoute(harMeldekort = true),
                 OppfolgingRoute(false),
                 ArbeidsøkerRoute(),
@@ -137,7 +137,7 @@ internal class ApiTest {
 
         initSelectorApi(testident = testIdent)
         initExternalServices(
-            SafRoute(sakstemaer = listOf("DAG")),
+            SafRoute(sakstemaer = listOf("DAG"), ident=testIdent),
             MeldekortRoute(harMeldekort = true),
             OppfolgingRoute(false),
             ArbeidsøkerRoute(),
@@ -195,7 +195,7 @@ internal class ApiTest {
 
         initSelectorApi(testident = testIdent)
         initExternalServices(
-            SafRoute(expectedProduktkort),
+            SafRoute(expectedProduktkort, ident = testIdent),
             MeldekortRoute(),
             OppfolgingRoute(false),
             ArbeidsøkerRoute(),
@@ -241,7 +241,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testIdent, levelOfAssurance = LEVEL_3)
             initExternalServices(
-                SafRoute(),
+                SafRoute(ident = testIdent),
                 MeldekortRoute(),
                 OppfolgingRoute(),
                 ArbeidsøkerRoute(),
@@ -283,7 +283,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testident2)
             initExternalServices(
-                SafRoute(),
+                SafRoute(ident = testident2),
                 MeldekortRoute(),
                 OppfolgingRoute(false),
                 ArbeidsøkerRoute(),
@@ -308,7 +308,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testident2)
             initExternalServices(
-                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
+                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999", ident = testident2),
                 MeldekortRoute(),
                 OppfolgingRoute(false),
                 ArbeidsøkerRoute()
@@ -336,7 +336,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testident2)
             initExternalServices(
-                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
+                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999", ident = testident2),
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 OppfolgingRoute(false, ovverideContent = ""),
                 PdlRoute("2000-05-05", 2000),
@@ -366,7 +366,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testident2)
             initExternalServices(
-                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
+                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999", ident = testident2),
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 OppfolgingRoute(false, ovverideContent = ""),
                 PdlRoute(errorMsg = "Kall til PDL feilet"),
