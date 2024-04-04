@@ -6,8 +6,8 @@ produktkort:
     includeIfSakstema:
       - DAG
     weeksSinceLastDocument:
-      kode: DAG
-      antallUker: 5
+      sakstemakode: DAG
+      numberOfWeeks: 5
   - id: FOR
     includeIfSakstema:
       - FOR
