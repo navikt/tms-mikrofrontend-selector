@@ -142,11 +142,15 @@ private class HentAlder(ident: String) {
             }
         }
     """.compactJson()
+
+    val variables = mapOf(
+        "ident" to ident
+    )
 }
 
 private class HentSafDokumenter(ident: String) {
-    private fun query(ident: String) = """ {
-        "query": "query(${'$'}ident: String!) {
+    val query = """ 
+        query(${'$'}ident: String!) {
             dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
                 tema {
                     kode
@@ -157,9 +161,7 @@ private class HentSafDokumenter(ident: String) {
                     }
                 }
               }
-           }",
-          "variables": {"ident" : "$ident"}
-        }
+           }
     """.compactJson()
 
     val variables = mapOf(

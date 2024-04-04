@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import assert
 import com.nfeld.jsonpathkt.extension.read
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -83,25 +82,12 @@ class SafRoute(
     sakstemaer: List<String> = emptyList(),
     errorMsg: String? = null,
     ident: String
-) : GraphQlRouteProvider(errorMsg = errorMsg, path = "graphql", assert = {
-    val safQuery: String =""" {
-    "query": "query(${'$'}ident: String!) {
-    dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
-    tema {
-    kode
-    journalposter{
-    relevanteDatoer {
-    dato
+) : GraphQlRouteProvider(errorMsg = errorMsg, path = "graphql", assert = { call ->
+    val callBody = call.receiveText().let { objectMapper.readTree(it) }
+    callBody.read<String>("$.query").assert {
+        this shouldNotBe null
+        this shouldBe "query(${'$'}ident: String!) { dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) { tema { kode journalposter{ relevanteDatoer { dato } } } } }"
     }
-    }
-    }
-    }
-    }",
-    "variables": {"ident" : "$ident"}
-    }
-    """.trimIndent()
-    val callBody = it.receiveText().let { objectMapper.readTree(it) }
-    callBody.read<String>("$.query") shouldNotBe null
     callBody.read<String>("$.variables.ident") shouldBe ident
 }) {
 
