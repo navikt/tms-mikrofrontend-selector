@@ -6,34 +6,29 @@ import com.nfeld.jsonpathkt.extension.read
 import no.nav.tms.mikrofrontend.selector.collector.SafResponse.SafDokument
 import java.time.LocalDateTime
 
-interface ContentRule {
+interface ContentResolver {
     fun skalVises(): Boolean
+}
+
+interface ContentRule<I> {
+    fun resolverOrNull(input: I): ContentResolver?
 }
 
 class ContentRulesFactory(
     val id: String,
-    val includeIfSakstema: List<String>?,
-    val exludeIfSakstema: List<String>?,
-    val usersAgeOver: Int?,
-    val weeksSinceLastDocument: WeeksSinceLastDocumentContentRule.WeeksAndSakstema?
+    val includeIfSakstema: IncludeIfSakstemaContentRule?,
+    val exludeIfSakstema: ExcludeIfSakstemaContentRule?,
+    val usersAgeOver: UsersAgeOverContentRule?,
+    val weeksSinceLastDocument: WeeksSinceLastDocumentContentResolver.WeeksAndSakstema?
 ) {
 
-    fun createRules(safDokumenter: List<SafDokument>, alder: Int?) = mutableListOf<ContentRule>().apply {
-        addIfNotNull(includeIfSakstema) {
-            IncludeIfSakstemaContentRule(
-                includeList = it,
-                sakstemaer = safDokumenter.map { dok -> dok.sakstemakode })
-        }
-        addIfNotNull(exludeIfSakstema) {
-            ExcludeIfSakstemaContentRule(
-                excludeList = it,
-                sakstemaer = safDokumenter.map { dok -> dok.sakstemakode })
-        }
-        addIfNotNull(usersAgeOver, alder) { olderThan, age ->
-            UsersAgeOverContentRule(shouldBeOlderThan = olderThan, ageOfUser = age)
-        }
+    fun createRules(safDokumenter: List<SafDokument>, alder: Int?) = mutableListOf<ContentResolver>().apply {
+        includeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.sakstemakode })
+        exludeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.sakstemakode })
+        usersAgeOver?.resolverOrNull(alder)?.let { add(it) }
+
         addIfNotNull(weeksSinceLastDocument) {
-            WeeksSinceLastDocumentContentRule(
+            WeeksSinceLastDocumentContentResolver(
                 sakstemakode = it.sakstemakode,
                 periodInWeeks = it.antallUker,
                 safDokumenter = safDokumenter
@@ -41,15 +36,9 @@ class ContentRulesFactory(
         }
     }
 
-    private fun <T> MutableList<ContentRule>.addIfNotNull(value: T?, construct: (T) -> ContentRule) {
+    private fun <T> MutableList<ContentResolver>.addIfNotNull(value: T?, construct: (T) -> ContentResolver) {
         if (value != null) {
             add(construct(value))
-        }
-    }
-
-    private fun <T, R> MutableList<ContentRule>.addIfNotNull(value: T?, val2: R?, construct: (T, R) -> ContentRule) {
-        if (value != null && val2 != null) {
-            add(construct(value, val2))
         }
     }
 
@@ -58,33 +47,56 @@ class ContentRulesFactory(
             this[category].toList().map {
                 ContentRulesFactory(
                     id = it.read<String>("$.id") ?: throw IllegalArgumentException("contentrules må ha en id"),
-                    includeIfSakstema = IncludeIfSakstemaContentRule.getSakstemaIfDefined(it, requireSakstemakode, category),
-                    weeksSinceLastDocument = WeeksSinceLastDocumentContentRule.getParamsIfRuleDefined(it),
-                    exludeIfSakstema = it.read<List<String>>("$.${ExcludeIfSakstemaContentRule.ruleId}"),
-                    usersAgeOver = it.read<Int>("$.${UsersAgeOverContentRule.ruleId}")
+                    includeIfSakstema = IncludeIfSakstemaContentRule.getSakstemaIfDefined(
+                        it,
+                        requireSakstemakode,
+                        category
+                    ),
+                    weeksSinceLastDocument = WeeksSinceLastDocumentContentResolver.getParamsIfRuleDefined(it),
+                    exludeIfSakstema = ExcludeIfSakstemaContentRule.parseRuleOrNull(it),
+                    usersAgeOver = UsersAgeOverContentRule.parseRuleOrNull(it)
                 )
             }
     }
 }
 
-class UsersAgeOverContentRule(val shouldBeOlderThan: Int, val ageOfUser: Int) : ContentRule {
-    override fun skalVises(): Boolean = ageOfUser > shouldBeOlderThan
+class UsersAgeOverContentRule(val shouldBeOlderThan: Int?) : ContentRule<Int?> {
+    override fun resolverOrNull(input: Int?): ContentResolver? = shouldBeOlderThan?.let {
+        input?.let {
+            object : ContentResolver {
+                override fun skalVises(): Boolean = input > shouldBeOlderThan
+            }
+        }
+    }
 
     companion object {
-        const val ruleId = "usersAgeOver"
+        fun parseRuleOrNull(jsonNode: JsonNode) =
+            UsersAgeOverContentRule(jsonNode.read<Int>("$.usersAgeOver"))
     }
 }
 
-class ExcludeIfSakstemaContentRule(val excludeList: List<String>, val sakstemaer: List<String>) : ContentRule {
-    override fun skalVises(): Boolean = excludeList.intersect(sakstemaer.toSet()).isEmpty()
+
+class ExcludeIfSakstemaContentRule(val excludeList: List<String>?) : ContentRule<List<String>?> {
+    override fun resolverOrNull(input: List<String>?): ContentResolver? =
+        excludeList?.let {
+            input?.let {
+                object : ContentResolver {
+                    override fun skalVises(): Boolean = excludeList.intersect(input.toSet()).isEmpty()
+                }
+            }
+        }
 
     companion object {
-        const val ruleId = "excludeIfSakstema"
+        fun parseRuleOrNull(it: JsonNode?): ExcludeIfSakstemaContentRule? =
+            it?.read<List<String>>("$.excludeIfSakstema")?.let { sakstema ->
+                ExcludeIfSakstemaContentRule(sakstema)
+            }
     }
 }
 
-open class IncludeIfSakstemaContentRule(val includeList: List<String>, val sakstemaer: List<String>) : ContentRule {
-    override fun skalVises(): Boolean = includeList.intersect(sakstemaer.toSet()).isNotEmpty()
+open class IncludeIfSakstemaContentRule(val includeList: List<String>?) :
+    ContentRule<List<String>> {
+
 
     companion object {
         const val ruleId = "includeIfSakstema"
@@ -95,21 +107,22 @@ open class IncludeIfSakstemaContentRule(val includeList: List<String>, val sakst
                 } else sakstema
             }
     }
+
+    override fun resolverOrNull(input: List<String>): ContentResolver? =
+        includeList?.let {
+            object : ContentResolver {
+                override fun skalVises(): Boolean = includeList.intersect(input.toSet()).isNotEmpty()
+            }
+        }
+
 }
 
 
-class WeeksSinceLastDocumentContentRule(
+class WeeksSinceLastDocumentContentResolver(
     val sakstemakode: String,
     val periodInWeeks: Int,
-    val safDokumenter: List<SafDokument>
-) :
-    ContentRule {
-    override fun skalVises(): Boolean =
-        safDokumenter.none {
-            it.sakstemakode == sakstemakode && it.sistEndret.isBefore(
-                LocalDateTime.now().minusWeeks(periodInWeeks.toLong() + 1)
-            )
-        }
+) : ContentRule<List<SafDokument>> {
+
 
     companion object {
         const val ruleId = "weeksSinceLastDocument"
@@ -124,4 +137,15 @@ class WeeksSinceLastDocumentContentRule(
     }
 
     class WeeksAndSakstema(val antallUker: Int, val sakstemakode: String)
+
+    override fun resolverOrNull(input: List<SafDokument>): ContentResolver? {
+        object: ContentResolver {
+            override fun skalVises(): Boolean =
+                input.none {
+                    it.sakstemakode == sakstemakode && it.sistEndret.isBefore(
+                        LocalDateTime.now().minusWeeks(periodInWeeks.toLong() + 1)
+                    )
+                }
+        }
+    }
 }

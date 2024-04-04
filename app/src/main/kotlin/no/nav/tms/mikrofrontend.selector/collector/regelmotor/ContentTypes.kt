@@ -7,7 +7,7 @@ import no.nav.tms.mikrofrontend.selector.collector.MicrofrontendsDefinition
 class RegelstyrtMicrofrontend(
     id: String,
     manifestMap: Map<String, String>,
-    var contentRules: MutableList<ContentRule> = mutableListOf()
+    var contentResolvers: MutableList<ContentResolver> = mutableListOf()
 ) {
     private val log = KotlinLogging.logger { }
     val definition = MicrofrontendsDefinition.create(id, manifestMap).also {
@@ -15,12 +15,12 @@ class RegelstyrtMicrofrontend(
             log.info { "Fant ikke manifest for regelstyre microfrontend med id $id i $manifestMap" }
     }
 
-    fun skalVises() = contentRules.all { it.skalVises() }
+    fun skalVises() = contentResolvers.all { it.skalVises() }
 }
 
 class Produktkort(
     val id: String,
-    var rules: MutableList<ContentRule> = mutableListOf()
+    var rules: MutableList<ContentResolver> = mutableListOf()
 ) {
     fun skalVises() =
         rules.all { it.skalVises() }

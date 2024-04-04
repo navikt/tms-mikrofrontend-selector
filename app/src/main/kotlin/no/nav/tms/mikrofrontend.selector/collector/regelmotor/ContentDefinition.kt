@@ -31,7 +31,7 @@ object ContentDefinition {
     ): List<MicrofrontendsDefinition> =
         aktueltFactory.map {
             RegelstyrtMicrofrontend(id = it.id, manifestMap = manifestMap).apply {
-                contentRules = it.createRules(safDokument, alder)
+                contentResolvers = it.createRules(safDokument, alder)
             }
         }.filter { it.skalVises() }.mapNotNull { it.definition }
 
