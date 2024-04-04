@@ -96,11 +96,17 @@ class SafRoute(
               "tema": ${
         sakstemaer.joinToString(prefix = "[", postfix = "]") {
             """ { "kode": "$it",  
-                        "journalposter": {
-                            "relevanteDatoer": {
+                        "journalposter": [{
+                            "relevanteDatoer": [ {
+                            
                                 "dato": "${LocalDateTime.now()}"
+                            },
+                            {
+                            
+                                "dato": "${LocalDateTime.now().minusMinutes(4)}"
                             }
-                        }
+                           ]
+                        }]
                       }""".trimIndent()
         }
     }

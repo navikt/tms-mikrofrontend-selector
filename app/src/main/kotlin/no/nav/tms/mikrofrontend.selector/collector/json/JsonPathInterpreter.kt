@@ -190,8 +190,8 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
                     jsonNode = it,
                     originalJson = jsonNode
                 ),
-                sistEndret = it.read<String>("\$.journalposter.relevanteDatoer.dato")
-                    ?.let {json -> LocalDateTime.parse(json) }
+                sistEndret = it.read<List<String>>("\$.journalposter..relevanteDatoer..dato")
+                    ?.let {json -> LocalDateTime.parse(json.first()) }
                     ?: throw JsonPathSearchException(
                         jsonPath ="\$.journalposter.relevanteDatoer.dato",
                         jsonNode = it,
