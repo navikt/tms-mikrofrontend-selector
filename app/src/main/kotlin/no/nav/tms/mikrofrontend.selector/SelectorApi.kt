@@ -15,8 +15,12 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import nav.no.tms.common.metrics.installTmsApiMetrics
-import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
+import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther.ApiException
+import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
+import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
+import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
+
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
 import no.nav.tms.token.support.tokenx.validation.tokenX
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
@@ -48,8 +52,15 @@ internal fun Application.selectorApi(
 
                 }
 
-                is ExternalContentFecther.ApiException -> {
-                    log.warn { "${cause::class.simpleName}: ${cause.message}" }
+                is ApiException -> {
+                    log.warn {
+                        "${cause::class.simpleName?:"ApiException"}: ${cause.message}" }
+                    call.respond(HttpStatusCode.ServiceUnavailable)
+
+                }
+
+                is TokenFetcherException -> {
+                    log.warn { "TokenFetcherException: ${cause.message}" }
                     call.respond(HttpStatusCode.ServiceUnavailable)
                 }
 
