@@ -112,10 +112,18 @@ class ExternalContentFecther(
             }
     }
 
-    private suspend fun <T> withErrorHandling(tjeneste: String, url: String, function: suspend () -> T) =
+    private suspend inline fun <reified T : ResponseWithErrors> withErrorHandling(tjeneste: String, url: String, function: suspend () -> T) =
         try {
             function()
-        } catch (e: Exception) {
+        }
+        catch (socketTimout: SocketTimeoutException) {
+            ResponseWithErrors.createWithError(
+                constructor = T::class.primaryConstructor,
+                errorMessage = "Sockettimeout ${errorDetails(socketTimout)}",
+                className = T::class.simpleName ?: "unknown"
+            )
+        }
+        catch (e: Exception) {
             throw ApiException(tjeneste, url, e)
         }
 

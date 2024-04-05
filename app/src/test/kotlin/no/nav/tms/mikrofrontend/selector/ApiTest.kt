@@ -4,9 +4,13 @@ import LocalPostgresDatabase
 import assert
 import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.matchers.shouldBe
+import io.ktor.client.*
+import io.ktor.client.engine.mock.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.network.sockets.*
 import io.ktor.server.auth.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
@@ -27,6 +31,7 @@ import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.LEVEL_4
 import no.nav.tms.token.support.tokenx.validation.mock.tokenXMock
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -385,12 +390,26 @@ internal class ApiTest {
             }
         }
 
+    @Disabled
+    @Test
+    fun `Skal returnere 207 ved SocketTimeoutException`() =
+        testApplication {
+            val testident2 = "12345678912"
+
+            initSelectorApi(testident = testident2, httpClient = sockettimeoutClient)
+
+            client.get("/microfrontends").assert {
+                status shouldBe HttpStatusCode.MultiStatus
+            }
+        }
+
 
     fun ApplicationTestBuilder.initSelectorApi(
         testident: String,
-        levelOfAssurance: LevelOfAssurance = LEVEL_4
+        levelOfAssurance: LevelOfAssurance = LEVEL_4,
+        httpClient: HttpClient? = null
     ) {
-        val apiClient = createClient { configureJackson() }
+        val apiClient = httpClient ?: createClient { configureJackson() }
         application {
             selectorApi(
                 PersonalContentCollector(
@@ -425,5 +444,15 @@ internal class ApiTest {
                 }
             }
         }
+    }
+}
+
+val mockEngine = MockEngine { request ->
+    throw (SocketTimeoutException("Error"))
+}
+
+private val sockettimeoutClient = HttpClient(mockEngine) {
+    install(ContentNegotiation) {
+        configureJackson()
     }
 }
