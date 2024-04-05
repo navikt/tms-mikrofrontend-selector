@@ -11,6 +11,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.network.sockets.*
+import io.ktor.serialization.jackson.*
 import io.ktor.server.auth.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
@@ -31,7 +32,6 @@ import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.LEVEL_4
 import no.nav.tms.token.support.tokenx.validation.mock.tokenXMock
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -390,7 +390,6 @@ internal class ApiTest {
             }
         }
 
-    @Disabled
     @Test
     fun `Skal returnere 207 ved SocketTimeoutException`() =
         testApplication {
@@ -452,7 +451,7 @@ val mockEngine = MockEngine { request ->
 }
 
 private val sockettimeoutClient = HttpClient(mockEngine) {
-    install(ContentNegotiation) {
-        configureJackson()
-    }
+        install(ContentNegotiation) {
+            jackson()
+        }
 }
