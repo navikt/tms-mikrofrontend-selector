@@ -36,6 +36,8 @@ abstract class ResponseWithErrors(private val errors: String?) {
                 className = T::class.simpleName ?: "unknown"
             )
 
+
+
         fun <T> createWithError(constructor: KFunction<T>?, errorMessage: String, className: String): T =
             constructor?.let {
                 val params = constructor.parameters

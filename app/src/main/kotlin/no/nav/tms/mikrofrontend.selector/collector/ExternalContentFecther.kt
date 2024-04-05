@@ -5,9 +5,13 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.network.sockets.*
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
+import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.redactedMessage
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
+import java.net.SocketTimeoutException
+import kotlin.reflect.full.primaryConstructor
 
 class ExternalContentFecther(
     val safUrl: String,
@@ -38,7 +42,7 @@ class ExternalContentFecther(
         }
     """.compactJson()
 
-    suspend fun fetchSakstema(user: TokenXUser): SafResponse = withErrorHandling("SAF","$safUrl/graphql") {
+    suspend fun fetchSakstema(user: TokenXUser): SafResponse = withErrorHandling("SAF", "$safUrl/graphql") {
         httpClient.post {
             url("$safUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
@@ -87,7 +91,7 @@ class ExternalContentFecther(
         map = { jsonPath -> MeldekortResponse(meldekortApiResponse = jsonPath) }
     )
 
-    suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling("pdl","$pdlUrl/graphql") {
+    suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling("pdl", "$pdlUrl/graphql") {
         httpClient.post {
             url("$pdlUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.pdlToken(user)}")
@@ -108,11 +112,11 @@ class ExternalContentFecther(
             }
     }
 
-    private suspend fun <T> withErrorHandling(tjeneste: String,url:String, function: suspend () -> T) =
+    private suspend fun <T> withErrorHandling(tjeneste: String, url: String, function: suspend () -> T) =
         try {
             function()
         } catch (e: Exception) {
-            throw ApiException(tjeneste,url,e)
+            throw ApiException(tjeneste, url, e)
         }
 
 
@@ -134,12 +138,18 @@ class ExternalContentFecther(
                 response.bodyAsNullOrJsonNode()?.let(map)
                     ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText())
         }
+    } catch (socketTimout: SocketTimeoutException) {
+        ResponseWithErrors.createWithError(
+            constructor = T::class.primaryConstructor,
+            errorMessage = "Kall til $tjeneste feiler: Sockettimeout",
+            className = T::class.simpleName ?: "unknown"
+        )
     } catch (e: Exception) {
         throw ApiException(tjeneste, url, e)
     }
 
 
-    class ApiException(tjeneste:String,url: String,e: Exception) :
+    class ApiException(tjeneste: String, url: String, e: Exception) :
         Exception(
             """
             |Kall til ekstern tjeneste $tjeneste feiler. Url: $url ${errorDetails(e)}. 
