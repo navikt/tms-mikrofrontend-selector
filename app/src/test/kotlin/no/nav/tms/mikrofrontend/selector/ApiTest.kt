@@ -445,7 +445,7 @@ internal class ApiTest {
             coEvery { pdlToken(any()) } returns "<pdl>"
         }
     ) {
-        val apiClient = httpClient ?: createClient { configureJackson() }
+        val apiClient = httpClient ?: createClient { configureClient() }
         application {
             selectorApi(
                 PersonalContentCollector(

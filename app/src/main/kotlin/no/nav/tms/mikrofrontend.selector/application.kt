@@ -24,7 +24,7 @@ fun main() {
     )
 
     val externalContentFecther = ExternalContentFecther(
-        httpClient = HttpClient { configureJackson() },
+        httpClient = HttpClient { configureClient() },
         oppfølgingBaseUrl = environment.oppfolgingUrl,
         aiaBackendUrl = environment.aiaUrl,
         meldekortUrl = environment.meldekortUrl,

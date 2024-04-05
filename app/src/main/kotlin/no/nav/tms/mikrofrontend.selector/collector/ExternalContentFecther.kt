@@ -6,7 +6,6 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.client.network.sockets.SocketTimeoutException as ClientTimeoutException
-import io.ktor.network.sockets.*
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
@@ -120,17 +119,15 @@ class ExternalContentFecther(
             ResponseWithErrors.createWithError(
                 constructor = T::class.primaryConstructor,
                 errorMessage = "Sockettimeout ${errorDetails(socketTimout)}",
-                className = T::class.simpleName ?: "unknown"
+                className = T::class.qualifiedName ?: "unknown"
             )
-        }
-        catch (socketTimeout: ClientTimeoutException) {
+        } catch (socketTimeout: ClientTimeoutException) {
             ResponseWithErrors.createWithError(
                 constructor = T::class.primaryConstructor,
                 errorMessage = "ClientSockettimeout ${errorDetails(socketTimeout)}",
-                className = T::class.simpleName ?: "unknown"
+                className = T::class.qualifiedName ?: "unknown"
             )
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             throw ApiException(tjeneste, url, e)
         }
 
@@ -157,13 +154,13 @@ class ExternalContentFecther(
         ResponseWithErrors.createWithError(
             constructor = T::class.primaryConstructor,
             errorMessage = "Sockettimeout ${errorDetails(socketTimout)}",
-            className = T::class.simpleName ?: "unknown"
-        ).also { log.info { it.errorMessage() } }
+            className = T::class.qualifiedName ?: "unknown"
+        )
     } catch (socketTimeout: ClientTimeoutException) {
         ResponseWithErrors.createWithError(
             constructor = T::class.primaryConstructor,
             errorMessage = "ClientSockettimeout ${errorDetails(socketTimeout)}",
-            className = T::class.simpleName ?: "unknown"
+            className = T::class.qualifiedName ?: "unknown"
         )
     }
     catch (e: Exception) {

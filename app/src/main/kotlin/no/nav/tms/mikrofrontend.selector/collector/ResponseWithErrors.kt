@@ -54,7 +54,7 @@ abstract class ResponseWithErrors(private val errors: String?) {
                         else -> throw IllegalArgumentException("unexpected Ktype for parameter errors: ${parameter.type}")
                     }
                 }.toTypedArray()
-                constructor.call(*args).also { log.info { "$it" } }
+                constructor.call(*args)
             } ?: throw IllegalArgumentException("$className does not have a primary constructor")
 
         private fun KType.isListType(starProjectedType: KType): Boolean {
