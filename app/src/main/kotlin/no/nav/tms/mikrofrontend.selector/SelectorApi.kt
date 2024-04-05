@@ -17,6 +17,7 @@ import io.ktor.server.routing.routing
 import nav.no.tms.common.metrics.installTmsApiMetrics
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ServicesFetcher
+import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
 import no.nav.tms.token.support.tokenx.validation.tokenX
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
@@ -48,8 +49,13 @@ internal fun Application.selectorApi(
 
                 }
 
+                is TokenFetcherException -> {
+                    log.warn {"TokenFetcherException: ${cause.message}" }
+                    call.respond(HttpStatusCode.ServiceUnavailable)
+                }
+
                 is ServicesFetcher.ApiException -> {
-                    log.warn { cause.message }
+                    log.warn { "ApiException: ${cause.message}" }
                     call.respond(HttpStatusCode.ServiceUnavailable)
                 }
 

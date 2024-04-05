@@ -6,6 +6,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import no.nav.tms.mikrofrontend.selector.collector.NullOrJsonNode.Companion.bodyAsNullOrJsonNode
+import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
 
 class ServicesFetcher(
@@ -119,7 +120,11 @@ class ServicesFetcher(
     private suspend fun <T> withErrorHandling(function: suspend () -> T) =
         try {
             function()
-        } catch (e: Exception) {
+        }
+        catch (e: TokenFetcherException) {
+            throw e
+        }
+        catch (e: Exception) {
             throw ApiException(e)
         }
 
