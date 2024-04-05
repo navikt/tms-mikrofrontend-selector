@@ -1,5 +1,6 @@
 package no.nav.tms.mikrofrontend.selector
 
+import io.ktor.client.plugins.*
 import io.ktor.http.*
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*

@@ -141,7 +141,7 @@ class ExternalContentFecther(
     } catch (socketTimout: SocketTimeoutException) {
         ResponseWithErrors.createWithError(
             constructor = T::class.primaryConstructor,
-            errorMessage = "Kall til $tjeneste feiler: Sockettimeout",
+            errorMessage = "Sockettimeout ${errorDetails(socketTimout)}",
             className = T::class.simpleName ?: "unknown"
         )
     } catch (e: Exception) {
