@@ -1,7 +1,7 @@
 package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 
-import assert
 import io.kotest.matchers.shouldBe
+import nav.no.tms.common.testutils.assert
 
 import no.nav.tms.mikrofrontend.selector.collector.SafResponse.SafDokument
 import org.junit.jupiter.api.Test

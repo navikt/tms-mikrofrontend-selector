@@ -62,6 +62,7 @@ class PersonalContentFactory(
             produktkort = ContentDefinition.getProduktkort(
                 safResponse.dokumenter
             ).filter { it.skalVises() }.map { it.id },
+
             offerStepup = microfrontends?.offerStepup(innloggetnivå) ?: false,
             aiaStandard = arbeidsøkerResponse.isStandardInnsats(),
             brukNyAia = arbeidsøkerResponse.brukNyAia == true,
@@ -72,6 +73,7 @@ class PersonalContentFactory(
                 safResponse.dokumenter,
                 manifestMap
             )
+
         ).apply {
             errors = listOf(
                 arbeidsøkerResponse,

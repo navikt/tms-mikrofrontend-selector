@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector.database
 
 import LocalPostgresDatabase
-import assert
 import assertChangelog
 import assertContent
 import dbv1Format
@@ -13,6 +12,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotliquery.queryOf
+import nav.no.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages.disableV2Message
 import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages.enableV2Message
 import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages.v1Message

@@ -24,12 +24,30 @@ class ExternalContentFecther(
 
     val log = KotlinLogging.logger { }
 
+    private fun safQuery(ident: String) = """ {
+        "query": "query(${'$'}ident: String!) {
+            dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
+                tema {
+                    kode
+                    journalposter{
+                        relevanteDatoer {
+                            dato
+                        }
+                    }
+                }
+              }
+           }",
+          "variables": {"ident" : "$ident"}
+        }
+    """.compactJson()
+
     suspend fun fetchSakstema(user: TokenXUser): SafResponse = withErrorHandling("SAF", "$safUrl/graphql") {
         httpClient.post {
             url("$safUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
             header("Content-Type", "application/json")
-            setBody(HentSafDokumenter(user.ident))
+
+            setBody(safQuery(user.ident))
         }
             .let { response ->
                 if (response.status != HttpStatusCode.OK) {
@@ -151,16 +169,17 @@ class ExternalContentFecther(
     } catch (e: Exception) {
         throw ApiException(tjeneste, url, e)
     }
+}
 
 
-    class ApiException(tjeneste: String, url: String, e: Exception) :
-        Exception(
-            """
+class ApiException(tjeneste: String, url: String, e: Exception) :
+    Exception(
+        """
             |Kall til ekstern tjeneste $tjeneste feiler. Url: $url ${errorDetails(e)}. 
            
         """.trimMargin()
-        )
-}
+    )
+
 
 private class HentAlder(ident: String) {
     val query = """

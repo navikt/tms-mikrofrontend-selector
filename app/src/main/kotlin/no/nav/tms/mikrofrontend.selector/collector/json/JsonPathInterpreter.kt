@@ -5,11 +5,11 @@ import com.nfeld.jsonpathkt.JsonPath
 import com.nfeld.jsonpathkt.extension.read
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.statement.*
-import no.nav.tms.mikrofrontend.selector.collector.SafResponse
 import no.nav.tms.mikrofrontend.selector.collector.SafResponse.*
 import java.lang.NullPointerException
 import java.time.LocalDate
 import java.time.LocalDateTime
+
 
 /**
  * Handles jsonpath queries for a string contaning valid json. Wrapperclass
@@ -185,18 +185,19 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
     fun safDokument() =
         jsonNode.read<JsonNode>("\$.data.dokumentoversiktSelvbetjening.tema")?.map {
             SafDokument(
-                sakstemakode = it.read<String>("$.kode")?:throw JsonPathSearchException(
-                    jsonPath ="\$.kode",
+                sakstemakode = it.read<String>("$.kode") ?: throw JsonPathSearchException(
+                    jsonPath = "\$.kode",
                     jsonNode = it,
                     originalJson = jsonNode
                 ),
                 sistEndret = it.read<List<String>>("\$.journalposter..relevanteDatoer..dato")
-                    ?.let {json -> LocalDateTime.parse(json.first()) }
+                    ?.let { json -> LocalDateTime.parse(json.first()) }
                     ?: throw JsonPathSearchException(
-                        jsonPath ="\$.journalposter.relevanteDatoer.dato",
+                        jsonPath = "\$.journalposter.relevanteDatoer.dato",
                         jsonNode = it,
                         originalJson = jsonNode
                     )
             )
         }
+
 }

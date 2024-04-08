@@ -1,14 +1,11 @@
 package no.nav.tms.mikrofrontend.selector.versions
 
-import assert
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.withClue
-import io.mockk.clearAllMocks
-import io.mockk.clearConstructorMockk
 import io.mockk.every
 import io.mockk.mockkConstructor
-import io.mockk.spyk
 import io.mockk.verify
+import nav.no.tms.common.testutils.assert
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages
 import no.nav.tms.mikrofrontend.selector.currentVersionPacket

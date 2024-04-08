@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector
 
 import LocalPostgresDatabase
-import assert
 import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.matchers.shouldBe
 import io.ktor.client.*
@@ -17,6 +16,7 @@ import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
+import nav.no.tms.common.testutils.assert
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
@@ -69,7 +69,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testIdent)
             initExternalServices(
-                SafRoute(sakstemaer = listOf("DAG"), ident=testIdent),
+                SafRoute(sakstemaer = listOf("DAG"), ident = testIdent),
                 MeldekortRoute(harMeldekort = true),
                 OppfolgingRoute(false),
                 ArbeidsøkerRoute(),
@@ -143,7 +143,7 @@ internal class ApiTest {
 
         initSelectorApi(testident = testIdent)
         initExternalServices(
-            SafRoute(sakstemaer = listOf("DAG"), ident=testIdent),
+            SafRoute(sakstemaer = listOf("DAG"), ident = testIdent),
             MeldekortRoute(harMeldekort = true),
             OppfolgingRoute(false),
             ArbeidsøkerRoute(),
@@ -372,7 +372,10 @@ internal class ApiTest {
 
             initSelectorApi(testident = testident2)
             initExternalServices(
-                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999", ident = testident2),
+                SafRoute(
+                    errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999",
+                    ident = testident2
+                ),
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 OppfolgingRoute(false, ovverideContent = ""),
                 PdlRoute(errorMsg = "Kall til PDL feilet"),
@@ -417,7 +420,8 @@ internal class ApiTest {
                 coEvery { meldekortToken(any()) } returns "<meldekort>"
                 coEvery { safToken(any()) } returns "<saf>"
                 coEvery { aiaToken(any()) } returns "<aia>"
-                coEvery { pdlToken(any()) } returns "<pdl>" })
+                coEvery { pdlToken(any()) } returns "<pdl>"
+            })
 
             initExternalServices(
                 SafRoute(),
@@ -476,12 +480,12 @@ internal class ApiTest {
     }
 }
 
-val mockEngine = MockEngine { request ->
+val mockEngine = MockEngine { _ ->
     throw (SocketTimeoutException("Error"))
 }
 
 private val sockettimeoutClient = HttpClient(mockEngine) {
-        install(ContentNegotiation) {
-            jackson()
-        }
+    install(ContentNegotiation) {
+        jackson()
+    }
 }

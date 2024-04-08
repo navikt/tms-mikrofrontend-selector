@@ -1,11 +1,10 @@
 package no.nav.tms.mikrofrontend.selector.collector.json
 
-import assert
 import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import nav.no.tms.common.testutils.assert
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
 class JsonPathInterpreterTest {

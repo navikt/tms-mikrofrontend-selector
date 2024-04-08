@@ -1,6 +1,7 @@
 package no.nav.tms.mikrofrontend.selector
 
-import assert
+import nav.no.tms.common.testutils.assert
+
 import com.nfeld.jsonpathkt.extension.read
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
