@@ -1,83 +1,54 @@
 package no.nav.tms.mikrofrontend.selector
 
-import io.ktor.client.plugins.*
+import nav.no.tms.common.testutils.assert
+
+import com.nfeld.jsonpathkt.extension.read
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.ktor.http.*
 import io.ktor.http.HttpStatusCode.Companion.OK
-import io.ktor.server.application.*
-import io.ktor.server.response.*
+import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
-import io.ktor.util.pipeline.*
-import kotlinx.coroutines.delay
+import nav.no.tms.common.testutils.GraphQlRouteProvider
+import nav.no.tms.common.testutils.RouteProvider
+import java.time.LocalDateTime
 
 
 const val testHost = "http://test.nav.no"
 
-abstract class RouteProvider(
-    val path: String,
-    private val routeMethodFunction: Routing.(
-        path: String,
-        suspend PipelineContext<Unit, ApplicationCall>.(Unit) -> Unit
-    ) -> Unit,
-    private val statusCode: HttpStatusCode = OK,
-) {
-    abstract fun content(): String
-    fun Routing.initRoute() {
-        routeMethodFunction(path) {
-            delay(1000)
-            call.respondText(
-                contentType = ContentType.Application.Json,
-                status = statusCode,
-                provider = ::content
-            )
-        }
-    }
-}
-
-abstract class GraphQlRouteProvider(
-    errorMsg: String?,
-    path: String,
-    statusCode: HttpStatusCode = OK,
-) : RouteProvider(path, Routing::post, statusCode) {
-    val errors = errorMsg?.let {
-        """
-                  "errors": [
-                                  {
-                                    "message": "$it",
-                                    "locations": [
-                                      {
-                                        "line": 2,
-                                        "column": 3
-                                      }
-                                    ],
-                                    "path": [
-                                      "journalpost"
-                                    ],
-                                    "extensions": {
-                                      "code": "not_found",
-                                      "classification": "ExecutionAborted"
-                                    }
-                                  }
-                                ],  
-                """.trimIndent()
-    } ?: ""
-    abstract val data: String
-    override fun content(): String = """
-        {
-        $errors
-        "data": $data
-        }
-    """.trimIndent()
-}
-
 class SafRoute(
     sakstemaer: List<String> = emptyList(),
-    errorMsg: String? = null
-) : GraphQlRouteProvider(errorMsg = errorMsg, path = "graphql") {
+    errorMsg: String? = null,
+    ident: String = "12345678910"
+) : GraphQlRouteProvider(errorMsg = errorMsg, path = "graphql", assert = { call ->
+    val callBody = call.receiveText().let { objectMapper.readTree(it) }
+    callBody.read<String>("$.query").assert {
+        this shouldNotBe null
+        this shouldBe "query(${'$'}ident: String!) { dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) { tema { kode journalposter{ relevanteDatoer { dato } } } } }"
+    }
+    callBody.read<String>("$.variables.ident") shouldBe ident
+}) {
 
     override val data: String = """{
             "dokumentoversiktSelvbetjening": {
-              "tema": ${sakstemaer.joinToString(prefix = "[", postfix = "]") { """{ "kode": "$it" }""".trimIndent() }}
+              "tema": ${
+        sakstemaer.joinToString(prefix = "[", postfix = "]") {
+            """ { "kode": "$it",  
+                        "journalposter": [{
+                            "relevanteDatoer": [ {
+                            
+                                "dato": "${LocalDateTime.now()}"
+                            },
+                            {
+                            
+                                "dato": "${LocalDateTime.now().minusMinutes(4)}"
+                            }
+                           ]
+                        }]
+                      }""".trimIndent()
+        }
+    }
             }
           }""".trimIndent()
 }

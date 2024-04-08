@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector
 
 import LocalPostgresDatabase
-import assert
 import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.matchers.shouldBe
 import io.ktor.client.*
@@ -17,6 +16,7 @@ import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
+import nav.no.tms.common.testutils.assert
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
@@ -69,7 +69,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testIdent)
             initExternalServices(
-                SafRoute(sakstemaer = listOf("DAG")),
+                SafRoute(sakstemaer = listOf("DAG"), ident = testIdent),
                 MeldekortRoute(harMeldekort = true),
                 OppfolgingRoute(false),
                 ArbeidsøkerRoute(),
@@ -120,10 +120,10 @@ internal class ApiTest {
                         require(this != null)
                         size shouldBe 1
                         this.find {
-                            it["microfrontend_id"].asText() == LocalGCPStorage.pensjonMf.first
+                            it["microfrontend_id"].asText() == "pensjonskalkulator-microfrontend"
                         }.assert {
                             require(this != null)
-                            this["url"].asText() shouldBe LocalGCPStorage.pensjonMf.second
+                            this["url"].asText() shouldBe "https://cdn.pensjon/manifest.json"
                         }
                     }
                 }
@@ -143,7 +143,7 @@ internal class ApiTest {
 
         initSelectorApi(testident = testIdent)
         initExternalServices(
-            SafRoute(sakstemaer = listOf("DAG")),
+            SafRoute(sakstemaer = listOf("DAG"), ident = testIdent),
             MeldekortRoute(harMeldekort = true),
             OppfolgingRoute(false),
             ArbeidsøkerRoute(),
@@ -201,7 +201,7 @@ internal class ApiTest {
 
         initSelectorApi(testident = testIdent)
         initExternalServices(
-            SafRoute(expectedProduktkort),
+            SafRoute(expectedProduktkort, ident = testIdent),
             MeldekortRoute(),
             OppfolgingRoute(false),
             ArbeidsøkerRoute(),
@@ -229,7 +229,7 @@ internal class ApiTest {
                 list<String>("produktkort").assert {
 
                     size shouldBe 2
-                    this shouldBe expectedProduktkort
+                    this.sorted() shouldBe expectedProduktkort.sorted()
                 }
             }
         }
@@ -247,7 +247,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testIdent, levelOfAssurance = LEVEL_3)
             initExternalServices(
-                SafRoute(),
+                SafRoute(ident = testIdent),
                 MeldekortRoute(),
                 OppfolgingRoute(),
                 ArbeidsøkerRoute(),
@@ -289,7 +289,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testident2)
             initExternalServices(
-                SafRoute(),
+                SafRoute(ident = testident2),
                 MeldekortRoute(),
                 OppfolgingRoute(false),
                 ArbeidsøkerRoute(),
@@ -314,7 +314,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testident2)
             initExternalServices(
-                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
+                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999", ident = testident2),
                 MeldekortRoute(),
                 OppfolgingRoute(false),
                 ArbeidsøkerRoute()
@@ -342,7 +342,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testident2)
             initExternalServices(
-                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
+                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999", ident = testident2),
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 OppfolgingRoute(false, ovverideContent = ""),
                 PdlRoute("2000-05-05", 2000),
@@ -372,7 +372,10 @@ internal class ApiTest {
 
             initSelectorApi(testident = testident2)
             initExternalServices(
-                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
+                SafRoute(
+                    errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999",
+                    ident = testident2
+                ),
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 OppfolgingRoute(false, ovverideContent = ""),
                 PdlRoute(errorMsg = "Kall til PDL feilet"),
@@ -417,7 +420,8 @@ internal class ApiTest {
                 coEvery { meldekortToken(any()) } returns "<meldekort>"
                 coEvery { safToken(any()) } returns "<saf>"
                 coEvery { aiaToken(any()) } returns "<aia>"
-                coEvery { pdlToken(any()) } returns "<pdl>" })
+                coEvery { pdlToken(any()) } returns "<pdl>"
+            })
 
             initExternalServices(
                 SafRoute(),
@@ -476,12 +480,12 @@ internal class ApiTest {
     }
 }
 
-val mockEngine = MockEngine { request ->
+val mockEngine = MockEngine { _ ->
     throw (SocketTimeoutException("Error"))
 }
 
 private val sockettimeoutClient = HttpClient(mockEngine) {
-        install(ContentNegotiation) {
-            jackson()
-        }
+    install(ContentNegotiation) {
+        jackson()
+    }
 }

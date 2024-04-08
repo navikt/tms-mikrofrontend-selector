@@ -143,11 +143,6 @@ data class ChangelogEntry(
     val initiatedBy: String?
 )
 
-inline fun <T> T.assert(block: T.() -> Unit): T =
-    apply {
-        block()
-    }
-
 inline fun <T> T.assertContent(block: T.() -> Unit): T =
     apply {
         withClue("content") {

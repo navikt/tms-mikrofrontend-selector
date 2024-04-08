@@ -50,6 +50,8 @@ dependencies {
     implementation(Kotlinx.coroutines)
     implementation(Kotlin.reflect)
     implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2")
+
 
 
 
@@ -63,6 +65,7 @@ dependencies {
     testImplementation(TmsKtorTokenSupport.tokenXValidationMock)
     testImplementation(Mockk.mockk)
     testImplementation(Ktor.Test.clientMock)
+    testImplementation(TmsCommonLibBeta.testutils)
 
     testImplementation(project(":lib"))
 

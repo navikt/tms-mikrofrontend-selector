@@ -1,13 +1,13 @@
 package no.nav.tms.mikrofrontend.selector
 
 import LocalPostgresDatabase
-import assert
 import dbv1Format
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.prometheus.client.CollectorRegistry
 import kotliquery.queryOf
+import nav.no.tms.common.testutils.assert
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter

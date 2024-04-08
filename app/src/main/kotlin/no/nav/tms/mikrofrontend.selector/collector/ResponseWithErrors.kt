@@ -5,6 +5,7 @@ import io.ktor.client.statement.*
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.redactedMessage
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.reflect.KFunction
 import kotlin.reflect.KType
@@ -95,11 +96,12 @@ abstract class ResponseWithErrors(private val errors: String?) {
 
 
 class SafResponse(
-    sakstemakoder: List<String>? = null,
+    safDokumenter: List<SafDokument>? = null,
     errors: List<String>? = null
 ) : ResponseWithErrors(errors?.joinToString(";")) {
-    val sakstemakoder = sakstemakoder ?: emptyList()
+    val dokumenter = safDokumenter ?: emptyList()
     override val source: String = "SAF"
+    class SafDokument(val sakstemakode: String, val sistEndret: LocalDateTime)
 }
 
 class OppfolgingResponse(
@@ -134,7 +136,7 @@ class ArbeidsøkerResponse(
     val erArbeidssoker: Boolean?,
     val erStandard: Boolean?,
     val brukNyAia: Boolean?,
-    errors: String? = null
+    errors: String? = null,
 ) : ResponseWithErrors(errors) {
     override val source = "aia-backend"
     fun isStandardInnsats(): Boolean = erArbeidssoker == true && erStandard == true
@@ -160,4 +162,3 @@ fun errorDetails(exception: Exception) =
                    melding: "${exception::class.simpleName} ${exception.message?.let { ":$it" }}"
                 """.trimIndent()
     } ?: "${exception::class.simpleName} ${exception.message?.let { ":$it" }}"
-

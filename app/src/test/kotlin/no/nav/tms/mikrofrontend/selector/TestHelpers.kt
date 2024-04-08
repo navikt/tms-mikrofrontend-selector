@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.tms.mikrofrontend.selector.collector.SafResponse
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
@@ -12,6 +13,7 @@ import no.nav.tms.mikrofrontend.selector.versions.MessageRequirements
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
 import no.nav.tms.token.support.tokendings.exchange.TokendingsService
+import java.time.LocalDateTime
 
 internal val objectMapper = jacksonObjectMapper().apply {
     registerModule(JavaTimeModule())
@@ -123,5 +125,4 @@ private fun MessageRequirements.addRequiredAndInterestedIn(jsonMessage: JsonMess
 }
 
 val testproduktkortCounter = ProduktkortCounter()
-val tokendingsmockk =
-    mockk<TokendingsService>().also { coEvery { it.exchangeToken(any(), any()) } returns "dummyToken" }
+fun String.safTestDokument(sistEndret: LocalDateTime = LocalDateTime.now()) = SafResponse.SafDokument(this, sistEndret)

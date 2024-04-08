@@ -46,6 +46,7 @@ class ExternalContentFecther(
             url("$safUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
             header("Content-Type", "application/json")
+
             setBody(safQuery(user.ident))
         }
             .let { response ->
@@ -55,7 +56,7 @@ class ExternalContentFecther(
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     SafResponse(
-                        sakstemakoder = jsonResponse?.getAll<String>("data.dokumentoversiktSelvbetjening.tema..kode"),
+                        safDokumenter = jsonResponse?.safDokument(),
                         errors = jsonResponse?.getAll<String>("errors..message")
                     )
                 }
@@ -111,11 +112,14 @@ class ExternalContentFecther(
             }
     }
 
-    private inline fun <reified T : ResponseWithErrors> withErrorHandling(tjeneste: String, url: String, function:  () -> T) =
+    private inline fun <reified T : ResponseWithErrors> withErrorHandling(
+        tjeneste: String,
+        url: String,
+        function: () -> T
+    ) =
         try {
             function()
-        }
-        catch (socketTimout: SocketTimeoutException) {
+        } catch (socketTimout: SocketTimeoutException) {
             ResponseWithErrors.createWithError(
                 constructor = T::class.primaryConstructor,
                 errorMessage = "Sockettimeout ${errorDetails(socketTimout)}",
@@ -162,20 +166,20 @@ class ExternalContentFecther(
             errorMessage = "Requesttimeout ${errorDetails(requestTimeoutException)}",
             className = T::class.qualifiedName ?: "unknown"
         )
-    }
-    catch (e: Exception) {
+    } catch (e: Exception) {
         throw ApiException(tjeneste, url, e)
     }
+}
 
 
-    class ApiException(tjeneste: String, url: String, e: Exception) :
-        Exception(
-            """
+class ApiException(tjeneste: String, url: String, e: Exception) :
+    Exception(
+        """
             |Kall til ekstern tjeneste $tjeneste feiler. Url: $url ${errorDetails(e)}. 
            
         """.trimMargin()
-        )
-}
+    )
+
 
 private class HentAlder(ident: String) {
     val query = """
@@ -187,6 +191,27 @@ private class HentAlder(ident: String) {
                 }
             }
         }
+    """.compactJson()
+
+    val variables = mapOf(
+        "ident" to ident
+    )
+}
+
+private class HentSafDokumenter(ident: String) {
+    val query = """ 
+        query(${'$'}ident: String!) {
+            dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
+                tema {
+                    kode
+                    journalposter{
+                        relevanteDatoer {
+                            dato
+                        }
+                    }
+                }
+              }
+           }
     """.compactJson()
 
     val variables = mapOf(

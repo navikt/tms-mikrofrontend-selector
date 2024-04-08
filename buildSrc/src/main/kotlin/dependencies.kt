@@ -14,5 +14,6 @@ object GoogleCloud: default.DependencyGroup {
 }
 
 object TmsCommonLibBeta: default.TmsCommonLibDefaults{
-    override val version get() = "1.7.2"
+    override val version get() = "3.2.0"
+    val testutils = dependency("testutils")
 }

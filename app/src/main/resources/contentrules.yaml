@@ -1,0 +1,31 @@
+produktkort:
+  - id: PEN
+    includeIfSakstema:
+      - PEN
+  - id: DAG
+    includeIfSakstema:
+      - DAG
+    weeksSinceLastDocument:
+      sakstemakode: DAG
+      numberOfWeeks: 5
+  - id: FOR
+    includeIfSakstema:
+      - FOR
+  - id: HJE
+    includeIfSakstema:
+      - HJE
+  - id: KOM
+    includeIfSakstema:
+      - KOM
+  - id: UFO
+    includeIfSakstema:
+      - UFO
+  - id: SYK
+    includeIfSakstema:
+      - SYK
+      - SYM
+aktuelt:
+  - id: "pensjonskalkulator-microfrontend"
+    excludeIfSakstema:
+      - PEN
+    usersAgeOver: 40

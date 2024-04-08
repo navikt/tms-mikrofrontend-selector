@@ -1,13 +1,11 @@
 package no.nav.tms.mikrofrontend.selector
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import nav.no.tms.common.observability.traceMicrofrontend
 import no.nav.helse.rapids_rivers.*
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
-import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.initiatedBy
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.traceInfo
-import observability.Contenttype
-import observability.traceMicrofrontend
 
 class EnableSink(
     rapidsConnection: RapidsConnection,
