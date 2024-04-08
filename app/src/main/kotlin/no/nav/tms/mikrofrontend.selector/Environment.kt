@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
 import io.ktor.client.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.serialization.jackson.*
 import no.nav.tms.common.util.config.StringEnvVar.getEnvVar
 
@@ -70,11 +72,15 @@ fun getDbUrl(host: String, port: String, name: String): String {
     }
 }
 
-fun HttpClientConfig<*>.configureJackson() {
-    install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+fun HttpClientConfig<*>.configureClient() {
+    install(ClientContentNegotiation) {
         jackson {
             configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         }
     }
+    install(HttpTimeout){
+        requestTimeoutMillis = 3000
+    }
+
 }
 

@@ -4,9 +4,14 @@ import LocalPostgresDatabase
 import assert
 import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.matchers.shouldBe
+import io.ktor.client.*
+import io.ktor.client.engine.mock.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.network.sockets.*
+import io.ktor.serialization.jackson.*
 import io.ktor.server.auth.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
@@ -16,6 +21,7 @@ import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
+import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
@@ -385,32 +391,74 @@ internal class ApiTest {
             }
         }
 
+    @Test
+    fun `Skal returnere 207 ved SocketTimeoutException`() =
+        testApplication {
+            val testident2 = "12345678912"
+
+            initSelectorApi(testident = testident2, httpClient = sockettimeoutClient)
+
+            client.get("/microfrontends").assert {
+                status shouldBe HttpStatusCode.MultiStatus
+            }
+        }
+
+    @Test
+    fun `Skal returnere 503 når tokendings feiler`() =
+        testApplication {
+            val testident2 = "12345678912"
+
+            initSelectorApi(testident = testident2, tokenFetcher = mockk<TokenFetcher>().apply {
+                coEvery { oppfolgingToken(any()) } throws TokenFetcherException(
+                    originalException = SocketTimeoutException(),
+                    forService = "oppfolging",
+                    appClientId = "testid"
+                )
+                coEvery { meldekortToken(any()) } returns "<meldekort>"
+                coEvery { safToken(any()) } returns "<saf>"
+                coEvery { aiaToken(any()) } returns "<aia>"
+                coEvery { pdlToken(any()) } returns "<pdl>" })
+
+            initExternalServices(
+                SafRoute(),
+                MeldekortRoute(),
+                OppfolgingRoute(false),
+                ArbeidsøkerRoute(),
+                PdlRoute()
+            )
+
+            client.get("/microfrontends").assert {
+                status shouldBe HttpStatusCode.ServiceUnavailable
+            }
+        }
+
 
     fun ApplicationTestBuilder.initSelectorApi(
         testident: String,
-        levelOfAssurance: LevelOfAssurance = LEVEL_4
+        levelOfAssurance: LevelOfAssurance = LEVEL_4,
+        httpClient: HttpClient? = null,
+        tokenFetcher: TokenFetcher = mockk<TokenFetcher>().apply {
+            coEvery { oppfolgingToken(any()) } returns "<oppfolging>"
+            coEvery { meldekortToken(any()) } returns "<meldekort>"
+            coEvery { safToken(any()) } returns "<saf>"
+            coEvery { aiaToken(any()) } returns "<aia>"
+            coEvery { pdlToken(any()) } returns "<pdl>"
+        }
     ) {
-        val apiClient = createClient { configureJackson() }
+        val apiClient = httpClient ?: createClient { configureClient() }
         application {
             selectorApi(
                 PersonalContentCollector(
                     repository = personRepository,
                     manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
                     externalContentFecther = ExternalContentFecther(
-
                         safUrl = testHost,
                         httpClient = apiClient,
                         oppfølgingBaseUrl = testHost,
                         aiaBackendUrl = testHost,
                         meldekortUrl = testHost,
                         pdlUrl = "$testHost/pdl",
-                        tokenFetcher = mockk<TokenFetcher>().apply {
-                            coEvery { oppfolgingToken(any()) } returns "<oppfolging>"
-                            coEvery { meldekortToken(any()) } returns "<meldekort>"
-                            coEvery { safToken(any()) } returns "<saf>"
-                            coEvery { aiaToken(any()) } returns "<aia>"
-                            coEvery { pdlToken(any()) } returns "<pdl>"
-                        },
+                        tokenFetcher = tokenFetcher
                     ),
                     produktkortCounter = testproduktkortCounter
                 ),
@@ -426,4 +474,14 @@ internal class ApiTest {
             }
         }
     }
+}
+
+val mockEngine = MockEngine { request ->
+    throw (SocketTimeoutException("Error"))
+}
+
+private val sockettimeoutClient = HttpClient(mockEngine) {
+        install(ContentNegotiation) {
+            jackson()
+        }
 }

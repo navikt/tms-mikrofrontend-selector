@@ -2,12 +2,15 @@ package no.nav.tms.mikrofrontend.selector.collector
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
+import java.net.SocketTimeoutException
+import kotlin.reflect.full.primaryConstructor
 
 class ExternalContentFecther(
     val safUrl: String,
@@ -91,9 +94,25 @@ class ExternalContentFecther(
             }
     }
 
-    private suspend fun <T> withErrorHandling(tjeneste: String, url: String, function: suspend () -> T) =
+    private inline fun <reified T : ResponseWithErrors> withErrorHandling(
+        tjeneste: String,
+        url: String,
+        function: () -> T
+    ) =
         try {
             function()
+        } catch (socketTimout: SocketTimeoutException) {
+            ResponseWithErrors.createWithError(
+                constructor = T::class.primaryConstructor,
+                errorMessage = "Sockettimeout ${errorDetails(socketTimout)}",
+                className = T::class.qualifiedName ?: "unknown"
+            )
+        } catch (requestTimeoutException: HttpRequestTimeoutException) {
+            ResponseWithErrors.createWithError(
+                constructor = T::class.primaryConstructor,
+                errorMessage = "Requesttimeout ${errorDetails(requestTimeoutException)}",
+                className = T::class.qualifiedName ?: "unknown"
+            )
         } catch (e: Exception) {
             throw ApiException(tjeneste, url, e)
         }
@@ -117,6 +136,18 @@ class ExternalContentFecther(
                 response.bodyAsNullOrJsonNode()?.let(map)
                     ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText())
         }
+    } catch (socketTimout: SocketTimeoutException) {
+        ResponseWithErrors.createWithError(
+            constructor = T::class.primaryConstructor,
+            errorMessage = "Sockettimeout ${errorDetails(socketTimout)}",
+            className = T::class.qualifiedName ?: "unknown"
+        )
+    } catch (requestTimeoutException: HttpRequestTimeoutException) {
+        ResponseWithErrors.createWithError(
+            constructor = T::class.primaryConstructor,
+            errorMessage = "Requesttimeout ${errorDetails(requestTimeoutException)}",
+            className = T::class.qualifiedName ?: "unknown"
+        )
     } catch (e: Exception) {
         throw ApiException(tjeneste, url, e)
     }

@@ -37,9 +37,13 @@ abstract class ResponseWithErrors(private val errors: String?) {
                 className = T::class.simpleName ?: "unknown"
             )
 
-        fun <T> createWithError(constructor: KFunction<T>?, errorMessage: String, className: String): T =
+
+
+        fun <T: ResponseWithErrors> createWithError(constructor: KFunction<T>?, errorMessage: String, className: String): T =
             constructor?.let {
                 val params = constructor.parameters
+                require(params.any { it.name == "errors" })
+
                 val args = params.map { parameter ->
                     when {
                         parameter.name != "errors" -> parameter.type.default()
@@ -102,8 +106,8 @@ class SafResponse(
 
 class OppfolgingResponse(
     underOppfolging: Boolean? = false,
-    error: String? = null,
-) : ResponseWithErrors(error) {
+    errors: String? = null,
+) : ResponseWithErrors(errors) {
     val underOppfolging: Boolean = underOppfolging ?: false
     override val source = "Oppfølgingapi"
 }
