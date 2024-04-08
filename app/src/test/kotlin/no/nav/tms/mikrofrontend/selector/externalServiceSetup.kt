@@ -1,5 +1,6 @@
 package no.nav.tms.mikrofrontend.selector
 
+import io.ktor.client.plugins.*
 import io.ktor.http.*
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
@@ -33,11 +34,12 @@ abstract class RouteProvider(
     }
 }
 
-class SafRoute(
-    private val sakstemaer: List<String> = emptyList(),
-    errorMsg: String? = null
-) : RouteProvider(path = "graphql", Routing::post) {
-    private val errors = errorMsg?.let {
+abstract class GraphQlRouteProvider(
+    errorMsg: String?,
+    path: String,
+    statusCode: HttpStatusCode = OK,
+) : RouteProvider(path, Routing::post, statusCode) {
+    val errors = errorMsg?.let {
         """
                   "errors": [
                                   {
@@ -59,26 +61,33 @@ class SafRoute(
                                 ],  
                 """.trimIndent()
     } ?: ""
-
+    abstract val data: String
     override fun content(): String = """
         {
-          $errors  
-          "data": {
-            "dokumentoversiktSelvbetjening": {
-              "tema": ${
-        sakstemaer.joinToString(prefix = "[", postfix = "]") { """{ "kode": "$it" }""".trimIndent() }
-    }
-            }
-          }
+        $errors
+        "data": $data
         }
-    ""${'"'}.trimIndent()
-""".trimIndent()
+    """.trimIndent()
 }
 
-class MeldekortRoute(private val harMeldekort: Boolean = false) :
-    RouteProvider(path = "api/person/meldekortstatus", routeMethodFunction = Routing::get) {
+class SafRoute(
+    sakstemaer: List<String> = emptyList(),
+    errorMsg: String? = null
+) : GraphQlRouteProvider(errorMsg = errorMsg, path = "graphql") {
 
-    //TODO
+    override val data: String = """{
+            "dokumentoversiktSelvbetjening": {
+              "tema": ${sakstemaer.joinToString(prefix = "[", postfix = "]") { """{ "kode": "$it" }""".trimIndent() }}
+            }
+          }""".trimIndent()
+}
+
+class MeldekortRoute(private val harMeldekort: Boolean = false, httpStatusCode: HttpStatusCode = OK) :
+    RouteProvider(
+        path = "api/person/meldekortstatus",
+        routeMethodFunction = Routing::get,
+        statusCode = httpStatusCode
+    ) {
     override fun content(): String = if (harMeldekort)
         """{
           "antallGjenstaaendeFeriedager": 0,
@@ -104,10 +113,10 @@ class MeldekortRoute(private val harMeldekort: Boolean = false) :
 }
 
 
-class OppfolgingRoute(private val underOppfølging: Boolean = false) :
+class OppfolgingRoute(private val underOppfølging: Boolean = false, val ovverideContent: String? = null) :
     RouteProvider(path = "api/niva3/underoppfolging", routeMethodFunction = Routing::get) {
     //TODO: sjekk route i proxy
-    override fun content(): String = """
+    override fun content(): String = ovverideContent ?: """
         {
           "underOppfolging": $underOppfølging
         }
@@ -115,16 +124,40 @@ class OppfolgingRoute(private val underOppfølging: Boolean = false) :
 
 }
 
-class ArbeidsøkerRoute(private val erArbeidsøker: Boolean = false, private val erStandard: Boolean = false, private val brukNyAia: Boolean = false) :
+class ArbeidsøkerRoute(
+    private val erArbeidsøker: Boolean = false,
+    private val erStandard: Boolean = false,
+    val ovverideContent: String? = null,
+    private val brukNyAia: Boolean = false
+) :
     RouteProvider(path = "aia-backend/er-arbeidssoker", routeMethodFunction = Routing::get) {
-    override fun content(): String = """
+    override fun content(): String = ovverideContent ?: """
         {
           "erArbeidssoker": $erArbeidsøker,
           "erStandard": $erStandard,
           "brukNyAia": $brukNyAia
         }
     """.trimIndent()
+}
 
+class PdlRoute(
+    fødselsdato: String = "1978-05-05",
+    fødselssår: Int = 1978,
+    errorMsg: String? = null
+) :
+    GraphQlRouteProvider(errorMsg = errorMsg, path = "pdl/graphql") {
+    override val data: String = if (errorMsg == null) """
+         {
+           "hentPerson": {
+      "foedsel": [
+        {
+          "foedselsdato": "$fødselsdato",
+          "foedselsaar": $fødselssår
+        }
+      ]
+    }
+         }
+    """.trimIndent() else "{}"
 }
 
 

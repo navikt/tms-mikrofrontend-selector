@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
 import io.ktor.client.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.serialization.jackson.*
 import no.nav.tms.common.util.config.StringEnvVar.getEnvVar
 
@@ -28,12 +30,12 @@ data class Environment(
     val aiaClientId: String = getEnvVar("AIA_CLIENT_ID"),
     val oppfolgingUrl: String = getEnvVar("OPPFOLGING_API_URL"),
     val oppfolgingClienId: String = getEnvVar("OPPFOLGING_CLIENT_ID"),
-    val meldekortUrl:String = getEnvVar("MELDEKORT_BASE_URL"),
-    val meldekortClientId :String = getEnvVar("MELDEKORT_CLIENT_ID")
+    val meldekortUrl: String = getEnvVar("MELDEKORT_BASE_URL"),
+    val meldekortClientId: String = getEnvVar("MELDEKORT_CLIENT_ID"),
+    val pdlClientId: String = getEnvVar("PDL_API_CLIENT_ID"),
+    val pdlApiUrl: String = getEnvVar("PDL_API_URL")
 
 ) {
-
-
     fun rapidConfig(): Map<String, String> = mapOf(
         "KAFKA_BROKERS" to aivenBrokers,
         "KAFKA_CONSUMER_GROUP_ID" to groupId,
@@ -70,11 +72,15 @@ fun getDbUrl(host: String, port: String, name: String): String {
     }
 }
 
-fun HttpClientConfig<*>.configureJackson() {
-    install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+fun HttpClientConfig<*>.configureClient() {
+    install(ClientContentNegotiation) {
         jackson {
             configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         }
     }
+    install(HttpTimeout){
+        requestTimeoutMillis = 3000
+    }
+
 }
 

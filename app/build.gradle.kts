@@ -48,6 +48,7 @@ dependencies {
     implementation(TmsCommonLib.observability)
     implementation(GoogleCloud.storage)
     implementation(Kotlinx.coroutines)
+    implementation(Kotlin.reflect)
     implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
 
 
@@ -61,6 +62,7 @@ dependencies {
     testImplementation(Ktor.Test.serverTestHost)
     testImplementation(TmsKtorTokenSupport.tokenXValidationMock)
     testImplementation(Mockk.mockk)
+    testImplementation(Ktor.Test.clientMock)
 
     testImplementation(project(":lib"))
 

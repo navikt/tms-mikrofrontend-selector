@@ -1,21 +1,18 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import assert
+import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 class PersonalContentFactoryTest {
     private val mockErrorUrl = Url("https://test.feil")
-    private val mockHttpResponse = mockk<HttpResponse>().apply {
-        every { status } returns HttpStatusCode.InternalServerError
-        every { request.url } returns mockErrorUrl
-    }
-
     @Test
     fun `Skal være tom`() {
         testFactory().build(
@@ -107,7 +104,7 @@ class PersonalContentFactoryTest {
                 erStandard = true,
                 brukNyAia = false
             ),
-            meldekortResponse = MeldekortResponse(response = mockHttpResponse)
+            meldekortResponse = MeldekortResponse(errors = "Feil som skjedde")
 
         ).build(
             microfrontends = Microfrontends(),
@@ -132,14 +129,14 @@ class PersonalContentFactoryTest {
         testFactory(
             arbeidsøkerResponse = ArbeidsøkerResponse(erArbeidssoker = true, erStandard = true, brukNyAia = true),
             safResponse = SafResponse(sakstemakoder = listOf("DAG"), errors = emptyList()),
-            meldekortResponse = MeldekortResponse(NullOrJsonNode.initObjectMapper("{}")),
+            meldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
             oppfolgingResponse = OppfolgingResponse(underOppfolging = true),
         ).build(
             microfrontends = microfrontendMocck(
                 level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5
             ),
             innloggetnivå = 4,
-            manifestMap = emptyMap()
+            manifestMap = mapOf("regefrontend" to "https://micro.moc")
         ).assert {
             oppfolgingContent shouldBe true
             offerStepup shouldBe false
@@ -179,19 +176,22 @@ class PersonalContentFactoryTest {
 }
 
 private operator fun MicrofrontendsDefinition.times(i: Int): List<MicrofrontendsDefinition> =
-    (1..i).map { this.copy(id = "$id$it", url = "$url$it") }
+    (1..i).map { MicrofrontendsDefinition(id = "$id$it", url = "$url$it") }
+
 
 private fun testFactory(
     arbeidsøkerResponse: ArbeidsøkerResponse = ArbeidsøkerResponse(false, false, false),
     safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
-    meldekortResponse: MeldekortResponse = MeldekortResponse(NullOrJsonNode.initObjectMapper("{meldekort:0}")),
-    oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false)
+    meldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{meldekort:0}")),
+    oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false),
+    pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"),1988)
 ) =
     PersonalContentFactory(
         arbeidsøkerResponse = arbeidsøkerResponse,
         safResponse = safResponse,
         meldekortResponse = meldekortResponse,
-        oppfolgingResponse = oppfolgingResponse
+        oppfolgingResponse = oppfolgingResponse,
+        pdlResponse = pdlResponse
     )
 
 private fun microfrontendMocck(

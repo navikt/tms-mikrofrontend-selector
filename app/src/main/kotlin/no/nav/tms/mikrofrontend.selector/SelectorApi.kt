@@ -15,9 +15,10 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import nav.no.tms.common.metrics.installTmsApiMetrics
+import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther.ApiException
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
-import no.nav.tms.mikrofrontend.selector.collector.ServicesFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
+
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
 import no.nav.tms.token.support.tokenx.validation.tokenX
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
@@ -49,13 +50,15 @@ internal fun Application.selectorApi(
 
                 }
 
-                is TokenFetcherException -> {
-                    log.warn {"TokenFetcherException: ${cause.message}" }
+                is ApiException -> {
+                    log.warn {
+                        "${cause::class.simpleName?:"ApiException"}: ${cause.message}" }
                     call.respond(HttpStatusCode.ServiceUnavailable)
+
                 }
 
-                is ServicesFetcher.ApiException -> {
-                    log.warn { "ApiException: ${cause.message}" }
+                is TokenFetcherException -> {
+                    log.warn { "TokenFetcherException: ${cause.message}" }
                     call.respond(HttpStatusCode.ServiceUnavailable)
                 }
 
@@ -80,7 +83,7 @@ internal fun Application.selectorApi(
                 get() {
                     val user = TokenXUserFactory.createTokenXUser(call)
                     val content = personalContentCollector.getContent(user, user.loginLevel)
-                    content.errors?.let {
+                    content.errors?.takeIf { it.isNotEmpty() }?.let {
                         log.warn { it }
                     }
                     call.respond(
