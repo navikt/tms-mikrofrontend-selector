@@ -33,9 +33,9 @@ hele dokumentet (`##`,deretter `###` osv).
 ### Kjøre tester med Testcontainers og Colima
 1. Legg følgende miljøvariabler i .zshrc-filen
 ```bash
-   export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
-   export TESTCONTAINERS_HOST_OVERRIDE=$(colima ls -j | jq -r '.address')
-   export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
+export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+export TESTCONTAINERS_HOST_OVERRIDE=$(colima ls -j | jq -r '.address')
+export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
 ```
 2. Restart Intellij
 
