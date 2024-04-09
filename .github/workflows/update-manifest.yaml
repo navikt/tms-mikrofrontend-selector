@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.client_payload.cluster == 'dev-gcp' }}
     steps:
+      - name: ${{ github.event.client_payload.dispatch_id }}
+        run: echo 'Starter oppdatering med id ${{ github.event.client_payload.dispatch_id }}'
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
