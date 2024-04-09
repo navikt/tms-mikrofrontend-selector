@@ -38,5 +38,5 @@ hele dokumentet (`##`,deretter `###` osv).
 4. Install App (i menyen til venstre) -> Settings (tannhjul til høyre)
 5. Velg produsent-repoet i dropdown-lista og trykk på den grønne "Update access"-knappen
 6. Legg inn secrets i produsent-repoet; Settings -> Secrets and variables -> Actions -> New repository secret
-   1. `PRIVATE_KEY` fra `github-auth-app-key` i secrets i prod-gcp
+   1. `PRIVATE_KEY` fra `min-side-repo-authenticator` i secrets i prod-gcp
    2. `APP_ID` fra "App ID" under "About" i repoauthenticator
