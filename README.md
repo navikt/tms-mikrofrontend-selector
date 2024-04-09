@@ -30,6 +30,14 @@ hele dokumentet (`##`,deretter `###` osv).
    "__offerStepup_desc__": "Boolean, hvorvidt bruker har mikrofrontender som ikke kan vises ved gjeldende sensitivitetsnivå"
 }
 ```
+### Kjøre tester med Testcontainers og Colima
+1. Legg følgende miljøvariabler i .zshrc-filen
+```bash
+   export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+   export TESTCONTAINERS_HOST_OVERRIDE=$(colima ls -j | jq -r '.address')
+   export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
+```
+2. Restart Intellij
 
 ### Gi produsent-repo tilgang til å trigge actions i selector
 1. Oppdater [oversikten over microfrontends](https://navno.sharepoint.com/:x:/r/sites/Teampersonbruker/_layouts/15/Doc.aspx?sourcedoc=%7B566CB64A-D4E2-4672-A740-8C9B7CC9D460%7D&file=Mikrofrontends.xlsx&action=default&mobileredirect=true)
