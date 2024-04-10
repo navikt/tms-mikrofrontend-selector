@@ -35,6 +35,8 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ApiTest {
@@ -60,8 +62,9 @@ internal class ApiTest {
         database.deleteAll()
     }
 
-    @Test
-    fun `Skal svare med liste over regelstyrte microfrontend Pensjon og kafkabaserte microfrontends`() =
+    @ParameterizedTest
+    @ValueSource(strings = ["din-oversikt","microfrontends"])
+    fun `Skal svare med liste over regelstyrte microfrontend Pensjon og kafkabaserte microfrontends`(endpoint: String) =
         testApplication {
             val testIdent = "12345678910"
             val kafkastyrtDinOversikt = Pair("rm1", "https://cdn.test/rm1.json")
@@ -93,7 +96,7 @@ internal class ApiTest {
                 )
             )
 
-            client.get("/microfrontends").assert {
+            client.get("/$endpoint").assert {
                 status shouldBe HttpStatusCode.OK
                 bodyAsNullOrJsonNode(true).assert {
                     require(this != null)
@@ -132,8 +135,9 @@ internal class ApiTest {
 
         }
 
-    @Test
-    fun `Skal svare med liste over mikrofrontends,meldekort og manifest med for loa-high`() = testApplication {
+    @ParameterizedTest
+    @ValueSource(strings = ["din-oversikt","microfrontends"])
+    fun `Skal svare med liste over mikrofrontends,meldekort og manifest med for loa-high`(endpoint: String) = testApplication {
         val testIdent = "12345678910"
         val expectedMicrofrontends = mutableMapOf(
             "mk1" to "https://cdn.test/mk1.json",
@@ -169,7 +173,7 @@ internal class ApiTest {
 
         gcpStorage.updateManifest(expectedMicrofrontends)
 
-        client.get("/microfrontends").assert {
+        client.get("/$endpoint").assert {
             status shouldBe HttpStatusCode.OK
             bodyAsNullOrJsonNode(true).assert {
                 require(this != null)
@@ -189,8 +193,9 @@ internal class ApiTest {
         }
     }
 
-    @Test
-    fun `Skal svare med liste over mikrofrontends og produktkort med nivå 4`() = testApplication {
+    @ParameterizedTest
+    @ValueSource(strings = ["din-oversikt","microfrontends"])
+    fun `Skal svare med liste over mikrofrontends og produktkort med nivå 4`(endpoint: String) = testApplication {
         val testIdent = "12345678910"
         val expectedMicrofrontends = mutableMapOf(
             "mk1" to "https://cdn.test/mk1.json",
@@ -220,7 +225,7 @@ internal class ApiTest {
 
         gcpStorage.updateManifest(expectedMicrofrontends)
 
-        client.get("/microfrontends").assert {
+        client.get("/$endpoint").assert {
             status shouldBe HttpStatusCode.OK
             bodyAsNullOrJsonNode().assert {
                 require(this != null)
@@ -235,8 +240,9 @@ internal class ApiTest {
         }
     }
 
-    @Test
-    fun `Skal svare med liste over mikrofrontends og tom produktkortliste for ident med innloggingsnivå 3`() =
+    @ParameterizedTest
+    @ValueSource(strings = ["din-oversikt","microfrontends"])
+    fun `Skal svare med liste over mikrofrontends og tom produktkortliste for ident med innloggingsnivå 3`(endpoint : String) =
         testApplication {
             val testIdent = "12345678910"
             val nivå4Mikrofrontends = mutableMapOf(
@@ -265,7 +271,7 @@ internal class ApiTest {
                 }
             )
 
-            client.get("/microfrontends").assert {
+            client.get("/$endpoint").assert {
                 status shouldBe HttpStatusCode.OK
                 objectMapper.readTree(bodyAsText()).assert {
                     this["microfrontends"].toList().assert {
@@ -282,8 +288,9 @@ internal class ApiTest {
         }
 
 
-    @Test
-    fun `Skal svare med tom liste for personer som ikke har noen mikrofrontends eller produktkort`() =
+    @ParameterizedTest
+    @ValueSource(strings = ["din-oversikt","microfrontends"])
+    fun `Skal svare med tom liste for personer som ikke har noen mikrofrontends eller produktkort`(endpoint: String) =
         testApplication {
             val testident2 = "12345678912"
 
@@ -296,7 +303,7 @@ internal class ApiTest {
                 PdlRoute()
             )
 
-            client.get("/microfrontends").assert {
+            client.get("/$endpoint").assert {
                 status shouldBe HttpStatusCode.OK
                 objectMapper.readTree(bodyAsText()).assert {
                     this["microfrontends"].size() shouldBe 0
@@ -307,8 +314,9 @@ internal class ApiTest {
             }
         }
 
-    @Test
-    fun `Skal svare med multistatus når saf feiler`() =
+    @ParameterizedTest
+    @ValueSource(strings = ["din-oversikt","microfrontends"])
+    fun `Skal svare med multistatus når saf feiler`(endpoint: String) =
         testApplication {
             val testident2 = "12345678912"
 
@@ -324,7 +332,7 @@ internal class ApiTest {
 
             testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
 
-            client.get("/microfrontends").assert {
+            client.get("/$endpoint").assert {
                 status shouldBe HttpStatusCode.MultiStatus
                 objectMapper.readTree(bodyAsText()).assert {
                     this["microfrontends"].size() shouldBe 1
@@ -335,8 +343,9 @@ internal class ApiTest {
             }
         }
 
-    @Test
-    fun `Svarer med 207 når eksterne tjenester feiler`() =
+    @ParameterizedTest
+    @ValueSource(strings = ["din-oversikt","microfrontends"])
+    fun `Svarer med 207 når eksterne tjenester feiler`(endpoint: String) =
         testApplication {
             val testident2 = "12345678912"
 
@@ -353,7 +362,7 @@ internal class ApiTest {
 
             testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
 
-            client.get("/microfrontends").assert {
+            client.get("/$endpoint").assert {
                 status shouldBe HttpStatusCode.MultiStatus
                 objectMapper.readTree(bodyAsText()).assert {
                     this["microfrontends"].size() shouldBe 1
@@ -365,8 +374,9 @@ internal class ApiTest {
             }
         }
 
-    @Test
-    fun `Retunerer ikke pensjons microfrontend når kallet til PDL feiler`() =
+    @ParameterizedTest
+    @ValueSource(strings = ["din-oversikt","microfrontends"])
+    fun `Retunerer ikke pensjons microfrontend når kallet til PDL feiler`(endpoint: String) =
         testApplication {
             val testident2 = "12345678912"
 
@@ -386,7 +396,7 @@ internal class ApiTest {
 
             testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
 
-            client.get("/microfrontends").assert {
+            client.get("/$endpoint").assert {
                 status shouldBe HttpStatusCode.MultiStatus
                 objectMapper.readTree(bodyAsText()).assert {
                     this["aktuelt"].size() shouldBe 0
@@ -394,20 +404,22 @@ internal class ApiTest {
             }
         }
 
-    @Test
-    fun `Skal returnere 207 ved SocketTimeoutException`() =
+    @ParameterizedTest
+    @ValueSource(strings = ["din-oversikt","microfrontends"])
+    fun `Skal returnere 207 ved SocketTimeoutException`(endpoint: String) =
         testApplication {
             val testident2 = "12345678912"
 
             initSelectorApi(testident = testident2, httpClient = sockettimeoutClient)
 
-            client.get("/microfrontends").assert {
+            client.get("/$endpoint").assert {
                 status shouldBe HttpStatusCode.MultiStatus
             }
         }
 
-    @Test
-    fun `Skal returnere 503 når tokendings feiler`() =
+    @ParameterizedTest
+    @ValueSource(strings = ["din-oversikt","microfrontends"])
+    fun `Skal returnere 503 når tokendings feiler`(endpoint: String) =
         testApplication {
             val testident2 = "12345678912"
 
@@ -431,7 +443,7 @@ internal class ApiTest {
                 PdlRoute()
             )
 
-            client.get("/microfrontends").assert {
+            client.get("/$endpoint").assert {
                 status shouldBe HttpStatusCode.ServiceUnavailable
             }
         }
