@@ -78,19 +78,6 @@ internal fun Application.selectorApi(
 
     routing {
         authenticate {
-            route("microfrontends") {
-                get() {
-                    val user = TokenXUserFactory.createTokenXUser(call)
-                    val content = personalContentCollector.getContent(user, user.loginLevel)
-                    content.errors?.takeIf { it.isNotEmpty() }?.let {
-                        log.warn { it }
-                    }
-                    call.respond(
-                        status = content.resolveStatus(),
-                        content
-                    )
-                }
-            }
             route("din-oversikt") {
                 get() {
                     val user = TokenXUserFactory.createTokenXUser(call)
