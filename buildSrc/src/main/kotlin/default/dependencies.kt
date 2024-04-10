@@ -222,6 +222,15 @@ interface TmsCommonLibDefaults: DependencyGroup {
     val observability get() = dependency("observability")
     val utils get() = dependency("utils")
     val kubernetes get() = dependency("kubernetes")
+    val testutils get () = dependency("testutils")
+    
+}
+
+interface TmsKafkaToolsDefaults: DependencyGroup {
+    override val groupId get() = "no.nav.tms.kafka"
+    override val version get() = "1.0.0"
+
+    val kafkaApplication get() = dependency("kafka-application")
 }
 
 interface TmsKtorTokenSupportDefaults: DependencyGroup {
