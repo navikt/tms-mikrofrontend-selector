@@ -29,3 +29,4 @@ aktuelt:
     excludeIfSakstema:
       - PEN
     usersAgeOver: 40
+    eiesAv: "team pensjonskalkulator"
