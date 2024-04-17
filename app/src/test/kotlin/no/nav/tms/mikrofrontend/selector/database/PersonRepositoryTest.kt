@@ -12,7 +12,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotliquery.queryOf
-import nav.no.tms.common.testutils.assert
+import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages.disableV2Message
 import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages.enableV2Message
 import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages.v1Message
@@ -22,7 +22,6 @@ import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.SUBSTANTIAL
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance

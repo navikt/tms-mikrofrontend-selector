@@ -1,6 +1,5 @@
 package no.nav.tms.mikrofrontend.selector
 
-import nav.no.tms.common.testutils.assert
 
 import com.nfeld.jsonpathkt.extension.read
 import io.kotest.matchers.shouldBe
@@ -10,8 +9,9 @@ import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
-import nav.no.tms.common.testutils.GraphQlRouteProvider
-import nav.no.tms.common.testutils.RouteProvider
+import no.nav.tms.common.testutils.GraphQlRouteProvider
+import no.nav.tms.common.testutils.RouteProvider
+import no.nav.tms.common.testutils.assert
 import java.time.LocalDateTime
 
 

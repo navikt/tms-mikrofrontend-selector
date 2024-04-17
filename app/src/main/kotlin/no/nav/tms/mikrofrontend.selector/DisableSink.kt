@@ -1,8 +1,8 @@
 package no.nav.tms.mikrofrontend.selector
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import nav.no.tms.common.observability.traceMicrofrontend
 import no.nav.helse.rapids_rivers.*
+import no.nav.tms.common.observability.traceMicrofrontend
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.initiatedBy

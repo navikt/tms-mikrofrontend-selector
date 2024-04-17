@@ -7,11 +7,10 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.prometheus.client.CollectorRegistry
 import kotliquery.queryOf
-import nav.no.tms.common.testutils.assert
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
-
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet

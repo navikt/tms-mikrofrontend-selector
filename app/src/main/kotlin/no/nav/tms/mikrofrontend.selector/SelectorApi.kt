@@ -14,8 +14,8 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
-import nav.no.tms.common.metrics.installTmsApiMetrics
-import nav.no.tms.common.observability.ApiMdc
+import no.nav.tms.common.metrics.installTmsApiMetrics
+import no.nav.tms.common.observability.ApiMdc
 import no.nav.tms.mikrofrontend.selector.collector.ApiException
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
