@@ -4,7 +4,7 @@ import io.kotest.matchers.shouldBe
 import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
-import nav.no.tms.common.testutils.assert
+import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import org.junit.jupiter.api.Test

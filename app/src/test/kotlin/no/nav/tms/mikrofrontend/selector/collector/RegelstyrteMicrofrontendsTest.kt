@@ -1,7 +1,7 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import io.kotest.matchers.shouldBe
-import nav.no.tms.common.testutils.assert
+import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
 import no.nav.tms.mikrofrontend.selector.safTestDokument
 import org.junit.jupiter.api.Test

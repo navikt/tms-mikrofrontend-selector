@@ -3,7 +3,7 @@ package no.nav.tms.mikrofrontend.selector.collector.json
 import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import nav.no.tms.common.testutils.assert
+import no.nav.tms.common.testutils.assert
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 

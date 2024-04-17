@@ -16,8 +16,8 @@ import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
-import nav.no.tms.common.testutils.assert
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher

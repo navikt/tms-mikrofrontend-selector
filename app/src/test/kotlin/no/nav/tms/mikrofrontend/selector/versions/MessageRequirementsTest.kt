@@ -5,8 +5,8 @@ import io.kotest.assertions.withClue
 import io.mockk.every
 import io.mockk.mockkConstructor
 import io.mockk.verify
-import nav.no.tms.common.testutils.assert
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages
 import no.nav.tms.mikrofrontend.selector.currentVersionPacket
 import no.nav.tms.mikrofrontend.selector.ident
@@ -14,11 +14,8 @@ import no.nav.tms.mikrofrontend.selector.metrics.MessageVersionCounter
 import no.nav.tms.mikrofrontend.selector.microfrontendId
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import kotlin.reflect.KProperty1
 
 
 internal class MessageVersionsTest {
