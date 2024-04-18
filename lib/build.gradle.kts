@@ -1,17 +1,15 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm").version(Kotlin.version)
-    kotlin("plugin.allopen").version(Kotlin.version)
     `java-library`
     `maven-publish`
 }
 
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
-   // kotlin.jvm.target.validation.mode=
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
 
 repositories {
@@ -23,9 +21,8 @@ repositories {
 }
 
 dependencies {
-    implementation("com.fasterxml.jackson.core:jackson-core:2.15.2")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
-
+    implementation(JacksonExt.core)
+    implementation(JacksonExt.databind)
 
     testImplementation(Junit.api)
     testImplementation(Junit.engine)
@@ -63,6 +60,13 @@ publishing {
             artifactId = "builder"
             version = libraryVersion
             from(components["java"])
+
+            val sourcesJar by tasks.creating(Jar::class) {
+                archiveClassifier.set("sources")
+                from(sourceSets.main.get().allSource)
+            }
+
+            artifact(sourcesJar)
         }
     }
 }

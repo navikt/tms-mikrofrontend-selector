@@ -1,7 +1,3 @@
-object RapidsAndRiversClassCast: default.RapidsAndRiversDefaults {
-    override val version = "classcast-feil-SNAPSHOT"
-}
-
 object Flyway9: default.FlywayDefaults {
     override val version = "9.18.0"
 }
@@ -13,6 +9,9 @@ object GoogleCloud: default.DependencyGroup {
     val storage = dependency("google-cloud-storage")
 }
 
-object TmsCommonLibBeta: default.TmsCommonLibDefaults{
-    override val version get() = "3.2.0"
+object JacksonExt : default.JacksonDatatypeDefaults {
+    val core = dependency("jackson-core", groupId = "com.fasterxml.jackson.core")
+    val databind = dependency("jackson-databind", groupId = "com.fasterxml.jackson.core")
+    val dataformatYaml = dependency("jackson-dataformat-yaml", groupId = "com.fasterxml.jackson.dataformat")
+
 }
