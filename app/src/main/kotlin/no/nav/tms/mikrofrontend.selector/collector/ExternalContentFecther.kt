@@ -19,6 +19,7 @@ class ExternalContentFecther(
     val aiaBackendUrl: String,
     val meldekortUrl: String,
     val pdlUrl: String,
+    val pdlBehandlingsnummer: String,
     val tokenFetcher: TokenFetcher
 ) {
 
@@ -96,6 +97,7 @@ class ExternalContentFecther(
             url("$pdlUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.pdlToken(user)}")
             header("Content-Type", "application/json")
+            header("Behandlingsnummer", pdlBehandlingsnummer)
             setBody(HentAlder(user.ident))
         }
             .let { response ->

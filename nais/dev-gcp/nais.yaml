@@ -97,4 +97,5 @@ spec:
       value: "https://pdl-api.dev-fss-pub.nais.io"
     - name: PDL_API_CLIENT_ID
       value: "dev-fss:pdl:pdl-api"
-
+    - name: PDL_BEHANDLINGSNUMMER
+      value: "B769"
