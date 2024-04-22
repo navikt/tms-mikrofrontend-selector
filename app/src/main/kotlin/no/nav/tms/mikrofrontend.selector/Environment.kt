@@ -33,8 +33,9 @@ data class Environment(
     val meldekortUrl: String = getEnvVar("MELDEKORT_BASE_URL"),
     val meldekortClientId: String = getEnvVar("MELDEKORT_CLIENT_ID"),
     val pdlClientId: String = getEnvVar("PDL_API_CLIENT_ID"),
-    val pdlApiUrl: String = getEnvVar("PDL_API_URL")
-
+    val pdlApiUrl: String = getEnvVar("PDL_API_URL"),
+    val digisosClientId: String = getEnvVar("DIGISOS_CLIENT_ID"),
+    val digisosUrl: String = getEnvVar("DIGISOS_CLIENT_URL")
 ) {
     fun rapidConfig(): Map<String, String> = mapOf(
         "KAFKA_BROKERS" to aivenBrokers,
@@ -78,7 +79,7 @@ fun HttpClientConfig<*>.configureClient() {
             configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         }
     }
-    install(HttpTimeout){
+    install(HttpTimeout) {
         requestTimeoutMillis = 3000
     }
 

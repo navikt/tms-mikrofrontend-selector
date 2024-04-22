@@ -38,8 +38,11 @@ abstract class ResponseWithErrors(private val errors: String?) {
             )
 
 
-
-        fun <T: ResponseWithErrors> createWithError(constructor: KFunction<T>?, errorMessage: String, className: String): T =
+        fun <T : ResponseWithErrors> createWithError(
+            constructor: KFunction<T>?,
+            errorMessage: String,
+            className: String
+        ): T =
             constructor?.let {
                 val params = constructor.parameters
                 require(params.any { it.name == "errors" })
@@ -96,13 +99,14 @@ abstract class ResponseWithErrors(private val errors: String?) {
 
 
 class SafResponse(
-    safDokumenter: List<SafDokument>? = null,
+    dokumenter: List<Dokument>? = null,
     errors: List<String>? = null
 ) : ResponseWithErrors(errors?.joinToString(";")) {
-    val dokumenter = safDokumenter ?: emptyList()
+    val dokumenter = dokumenter ?: emptyList()
     override val source: String = "SAF"
-    class SafDokument(val sakstemakode: String, val sistEndret: LocalDateTime)
 }
+
+class Dokument(val sakstemakode: String, val sistEndret: LocalDateTime)
 
 class OppfolgingResponse(
     underOppfolging: Boolean? = false,
@@ -116,7 +120,6 @@ class MeldekortResponse(
     meldekortApiResponse: JsonPathInterpreter? = null,
     errors: String? = null,
 ) : ResponseWithErrors(errors) {
-    //TODO
     override val source = "meldekort"
     val harMeldekort: Boolean =
         when {
@@ -154,6 +157,16 @@ class PdlResponse(
         else -> 0
     }
 }
+
+class DigisosResponse(
+    dokumenter: List<Dokument>? = null,
+    errors: List<String>? = null,
+) : ResponseWithErrors(errors?.joinToString(";")) {
+    override val source = "digisos"
+    val dokumenter = dokumenter ?: emptyList()
+
+}
+
 
 fun errorDetails(exception: Exception) =
     exception.stackTrace.firstOrNull()?.let { stacktraceElement ->

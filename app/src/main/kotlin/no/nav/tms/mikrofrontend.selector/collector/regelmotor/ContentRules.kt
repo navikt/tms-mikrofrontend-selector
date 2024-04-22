@@ -3,7 +3,7 @@ package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.nfeld.jsonpathkt.extension.read
-import no.nav.tms.mikrofrontend.selector.collector.SafResponse.SafDokument
+import no.nav.tms.mikrofrontend.selector.collector.Dokument
 import java.time.LocalDateTime
 
 interface ContentResolver {
@@ -22,7 +22,7 @@ class ContentRulesDefinition(
     val weeksSinceLastDocument: WeeksSinceLastDocumentContentRule?
 ) {
 
-    fun createRules(safDokumenter: List<SafDokument>, alder: Int?) = mutableListOf<ContentResolver>().apply {
+    fun createRules(safDokumenter: List<Dokument>, alder: Int?) = mutableListOf<ContentResolver>().apply {
         includeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.sakstemakode })?.let { add(it) }
         exludeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.sakstemakode })?.let { add(it) }
         usersAgeOver?.resolverOrNull(alder)?.let { add(it) }
@@ -104,8 +104,8 @@ open class IncludeIfSakstemaContentRule(val includeList: List<String>) :
 class WeeksSinceLastDocumentContentRule(
     val sakstemakode: String,
     val periodInWeeks: Int,
-) : ContentRule<List<SafDokument>> {
-    override fun resolverOrNull(input: List<SafDokument>?): ContentResolver? =
+) : ContentRule<List<Dokument>> {
+    override fun resolverOrNull(input: List<Dokument>?): ContentResolver? =
         input?.let { safDokumenter ->
             object : ContentResolver {
                 override fun skalVises(): Boolean =

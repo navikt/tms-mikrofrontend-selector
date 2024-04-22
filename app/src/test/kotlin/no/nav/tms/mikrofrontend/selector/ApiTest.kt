@@ -484,6 +484,7 @@ internal class ApiTest {
             coEvery { safToken(any()) } returns "<saf>"
             coEvery { aiaToken(any()) } returns "<aia>"
             coEvery { pdlToken(any()) } returns "<pdl>"
+            coEvery { digisosToken(any()) } returns "<digisos>"
         }
     ) {
         val apiClient = httpClient ?: createClient { configureClient() }
@@ -499,7 +500,8 @@ internal class ApiTest {
                         aiaBackendUrl = testHost,
                         meldekortUrl = testHost,
                         pdlUrl = "$testHost/pdl",
-                        tokenFetcher = tokenFetcher
+                        digisosUrl = testHost,
+                        tokenFetcher = tokenFetcher,
                     ),
                     produktkortCounter = testproduktkortCounter
                 ),

@@ -3,8 +3,8 @@ package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import no.nav.tms.mikrofrontend.selector.collector.Dokument
 import no.nav.tms.mikrofrontend.selector.collector.MicrofrontendsDefinition
-import no.nav.tms.mikrofrontend.selector.collector.SafResponse.SafDokument
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentRulesDefinition.Companion.initContentRules
 
 object ContentDefinition {
@@ -26,7 +26,7 @@ object ContentDefinition {
 
     fun getAktueltContent(
         alder: Int,
-        safDokument: List<SafDokument>,
+        safDokument: List<Dokument>,
         manifestMap: Map<String, String>
     ): List<MicrofrontendsDefinition> =
         aktuelt.map {
@@ -35,7 +35,7 @@ object ContentDefinition {
             }
         }.filter { it.skalVises() }.mapNotNull { it.definition }
 
-    fun getProduktkort(safDokument: List<SafDokument>) = produktkort.map { definition ->
+    fun getProduktkort(safDokument: List<Dokument>) = produktkort.map { definition ->
         Produktkort(id = definition.id).apply {
             rules = definition.createRules(safDokumenter = safDokument, alder = null)
         }

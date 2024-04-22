@@ -10,6 +10,7 @@ import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
 import java.net.SocketTimeoutException
+import java.util.UUID
 import kotlin.reflect.full.primaryConstructor
 
 class ExternalContentFecther(
@@ -19,7 +20,8 @@ class ExternalContentFecther(
     val aiaBackendUrl: String,
     val meldekortUrl: String,
     val pdlUrl: String,
-    val tokenFetcher: TokenFetcher
+    val tokenFetcher: TokenFetcher,
+    val digisosUrl: String
 ) {
 
     val log = KotlinLogging.logger { }
@@ -56,7 +58,10 @@ class ExternalContentFecther(
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     SafResponse(
-                        safDokumenter = jsonResponse?.safDokument(),
+                        dokumenter = jsonResponse?.dokument(
+                            path = "\$.data.dokumentoversiktSelvbetjening.tema",
+                            datoPath = "\$.journalposter..relevanteDatoer..dato"
+                        ),
                         errors = jsonResponse?.getAll<String>("errors..message")
                     )
                 }
@@ -91,23 +96,23 @@ class ExternalContentFecther(
         map = { jsonPath -> MeldekortResponse(meldekortApiResponse = jsonPath) }
     )
 
-    suspend fun fetchDigisosSakstema(user: TokenXUser)={}
-
-    /*
-    *
-    *     private suspend fun hent(accessToken: String): HttpResponse = withContext(Dispatchers.IO) {
-        val callId = UUID.randomUUID()
-        log.info { "Gjør kall mot DígiSos med correlationId=$callId" }
-        httpClient.get {
-            url("$digiSosEndpoint/minesaker/innsendte")
-            method = HttpMethod.Get
-            header(callIdHeaderName, callId)
-            header(HttpHeaders.Authorization, "Bearer $accessToken")
-            contentType(ContentType.Application.Json)
+    suspend fun fetchDigisosSakstema(user: TokenXUser): DigisosResponse = getResponseAsJsonPath(
+        token = tokenFetcher.digisosToken(user),
+        url = "$digisosUrl/minesaker/innsendte",
+        tjeneste = "digisos",
+        requestOptions = {
             accept(ContentType.Application.Json)
+            header("Nav-Callid", UUID.randomUUID())
+        },
+        map = { jsonPath ->
+            DigisosResponse(
+                dokumenter = jsonPath.dokument(
+                    path = "$.[0]",
+                    datoPath = "\$.sistEndret"
+                )
+            )
         }
-    }
-    * */
+    )
 
     suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling("pdl", "$pdlUrl/graphql") {
         httpClient.post {
@@ -158,6 +163,7 @@ class ExternalContentFecther(
         token: String,
         url: String,
         tjeneste: String,
+        requestOptions: HttpRequestBuilder.() -> Unit = {},
         crossinline map: (JsonPathInterpreter) -> T
     ): T = try {
         httpClient.get {
@@ -165,6 +171,7 @@ class ExternalContentFecther(
             header("Authorization", "Bearer $token")
             header("Content-Type", "application/json")
             header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
+            requestOptions()
         }.let { response ->
             if (response.status != HttpStatusCode.OK)
                 ResponseWithErrors.createFromHttpError(response)

@@ -5,6 +5,7 @@ import com.nfeld.jsonpathkt.JsonPath
 import com.nfeld.jsonpathkt.extension.read
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.statement.*
+import no.nav.tms.mikrofrontend.selector.collector.Dokument
 import no.nav.tms.mikrofrontend.selector.collector.SafResponse.*
 import java.lang.NullPointerException
 import java.time.LocalDate
@@ -184,7 +185,7 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
 
     fun safDokument() =
         jsonNode.read<JsonNode>("\$.data.dokumentoversiktSelvbetjening.tema")?.map {
-            SafDokument(
+            Dokument(
                 sakstemakode = it.read<String>("$.kode") ?: throw JsonPathSearchException(
                     jsonPath = "\$.kode",
                     jsonNode = it,
@@ -200,4 +201,20 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
             )
         }
 
+    fun dokument(path: String, datoPath: String) = jsonNode.read<JsonNode>(path)?.map {
+        Dokument(
+            sakstemakode = it.read<String>("$.kode") ?: throw JsonPathSearchException(
+                jsonPath = "\$.kode",
+                jsonNode = it,
+                originalJson = jsonNode
+            ),
+            sistEndret = it.read<List<String>>(datoPath)
+                ?.let { json -> LocalDateTime.parse(json.first()) }
+                ?: throw JsonPathSearchException(
+                    jsonPath =datoPath,
+                    jsonNode = it,
+                    originalJson = jsonNode
+                )
+        )
+    }
 }
