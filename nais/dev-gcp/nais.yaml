@@ -97,9 +97,10 @@ spec:
     - name: PDL_API_URL
       value: "https://pdl-api.dev-fss-pub.nais.io"
     - name: PDL_API_CLIENT_ID
-      value: "dev-fss:pdl:pdl-api"
+      value: "dev-fss:pdl:pdl-api"<<<<<<< HEAD
     - name: DIGISOS_API_URL
       value: https://sosialhjelp-soknad-api.dev-fss-pub.nais.io/sosialhjelp/soknad-api
     - name: DIGISOS_CLIENT_ID
       value: dev-fss:teamdigisos:sosialhjelp-soknad-api
-
+    - name: PDL_BEHANDLINGSNUMMER
+      value: "B769"

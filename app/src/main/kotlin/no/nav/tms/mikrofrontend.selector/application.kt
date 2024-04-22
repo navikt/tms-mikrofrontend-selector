@@ -31,6 +31,7 @@ fun main() {
         meldekortUrl = environment.meldekortUrl,
         pdlUrl = environment.pdlApiUrl,
         digisosUrl = environment.digisosUrl,
+        pdlBehandlingsnummer = environment.pdlBehandlingsnummer,
         tokenFetcher = TokenFetcher(
             tokendingsService = TokendingsServiceBuilder.buildTokendingsService(),
             meldekortClientId = environment.meldekortClientId,

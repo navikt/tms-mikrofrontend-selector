@@ -490,7 +490,7 @@ internal class ApiTest {
         val apiClient = httpClient ?: createClient { configureClient() }
         application {
             selectorApi(
-                PersonalContentCollector(
+                personalContentCollector = PersonalContentCollector(
                     repository = personRepository,
                     manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
                     externalContentFecther = ExternalContentFecther(
@@ -501,7 +501,8 @@ internal class ApiTest {
                         meldekortUrl = testHost,
                         pdlUrl = "$testHost/pdl",
                         digisosUrl = testHost,
-                        tokenFetcher = tokenFetcher,
+                        pdlBehandlingsnummer = "B000",
+                        tokenFetcher = tokenFetcher
                     ),
                     produktkortCounter = testproduktkortCounter
                 ),

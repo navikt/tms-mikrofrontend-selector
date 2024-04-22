@@ -35,7 +35,8 @@ data class Environment(
     val pdlClientId: String = getEnvVar("PDL_API_CLIENT_ID"),
     val pdlApiUrl: String = getEnvVar("PDL_API_URL"),
     val digisosClientId: String = getEnvVar("DIGISOS_CLIENT_ID"),
-    val digisosUrl: String = getEnvVar("DIGISOS_CLIENT_URL")
+    val digisosUrl: String = getEnvVar("DIGISOS_CLIENT_URL"),
+    val pdlBehandlingsnummer: String = getEnvVar("PDL_BEHANDLINGSNUMMER"),
 ) {
     fun rapidConfig(): Map<String, String> = mapOf(
         "KAFKA_BROKERS" to aivenBrokers,
