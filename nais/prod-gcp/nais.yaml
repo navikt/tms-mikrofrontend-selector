@@ -44,6 +44,7 @@ spec:
           namespace: paw
           cluster: prod-gcp
       external:
+        - host: "sosialhjelp-soknad-api.prod-fss-pub.nais.io"
         - host: "safselvbetjening.prod-fss-pub.nais.io"
   gcp:
     sqlInstances:
@@ -98,3 +99,7 @@ spec:
       value: "prod-fss:pdl:pdl-api"
     - name: PDL_BEHANDLINGSNUMMER
       value: "B328"
+    - name: DIGISOS_API_URL
+      value: https://sosialhjelp-soknad-api.prod-fss-pub.nais.io/sosialhjelp/soknad-api
+    - name: DIGISOS_CLIENT_ID
+      value: prod-fss:teamdigisos:sosialhjelp-soknad-api
