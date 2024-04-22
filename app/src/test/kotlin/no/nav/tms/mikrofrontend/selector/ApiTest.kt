@@ -463,6 +463,7 @@ internal class ApiTest {
                         aiaBackendUrl = testHost,
                         meldekortUrl = testHost,
                         pdlUrl = "$testHost/pdl",
+                        pdlBehandlingsnummer = "B000",
                         tokenFetcher = tokenFetcher
                     ),
                     produktkortCounter = testproduktkortCounter

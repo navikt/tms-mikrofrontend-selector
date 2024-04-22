@@ -30,6 +30,7 @@ fun main() {
         meldekortUrl = environment.meldekortUrl,
         safUrl = environment.safUrl,
         pdlUrl = environment.pdlApiUrl,
+        pdlBehandlingsnummer = environment.pdlBehandlingsnummer,
         tokenFetcher = TokenFetcher(
             tokendingsService = TokendingsServiceBuilder.buildTokendingsService(),
             meldekortClientId = environment.meldekortClientId,

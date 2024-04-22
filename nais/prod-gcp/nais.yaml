@@ -97,4 +97,4 @@ spec:
     - name: PDL_API_CLIENT_ID
       value: "prod-fss:pdl:pdl-api"
     - name: PDL_BEHANDLINGSNUMMER
-      value: "B328"
+      value: "B769"

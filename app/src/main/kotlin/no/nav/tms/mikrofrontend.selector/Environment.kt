@@ -33,7 +33,8 @@ data class Environment(
     val meldekortUrl: String = getEnvVar("MELDEKORT_BASE_URL"),
     val meldekortClientId: String = getEnvVar("MELDEKORT_CLIENT_ID"),
     val pdlClientId: String = getEnvVar("PDL_API_CLIENT_ID"),
-    val pdlApiUrl: String = getEnvVar("PDL_API_URL")
+    val pdlApiUrl: String = getEnvVar("PDL_API_URL"),
+    val pdlBehandlingsnummer: String = getEnvVar("PDL_BEHANDLINGSNUMMER"),
 
 ) {
     fun rapidConfig(): Map<String, String> = mapOf(
