@@ -91,6 +91,24 @@ class ExternalContentFecther(
         map = { jsonPath -> MeldekortResponse(meldekortApiResponse = jsonPath) }
     )
 
+    suspend fun fetchDigisosSakstema(user: TokenXUser)={}
+
+    /*
+    *
+    *     private suspend fun hent(accessToken: String): HttpResponse = withContext(Dispatchers.IO) {
+        val callId = UUID.randomUUID()
+        log.info { "Gjør kall mot DígiSos med correlationId=$callId" }
+        httpClient.get {
+            url("$digiSosEndpoint/minesaker/innsendte")
+            method = HttpMethod.Get
+            header(callIdHeaderName, callId)
+            header(HttpHeaders.Authorization, "Bearer $accessToken")
+            contentType(ContentType.Application.Json)
+            accept(ContentType.Application.Json)
+        }
+    }
+    * */
+
     suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling("pdl", "$pdlUrl/graphql") {
         httpClient.post {
             url("$pdlUrl/graphql")

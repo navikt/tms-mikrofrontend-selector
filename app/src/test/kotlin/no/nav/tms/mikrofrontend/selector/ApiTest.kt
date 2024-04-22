@@ -74,7 +74,8 @@ internal class ApiTest {
                 MeldekortRoute(harMeldekort = true),
                 OppfolgingRoute(false),
                 ArbeidsøkerRoute(),
-                PdlRoute(fødselssår = 1960)
+                PdlRoute(fødselssår = 1960),
+                DigisosRoute()
             )
 
             gcpStorage.updateManifest(mutableMapOf(kafkastyrtDinOversikt, kafkastyrtDinOversikt2))
@@ -148,7 +149,8 @@ internal class ApiTest {
             MeldekortRoute(harMeldekort = true),
             OppfolgingRoute(false),
             ArbeidsøkerRoute(),
-            PdlRoute(fødselsdato = "2004-05-05", 2004)
+            PdlRoute(fødselsdato = "2004-05-05", 2004),
+            DigisosRoute(),
         )
 
         expectedMicrofrontends.keys.forEach {
@@ -206,7 +208,8 @@ internal class ApiTest {
             MeldekortRoute(),
             OppfolgingRoute(false),
             ArbeidsøkerRoute(),
-            PdlRoute()
+            PdlRoute(),
+            DigisosRoute(),
         )
 
         expectedMicrofrontends.keys.forEach {
@@ -252,7 +255,8 @@ internal class ApiTest {
                 MeldekortRoute(),
                 OppfolgingRoute(),
                 ArbeidsøkerRoute(),
-                PdlRoute()
+                PdlRoute(),
+                DigisosRoute(),
             )
 
             nivå4Mikrofrontends.keys.forEach {
@@ -294,7 +298,8 @@ internal class ApiTest {
                 MeldekortRoute(),
                 OppfolgingRoute(false),
                 ArbeidsøkerRoute(),
-                PdlRoute()
+                PdlRoute(),
+                DigisosRoute(),
             )
 
             client.get("/din-oversikt").assert {
@@ -318,7 +323,8 @@ internal class ApiTest {
                 SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999", ident = testident2),
                 MeldekortRoute(),
                 OppfolgingRoute(false),
-                ArbeidsøkerRoute()
+                ArbeidsøkerRoute(),
+                DigisosRoute(),
             )
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
@@ -347,7 +353,8 @@ internal class ApiTest {
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 OppfolgingRoute(false, ovverideContent = ""),
                 PdlRoute("2000-05-05", 2000),
-                ArbeidsøkerRoute(ovverideContent = "{}")
+                ArbeidsøkerRoute(ovverideContent = "{}"),
+                DigisosRoute(),
             )
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
@@ -380,7 +387,8 @@ internal class ApiTest {
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 OppfolgingRoute(false, ovverideContent = ""),
                 PdlRoute(errorMsg = "Kall til PDL feilet"),
-                ArbeidsøkerRoute(ovverideContent = "{}")
+                ArbeidsøkerRoute(ovverideContent = "{}"),
+                DigisosRoute(),
             )
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
@@ -429,13 +437,41 @@ internal class ApiTest {
                 MeldekortRoute(),
                 OppfolgingRoute(false),
                 ArbeidsøkerRoute(),
-                PdlRoute()
+                PdlRoute(),
+                DigisosRoute(),
             )
 
             client.get("/din-oversikt").assert {
                 status shouldBe HttpStatusCode.ServiceUnavailable
             }
         }
+
+    @Test
+    fun `Retunere sosialhjelp produktkort`() = testApplication {
+
+        initSelectorApi(testident = "12345678910")
+        initExternalServices(
+            SafRoute(),
+            MeldekortRoute(),
+            OppfolgingRoute(false),
+            ArbeidsøkerRoute(),
+            PdlRoute(),
+            DigisosRoute(true)
+        )
+
+
+        client.get("/din-oversikt").assert {
+            status shouldBe HttpStatusCode.OK
+            objectMapper.readTree(bodyAsText()).assert {
+                this["microfrontends"].size() shouldBe 0
+                this["produktkort"].toList().assert {
+                    size shouldBe 1
+                    first().asText() shouldBe "KOM"
+                }
+            }
+
+        }
+    }
 
 
     fun ApplicationTestBuilder.initSelectorApi(
