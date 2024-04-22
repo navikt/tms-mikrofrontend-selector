@@ -58,10 +58,7 @@ class ExternalContentFecther(
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     SafResponse(
-                        dokumenter = jsonResponse?.dokument(
-                            path = "\$.data.dokumentoversiktSelvbetjening.tema",
-                            datoPath = "\$.journalposter..relevanteDatoer..dato"
-                        ),
+                        dokumenter = jsonResponse?.safDokument(),
                         errors = jsonResponse?.getAll<String>("errors..message")
                     )
                 }
@@ -106,10 +103,7 @@ class ExternalContentFecther(
         },
         map = { jsonPath ->
             DigisosResponse(
-                dokumenter = jsonPath.dokument(
-                    path = "$.[0]",
-                    datoPath = "\$.sistEndret"
-                )
+                dokumenter = jsonPath.digisosDokument()
             )
         }
     )

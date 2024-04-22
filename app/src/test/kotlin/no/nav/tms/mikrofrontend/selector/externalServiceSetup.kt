@@ -118,7 +118,7 @@ class DigisosRoute(private val hasSosialhjelp: Boolean = false) :
                 {
                  "navn":"Økonomisk sosialhjelp",
                  "kode":"KOM",
-                 "sistEndret": ${LocalDateTime.now().minusWeeks(1)}
+                 "sistEndret": "${LocalDateTime.now().minusWeeks(1)}"
                 }
             ]
         """.trimMargin()
