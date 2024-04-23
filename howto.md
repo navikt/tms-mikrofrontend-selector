@@ -83,10 +83,10 @@ på `idporten-loa-high` vil bruker få beskjed om dette og link til en "stepup"
 login. Se også [NAIS docs](https://docs.nais.io/security/auth/idporten/#security-levels) for mer info om acr-verdiene
 
 ## Plassering
-Mikrofrontender fra team plaseres enten under seksjonen "Din oversikt", på toppen under varslene, eller nederst under "Kanskje akutelt for deg"
+Mikrofrontender fra team plaseres enten under seksjonen "Din oversikt", på toppen under varslene, eller nederst under "Kanskje aktuelt for deg"
 ### Din oversikt
 I din oversikt skal bruker få spesifikk informasjon knyttet til hens forhold til NAV. Din oversikt støtter for øyeblikket kun kafkabaserte mikrofrontends.
 #### Produktkort
 Produktkort er strengt talt ikke mikrofrontender, men regelbaserte lenker som peker til innloggede produktsider for ett område. Vi anbefaler heller å bruke kafka, siden dette er mer treffsikkert i forhold til brukers situasjon, men hvis kafka ikke er en mulighet kan dette være ett alternativ. 
-### Kanskje akutelt for deg
-Under kanskje akutelt for deg skal bruker få forslag til annet innhold som kan være relevant for hen, for eksempel andre stønader eller støttetjenester en bruker kan ha rett på gitt at hen har en spesifikk ytelse. Foreløbig er det kun regelbaserte mikrofrontender som vises i den her seksjonen.
+### Kanskje aktuelt for deg
+Under kanskje aktuelt for deg skal bruker få forslag til annet innhold som kan være relevant for hen, for eksempel andre stønader eller støttetjenester en bruker kan ha rett på gitt at hen har en spesifikk ytelse. Foreløbig er det kun regelbaserte mikrofrontender som vises i den her seksjonen.
