@@ -4,7 +4,7 @@ Personalisering med microfrontends.
 
 Microfrontendene brukt på min side kommer i form av små bokser med forskjellig funksjonalitet og innhold teamene ønsker å presentere til en spesifikk gruppe brukere. Det overordnede konseptet er at bruker skal finne igjen mye av sitt mest relevante innhold og av innganger gruppert og løftet på min side.
 
-Vår microfrontendrigg består av tre deler. Mikrofrontenden som lastes opp til frontend-plattform sin CDN, min side som viser microfrontendene, og Kafka-backenden for å aktivere og deaktivere mikrofrontends for spesifikke brukere. Om Kafka ikke er et alternativ for ditt team, finnes det ett regelbasert alternativ som bruker informasjon fra SAF og/eller PDL til å avgjøre hvorvidt en mikrofrontend skal vises, ta kontakt med team min side for mer info.
+Vår microfrontendrigg består av tre deler. Mikrofrontenden som lastes opp til frontend-plattform sin CDN, min side som viser microfrontendene, og Kafka-backenden for å aktivere og deaktivere mikrofrontends for spesifikke brukere. Om Kafka ikke er et alternativ for ditt team, finnes det ett regelbasert alternativ som bruker informasjon fra SAF og/eller PDL til å avgjøre hvorvidt en mikrofrontend skal vises. Her er det mulig for ditt team å legge inn forslag til ønsket regel, ta kontakt med team min side for mer info.
 Selve mikrofrontenden blir bygget til ESM, lastet opp til CDN og hentes deretter inn som en remote ES-Modul.
 
 ## Sett opp microfrontend
