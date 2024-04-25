@@ -5,7 +5,7 @@ import com.nfeld.jsonpathkt.JsonPath
 import com.nfeld.jsonpathkt.extension.read
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.statement.*
-import no.nav.tms.mikrofrontend.selector.collector.SafResponse.*
+import no.nav.tms.mikrofrontend.selector.collector.Dokument
 import java.lang.NullPointerException
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -20,7 +20,6 @@ import java.time.LocalDateTime
  */
 class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugLog: Boolean = false) {
     val log = KotlinLogging.logger { }
-    private val keysInJsonNode = mutableSetOf<String>().apply { getAllKeys(jsonNode, this) }
     private fun getAllKeys(jsonNode: JsonNode, keys: MutableSet<String>) {
         when {
             jsonNode.isObject -> {
@@ -182,22 +181,43 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
             initPathInterpreter(bodyAsText(), debugLog)
     }
 
-    fun safDokument() =
-        jsonNode.read<JsonNode>("\$.data.dokumentoversiktSelvbetjening.tema")?.map {
-            SafDokument(
-                sakstemakode = it.read<String>("$.kode") ?: throw JsonPathSearchException(
-                    jsonPath = "\$.kode",
+    fun safDokument() = jsonNode.read<JsonNode>("\$.data.dokumentoversiktSelvbetjening.tema")?.map {
+        val datoPath = "\$.journalposter..relevanteDatoer..dato"
+        val kodePath = "\$.kode"
+
+        Dokument(
+            sakstemakode = it.read<String>(kodePath) ?: throw JsonPathSearchException(
+                jsonPath = kodePath,
+                jsonNode = it,
+                originalJson = jsonNode
+            ),
+            sistEndret = it.read<List<String>>(datoPath)
+                ?.let { json -> LocalDateTime.parse(json.first()) }
+                ?: throw JsonPathSearchException(
+                    jsonPath =datoPath,
                     jsonNode = it,
                     originalJson = jsonNode
-                ),
-                sistEndret = it.read<List<String>>("\$.journalposter..relevanteDatoer..dato")
-                    ?.let { json -> LocalDateTime.parse(json.first()) }
-                    ?: throw JsonPathSearchException(
-                        jsonPath = "\$.journalposter.relevanteDatoer.dato",
-                        jsonNode = it,
-                        originalJson = jsonNode
-                    )
-            )
-        }
+                )
+        )
+    }
 
+    fun digisosDokument() = jsonNode.read<JsonNode>("$")?.map {
+        val kodePath = "$.kode"
+        val datoPath = "$.sistEndret"
+
+        Dokument(
+            sakstemakode = it.read<String>(kodePath) ?: throw JsonPathSearchException(
+                jsonPath = kodePath,
+                jsonNode = it,
+                originalJson = jsonNode
+            ),
+            sistEndret = it.read<String>(datoPath)
+                ?.let { json -> LocalDateTime.parse(json) }
+                ?: throw JsonPathSearchException(
+                    jsonPath =datoPath,
+                    jsonNode = it,
+                    originalJson = jsonNode
+                )
+        )
+    }
 }

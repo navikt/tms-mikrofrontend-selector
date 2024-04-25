@@ -24,12 +24,13 @@ fun main() {
     )
 
     val externalContentFecther = ExternalContentFecther(
+        safUrl = environment.safUrl,
         httpClient = HttpClient { configureClient() },
         oppfølgingBaseUrl = environment.oppfolgingUrl,
         aiaBackendUrl = environment.aiaUrl,
         meldekortUrl = environment.meldekortUrl,
-        safUrl = environment.safUrl,
         pdlUrl = environment.pdlApiUrl,
+        digisosUrl = environment.digisosUrl,
         pdlBehandlingsnummer = environment.pdlBehandlingsnummer,
         tokenFetcher = TokenFetcher(
             tokendingsService = TokendingsServiceBuilder.buildTokendingsService(),
@@ -37,8 +38,9 @@ fun main() {
             oppfølgingClientId = environment.oppfolgingClienId,
             safClientId = environment.safClientId,
             aiaClientId = environment.aiaClientId,
-            pdlClientId = environment.pdlClientId
-        )
+            pdlClientId = environment.pdlClientId,
+            digisosClientId = environment.digisosClientId,
+        ),
     )
 
     startRapid(

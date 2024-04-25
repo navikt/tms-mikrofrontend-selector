@@ -45,6 +45,7 @@ spec:
           cluster: dev-gcp
       external:
         - host: "safselvbetjening-q1.dev-fss-pub.nais.io"
+        - host: "sosialhjelp-soknad-api.dev-fss-pub.nais.io"
   gcp:
     sqlInstances:
       - name: microfrontend
@@ -97,5 +98,9 @@ spec:
       value: "https://pdl-api.dev-fss-pub.nais.io"
     - name: PDL_API_CLIENT_ID
       value: "dev-fss:pdl:pdl-api"
+    - name: DIGISOS_API_URL
+      value: https://sosialhjelp-soknad-api.dev-fss-pub.nais.io/sosialhjelp/soknad-api
+    - name: DIGISOS_CLIENT_ID
+      value: dev-fss:teamdigisos:sosialhjelp-soknad-api
     - name: PDL_BEHANDLINGSNUMMER
       value: "B769"

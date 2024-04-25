@@ -111,6 +111,22 @@ class ArbeidsøkerRoute(
     """.trimIndent()
 }
 
+class DigisosRoute(private val hasSosialhjelp: Boolean = false) :
+    RouteProvider(path = "minesaker/innsendte", routeMethodFunction = Routing::get) {
+    override fun content(): String = if (hasSosialhjelp) {
+        """ [
+                {
+                 "navn":"Økonomisk sosialhjelp",
+                 "kode":"KOM",
+                 "sistEndret": "${LocalDateTime.now().minusWeeks(1)}"
+                }
+            ]
+        """.trimMargin()
+    } else "[]"
+
+
+}
+
 class PdlRoute(
     fødselsdato: String = "1978-05-05",
     fødselssår: Int = 1978,

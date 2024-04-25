@@ -2,8 +2,8 @@ package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 
 import io.kotest.matchers.shouldBe
 import no.nav.tms.common.testutils.assert
+import no.nav.tms.mikrofrontend.selector.collector.Dokument
 
-import no.nav.tms.mikrofrontend.selector.collector.SafResponse.SafDokument
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -14,7 +14,7 @@ class ProduktkortTest {
     fun `avgjør om ett produktkort skal vises eller ikke`() {
 
         ContentDefinition.getProduktkort(listOf(
-            SafDokument(
+            Dokument(
                 sakstemakode = "PEN",
                 sistEndret = LocalDateTime.now()
             )
@@ -27,7 +27,7 @@ class ProduktkortTest {
             }
 
         ContentDefinition.getProduktkort(listOf(
-            SafDokument(
+            Dokument(
                 sakstemakode = "DAG",
                 sistEndret = LocalDateTime.now()
             )
@@ -53,7 +53,7 @@ class ProduktkortTest {
     )
     fun `skal mappes til riktige koder og navn`(kode: String, forventetKode: String) {
         ContentDefinition.getProduktkort(
-            listOf(SafDokument(kode, LocalDateTime.now()))
+            listOf(Dokument(kode, LocalDateTime.now()))
         ).first().assert {
             id shouldBe forventetKode
         }
@@ -61,7 +61,7 @@ class ProduktkortTest {
     @Test
     fun `skal ikke legge til produktkort for ukjente verdier`() {
         ContentDefinition.getProduktkort(
-            listOf(SafDokument("ABC", LocalDateTime.now()))
+            listOf(Dokument("ABC", LocalDateTime.now()))
         ).size shouldBe 0
     }
 }

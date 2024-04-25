@@ -33,7 +33,8 @@ class PersonalContentFactoryTest {
     @Test
     fun `skal ha microfrontends og produktkort innlogingsnivå 4`() {
         testFactory(
-            safResponse = SafResponse(listOf(SafResponse.SafDokument("DAG", LocalDateTime.now())), emptyList())
+            safResponse = SafResponse(listOf(Dokument("DAG", LocalDateTime.now()))),
+            digisosResponse = DigisosResponse(listOf(Dokument(sakstemakode = "KOM", LocalDateTime.now())))
         ).build(
             microfrontends = microfrontendMocck(level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5),
             innloggetnivå = 4,
@@ -41,7 +42,7 @@ class PersonalContentFactoryTest {
         ).assert {
             oppfolgingContent shouldBe false
             offerStepup shouldBe false
-            produktkort shouldBe listOf("DAG")
+            produktkort shouldBe listOf("DAG", "KOM")
             aiaStandard shouldBe false
             brukNyAia shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.OK
@@ -128,7 +129,7 @@ class PersonalContentFactoryTest {
         testFactory(
             arbeidsøkerResponse = ArbeidsøkerResponse(erArbeidssoker = true, erStandard = true, brukNyAia = true),
                 safResponse = SafResponse(
-            safDokumenter = listOf(SafResponse.SafDokument("DAG", LocalDateTime.now())),
+            dokumenter = listOf(Dokument("DAG", LocalDateTime.now())),
             errors = emptyList()
         ),
         meldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
@@ -157,7 +158,7 @@ class PersonalContentFactoryTest {
         //er både aia og oppfolging og meldekort nivå 4? Hva med produktkort?
         testFactory(
             safResponse = SafResponse(
-                listOf(SafResponse.SafDokument("DAG", LocalDateTime.now())),
+                listOf(Dokument("DAG", LocalDateTime.now())),
                 emptyList()
             )
         ).build(
@@ -189,13 +190,16 @@ private fun testFactory(
     safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
     meldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{meldekort:0}")),
     oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false),
-    pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"), 1988)) =
+    pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"), 1988),
+    digisosResponse: DigisosResponse = DigisosResponse()
+) =
     PersonalContentFactory(
         arbeidsøkerResponse = arbeidsøkerResponse,
         safResponse = safResponse,
         meldekortResponse = meldekortResponse,
         oppfolgingResponse = oppfolgingResponse,
-        pdlResponse = pdlResponse
+        pdlResponse = pdlResponse,
+        digisosResponse = digisosResponse
     )
 
 private fun microfrontendMocck(

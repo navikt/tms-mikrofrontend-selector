@@ -34,12 +34,15 @@ class PersonalContentCollector(
             val oppfolgingResponse = async { externalContentFecther.fetchOppfolging(user) }
             val meldekortResponse = async { externalContentFecther.fetchMeldekort(user) }
             val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
+            val digisosResponse = async { externalContentFecther.fetchDigisosSakstema(user) }
+
             return@coroutineScope PersonalContentFactory(
                 arbeidsøkerResponse = arbeidsøkerResponse.await(),
                 safResponse = safResponse.await(),
                 meldekortResponse = meldekortResponse.await(),
                 oppfolgingResponse = oppfolgingResponse.await(),
-                pdlResponse = pdlResponse.await()
+                pdlResponse = pdlResponse.await(),
+                digisosResponse = digisosResponse.await()
             )
         }
     }
@@ -50,7 +53,8 @@ class PersonalContentFactory(
     val safResponse: SafResponse,
     val meldekortResponse: MeldekortResponse,
     val oppfolgingResponse: OppfolgingResponse,
-    val pdlResponse: PdlResponse
+    val pdlResponse: PdlResponse,
+    val digisosResponse: DigisosResponse
 ) {
     fun build(
         microfrontends: Microfrontends?,
@@ -60,7 +64,7 @@ class PersonalContentFactory(
         PersonalContentResponse(
             microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestMap) ?: emptyList(),
             produktkort = ContentDefinition.getProduktkort(
-                safResponse.dokumenter
+                digisosResponse.dokumenter + safResponse.dokumenter
             ).filter { it.skalVises() }.map { it.id },
 
             offerStepup = microfrontends?.offerStepup(innloggetnivå) ?: false,

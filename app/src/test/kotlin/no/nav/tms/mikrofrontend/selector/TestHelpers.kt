@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.tms.mikrofrontend.selector.collector.Dokument
 import no.nav.tms.mikrofrontend.selector.collector.SafResponse
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions
@@ -125,4 +126,4 @@ private fun MessageRequirements.addRequiredAndInterestedIn(jsonMessage: JsonMess
 }
 
 val testproduktkortCounter = ProduktkortCounter()
-fun String.safTestDokument(sistEndret: LocalDateTime = LocalDateTime.now()) = SafResponse.SafDokument(this, sistEndret)
+fun String.safTestDokument(sistEndret: LocalDateTime = LocalDateTime.now()) = Dokument(this, sistEndret)
