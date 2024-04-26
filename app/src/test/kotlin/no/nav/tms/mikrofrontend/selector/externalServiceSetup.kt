@@ -86,7 +86,6 @@ class MeldekortRoute(private val harMeldekort: Boolean = false, httpStatusCode: 
 
 class OppfolgingRoute(private val underOppfølging: Boolean = false, val ovverideContent: String? = null) :
     RouteProvider(path = "api/niva3/underoppfolging", routeMethodFunction = Routing::get) {
-    //TODO: sjekk route i proxy
     override fun content(): String = ovverideContent ?: """
         {
           "underOppfolging": $underOppfølging

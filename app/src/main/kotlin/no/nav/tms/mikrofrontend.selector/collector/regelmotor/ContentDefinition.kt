@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import no.nav.tms.mikrofrontend.selector.collector.Dokument
 import no.nav.tms.mikrofrontend.selector.collector.MicrofrontendsDefinition
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentRulesDefinition.Companion.initContentRules
+import no.nav.tms.mikrofrontend.selector.collector.regelmotor.Section.Companion.getSection
 
 object ContentDefinition {
     private fun yamlObjectMapper() =
@@ -23,6 +24,8 @@ object ContentDefinition {
     private val produktkort = contentYaml.initContentRules("produktkort", true)
 
     private val aktuelt = contentYaml.initContentRules("aktuelt", false)
+
+    val arbeidsøkerSection = contentYaml.getSection("arbeidsoker")
 
     fun getAktueltContent(
         alder: Int,

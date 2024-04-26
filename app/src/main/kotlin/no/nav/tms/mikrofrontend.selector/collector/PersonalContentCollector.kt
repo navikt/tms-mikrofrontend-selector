@@ -6,6 +6,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
+import no.nav.tms.mikrofrontend.selector.collector.regelmotor.Section
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
@@ -18,6 +19,7 @@ class PersonalContentCollector(
     val externalContentFecther: ExternalContentFecther,
     val produktkortCounter: ProduktkortCounter
 ) {
+
     suspend fun getContent(user: TokenXUser, innloggetnivå: Int): PersonalContentResponse {
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
         return asyncCollector(user).build(microfrontends, innloggetnivå, manifestStorage.getManifestBucketContent())
@@ -60,16 +62,19 @@ class PersonalContentFactory(
         microfrontends: Microfrontends?,
         innloggetnivå: Int,
         manifestMap: Map<String, String>,
-    ): PersonalContentResponse =
-        PersonalContentResponse(
+    ): PersonalContentResponse {
+        val arbeidsøkerSection = ContentDefinition.arbeidsøkerSection.getMicrofrontendsForSection(microfrontends)
+
+        return PersonalContentResponse(
             microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestMap) ?: emptyList(),
             produktkort = ContentDefinition.getProduktkort(
                 digisosResponse.dokumenter + safResponse.dokumenter
             ).filter { it.skalVises() }.map { it.id },
 
             offerStepup = microfrontends?.offerStepup(innloggetnivå) ?: false,
-            aiaStandard = arbeidsøkerResponse.isStandardInnsats(),
-            brukNyAia = arbeidsøkerResponse.brukNyAia == true,
+            aiaStandard = arbeidsøkerResponse.isStandardInnsats() && arbeidsøkerSection.isEmpty(),
+            // || arbeidsøkerResponse.brukNyAia?:false skal fjernes når ny-aia er over på kafka
+            brukNyAia = arbeidsøkerSection.isNotEmpty() || arbeidsøkerResponse.brukNyAia?:false,
             oppfolgingContent = oppfolgingResponse.underOppfolging,
             meldekort = meldekortResponse.harMeldekort,
             aktuelt = ContentDefinition.getAktueltContent(
@@ -87,6 +92,7 @@ class PersonalContentFactory(
                 pdlResponse
             ).mapNotNull { it.errorMessage() }.joinToString()
         }
+    }
 }
 
 class PersonalContentResponse(
