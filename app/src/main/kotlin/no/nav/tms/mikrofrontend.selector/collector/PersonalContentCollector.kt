@@ -6,7 +6,6 @@ import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
-import no.nav.tms.mikrofrontend.selector.collector.regelmotor.Section
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
@@ -63,7 +62,8 @@ class PersonalContentFactory(
         innloggetnivå: Int,
         manifestMap: Map<String, String>,
     ): PersonalContentResponse {
-        val arbeidsøkerSection = ContentDefinition.arbeidsøkerSection.getMicrofrontendsForSection(microfrontends)
+        val useNewAia = ContentDefinition.arbeidsøkerSection.getMicrofrontendsForSection(microfrontends)
+            .isNotEmpty() || arbeidsøkerResponse.brukNyAia ?: false
 
         return PersonalContentResponse(
             microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestMap) ?: emptyList(),
@@ -72,9 +72,9 @@ class PersonalContentFactory(
             ).filter { it.skalVises() }.map { it.id },
 
             offerStepup = microfrontends?.offerStepup(innloggetnivå) ?: false,
-            aiaStandard = arbeidsøkerResponse.isStandardInnsats() && arbeidsøkerSection.isEmpty(),
+            aiaStandard = arbeidsøkerResponse.isStandardInnsats() && !useNewAia,
             // || arbeidsøkerResponse.brukNyAia?:false skal fjernes når ny-aia er over på kafka
-            brukNyAia = arbeidsøkerSection.isNotEmpty() || arbeidsøkerResponse.brukNyAia?:false,
+            brukNyAia = useNewAia,
             oppfolgingContent = oppfolgingResponse.underOppfolging,
             meldekort = meldekortResponse.harMeldekort,
             aktuelt = ContentDefinition.getAktueltContent(
