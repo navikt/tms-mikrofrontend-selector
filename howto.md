@@ -4,7 +4,8 @@ Personalisering med microfrontends.
 
 Microfrontendene brukt på min side kommer i form av små bokser med forskjellig funksjonalitet og innhold teamene ønsker å presentere til en spesifikk gruppe brukere. Det overordnede konseptet er at bruker skal finne igjen mye av sitt mest relevante innhold og av innganger gruppert og løftet på min side.
 
-Vår microfrontendrigg består av tre deler. Mikrofrontenden som lastes opp til frontend-plattform sin CDN, min side som viser microfrontendene, og Kafka-backenden for å aktivere og deaktivere mikrofrontends for spesifikke brukere. Selve mikrofrontenden blir bygget til ESM, lastet opp til CDN og hentes deretter inn som en remote ES-Modul.
+Vår microfrontendrigg består av tre deler. Mikrofrontenden som lastes opp til frontend-plattform sin CDN, min side som viser microfrontendene, og Kafka-backenden for å aktivere og deaktivere mikrofrontends for spesifikke brukere. Om Kafka ikke er et alternativ for ditt team, finnes det ett regelbasert alternativ som bruker informasjon fra SAF og/eller PDL til å avgjøre hvorvidt en mikrofrontend skal vises. Her er det mulig for ditt team å legge inn forslag til ønsket regel, ta kontakt med team min side for mer info.
+Selve mikrofrontenden blir bygget til ESM, lastet opp til CDN og hentes deretter inn som en remote ES-Modul.
 
 ## Sett opp microfrontend
 Bruk [denne](https://github.com/navikt/tms-microfrontend-template) templaten og følg instruksjonene i readme-filen.
@@ -80,3 +81,12 @@ Om sensitivitet ikke er spesifisert i kafka-meldingen settes det alltid til `hig
 Om en person logger inn med `idporten-loa-substantial` og det finnes mikrofrontender som personen kan se
 på `idporten-loa-high` vil bruker få beskjed om dette og link til en "stepup"
 login. Se også [NAIS docs](https://docs.nais.io/security/auth/idporten/#security-levels) for mer info om acr-verdiene
+
+## Plassering
+Mikrofrontender fra team plaseres enten under seksjonen "Din oversikt", på toppen under varslene, eller nederst under "Kanskje aktuelt for deg"
+### Din oversikt
+I din oversikt skal bruker få spesifikk informasjon knyttet til hens forhold til NAV. Din oversikt støtter for øyeblikket kun kafkabaserte mikrofrontends.
+#### Produktkort
+Produktkort er strengt talt ikke mikrofrontender, men regelbaserte lenker som peker til innloggede produktsider for ett område. Vi anbefaler heller å bruke kafka, siden dette er mer treffsikkert i forhold til brukers situasjon, men hvis kafka ikke er en mulighet kan dette være ett alternativ. 
+### Kanskje aktuelt for deg
+Under kanskje aktuelt for deg skal bruker få forslag til annet innhold som kan være relevant for hen, for eksempel andre stønader eller støttetjenester en bruker kan ha rett på gitt at hen har en spesifikk ytelse. Foreløbig er det kun regelbaserte mikrofrontender som vises i den her seksjonen.
