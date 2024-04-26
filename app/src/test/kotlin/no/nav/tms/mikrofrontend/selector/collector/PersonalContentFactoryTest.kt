@@ -213,5 +213,5 @@ private fun microfrontendMocck(
     every { offerStepup(3) } returns (level3Microfrontends != level4Microfrontends)
     every { getDefinitions(3, any()) } returns level3Microfrontends
     every { getDefinitions(4, any()) } returns (level4Microfrontends ?: level3Microfrontends)
-    every { ids() } returns ids
+    every { ids(any()) } returns ids
 }

@@ -62,7 +62,7 @@ class PersonalContentFactory(
         innloggetnivå: Int,
         manifestMap: Map<String, String>,
     ): PersonalContentResponse {
-        val useNewAia = ContentDefinition.arbeidsøkerSection.getMicrofrontendsForSection(microfrontends)
+        val useNewAia = ContentDefinition.arbeidsøkerSection.getMicrofrontendsForSection(microfrontends, innloggetnivå)
             .isNotEmpty() || arbeidsøkerResponse.brukNyAia ?: false
 
         return PersonalContentResponse(
@@ -74,7 +74,7 @@ class PersonalContentFactory(
             offerStepup = microfrontends?.offerStepup(innloggetnivå) ?: false,
             aiaStandard = arbeidsøkerResponse.isStandardInnsats() && !useNewAia,
             // || arbeidsøkerResponse.brukNyAia?:false skal fjernes når ny-aia er over på kafka
-            brukNyAia = useNewAia,
+            brukNyAia = useNewAia && innloggetnivå == 4,
             oppfolgingContent = oppfolgingResponse.underOppfolging,
             meldekort = meldekortResponse.harMeldekort,
             aktuelt = ContentDefinition.getAktueltContent(
