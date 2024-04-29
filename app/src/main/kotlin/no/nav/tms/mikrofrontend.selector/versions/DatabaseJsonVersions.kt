@@ -7,6 +7,7 @@ import no.nav.tms.kafka.application.isMissingOrNull
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends.Companion.microfrontendMapper
 import no.nav.tms.mikrofrontend.selector.microfrontendId
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.sensitivitet
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 
 private val log = KotlinLogging.logger { }
 
@@ -72,12 +73,14 @@ enum class Sensitivitet(private val sikkerhetsnivå: Int) {
         }
 
         fun fromJsonNode(jsonNode: JsonNode) = when {
-            jsonNode.isMissingOrNull() -> HIGH
-            jsonNode.asText() == HIGH.stringValue -> HIGH
-            jsonNode.asText() == SUBSTANTIAL.stringValue -> SUBSTANTIAL
+            jsonNode.isMissingOrNull() -> LevelOfAssurance.HIGH
+            jsonNode.asText() == HIGH.stringValue -> LevelOfAssurance.HIGH
+            jsonNode.asText() == "4" -> LevelOfAssurance.HIGH
+            jsonNode.asText() == SUBSTANTIAL.stringValue -> LevelOfAssurance.SUBSTANTIAL
+            jsonNode.asText() == "3" -> LevelOfAssurance.SUBSTANTIAL
             else -> {
                 log.error { "${jsonNode.asText()} har ingen korresponederende sensitivitetsnviå. Returnerer default-verdi HIGH" }
-                HIGH
+                LevelOfAssurance.HIGH
             }
         }
 

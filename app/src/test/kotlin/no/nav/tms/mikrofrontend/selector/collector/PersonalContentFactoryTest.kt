@@ -7,6 +7,9 @@ import io.mockk.mockk
 import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.HIGH
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.SUBSTANTIAL
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -16,7 +19,7 @@ class PersonalContentFactoryTest {
     fun `Skal være tom`() {
         testFactory().build(
             microfrontends = Microfrontends(),
-            innloggetnivå = 4,
+            levelOfAssurance = HIGH,
             manifestMap = emptyMap()
         ).assert {
             oppfolgingContent shouldBe false
@@ -37,7 +40,7 @@ class PersonalContentFactoryTest {
             digisosResponse = DigisosResponse(listOf(Dokument(sakstemakode = "KOM", LocalDateTime.now())))
         ).build(
             microfrontends = microfrontendMocck(level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5),
-            innloggetnivå = 4,
+            levelOfAssurance = HIGH,
             manifestMap = emptyMap()
         ).assert {
             oppfolgingContent shouldBe false
@@ -61,7 +64,7 @@ class PersonalContentFactoryTest {
             )
         ).build(
             microfrontends = Microfrontends(),
-            innloggetnivå = 4,
+            levelOfAssurance = HIGH,
             manifestMap = emptyMap()
         ).assert {
             oppfolgingContent shouldBe false
@@ -82,7 +85,7 @@ class PersonalContentFactoryTest {
 
         ).build(
             microfrontends = Microfrontends(),
-            innloggetnivå = 4,
+            levelOfAssurance = HIGH,
             manifestMap = emptyMap()
         ).assert {
             oppfolgingContent shouldBe true
@@ -108,7 +111,7 @@ class PersonalContentFactoryTest {
 
         ).build(
             microfrontends = Microfrontends(),
-            innloggetnivå = 4,
+            levelOfAssurance = HIGH,
             manifestMap = emptyMap()
         ).assert {
             oppfolgingContent shouldBe false
@@ -140,7 +143,7 @@ class PersonalContentFactoryTest {
             ids = listOf("aia-ny")
 
         ),
-        innloggetnivå = 4,
+        levelOfAssurance = HIGH,
         manifestMap = mapOf("regefrontend" to "https://micro.moc")
         ).assert {
             oppfolgingContent shouldBe true
@@ -168,7 +171,7 @@ class PersonalContentFactoryTest {
                 level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5,
                 level3Microfrontends = MicrofrontendsDefinition("id", "url") * 2,
             ),
-            innloggetnivå = 3,
+            levelOfAssurance = SUBSTANTIAL,
             manifestMap = emptyMap()
         ).assert {
             oppfolgingContent shouldBe false
@@ -209,9 +212,9 @@ private fun microfrontendMocck(
     level4Microfrontends: List<MicrofrontendsDefinition>? = null,
     ids: List<String> = listOf("mock")
 ) = mockk<Microfrontends> {
-    every { offerStepup(4) } returns false
-    every { offerStepup(3) } returns (level3Microfrontends != level4Microfrontends)
-    every { getDefinitions(3, any()) } returns level3Microfrontends
-    every { getDefinitions(4, any()) } returns (level4Microfrontends ?: level3Microfrontends)
+    every { offerStepup(HIGH) } returns false
+    every { offerStepup(SUBSTANTIAL) } returns (level3Microfrontends != level4Microfrontends)
+    every { getDefinitions(SUBSTANTIAL, any()) } returns level3Microfrontends
+    every { getDefinitions(HIGH, any()) } returns (level4Microfrontends ?: level3Microfrontends)
     every { ids(any()) } returns ids
 }

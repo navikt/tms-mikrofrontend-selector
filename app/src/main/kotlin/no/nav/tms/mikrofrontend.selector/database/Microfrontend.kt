@@ -11,6 +11,7 @@ import no.nav.tms.mikrofrontend.selector.microfrontendId
 import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.toDbNode
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.sensitivitet
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import org.postgresql.util.PGobject
 
 
@@ -63,15 +64,15 @@ class Microfrontends(initialJson: String? = null) {
         value = this@jsonB
     }
 
-    fun getDefinitions(innloggetnivå: Int, manifestMap: Map<String, String>): List<MicrofrontendsDefinition> =
+    fun getDefinitions(innloggetnivå: LevelOfAssurance, manifestMap: Map<String, String>): List<MicrofrontendsDefinition> =
         newData
             .filter { Sensitivitet.fromJsonNode(it["sensitivitet"]) <= innloggetnivå }
             .mapNotNull { MicrofrontendsDefinition.create(it["microfrontend_id"].asText(), manifestMap) }
 
-    fun offerStepup(innloggetnivå: Int): Boolean =
+    fun offerStepup(innloggetnivå: LevelOfAssurance): Boolean =
         newData.any { Sensitivitet.fromJsonNode(it["sensitivitet"]) > innloggetnivå }
 
-    fun ids(innloggetnivå: Int): List<String> = newData.mapNotNull {
+    fun ids(innloggetnivå: LevelOfAssurance): List<String> = newData.mapNotNull {
         if (Sensitivitet.fromJsonNode(it["sensitivitet"]) >= innloggetnivå)
             it["microfrontend_id"].asText()
         else
