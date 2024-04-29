@@ -2,8 +2,6 @@ package no.nav.tms.mikrofrontend.selector.versions
 
 import com.nfeld.jsonpathkt.extension.read
 import no.nav.tms.kafka.application.JsonMessage
-import no.nav.tms.kafka.application.isMissingOrNull
-import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.sensitivitet
 
 abstract class MessageRequirements(
     vararg eventFields: String
