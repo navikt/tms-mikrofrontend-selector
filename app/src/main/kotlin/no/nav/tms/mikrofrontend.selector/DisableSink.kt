@@ -22,8 +22,6 @@ class DisableSink(
             validate { it.demandValue("@action", DisableMessage.action) }
             validate { DisableMessage.requireCommonKeys(it) }
             validate { DisableMessage.interestedInCurrentVersionKeys(it) }
-            validate { DisableMessage.interestedInLegacyKeys(it) }
-
         }.register(this)
     }
 
@@ -32,7 +30,6 @@ class DisableSink(
             try {
                 log.info { "disablemelding mottat fra ${packet.initiatedBy}" }
                 personRepository.disableMicrofrontend(packet)
-                DisableMessage.countVersion(packet)
             } catch (e: Exception) {
                 log.error { "Feil i behandling av enablemelding" }
                 secureLog.error(e) { """

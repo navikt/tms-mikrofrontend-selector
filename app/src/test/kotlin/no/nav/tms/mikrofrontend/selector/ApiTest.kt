@@ -27,6 +27,8 @@ import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
+import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
+import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
 import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance
 import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.LEVEL_3
 import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.LEVEL_4
@@ -165,8 +167,14 @@ internal class ApiTest {
         testRapid.sendTestMessage(currentVersionMessage(microfrontendId = "aia-ny", ident = testIdent))
 
         //legacy
-        testRapid.sendTestMessage(legacyMessagev2(microfrontendId = "legacyNivå4mkf", ident = testIdent))
-        testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testIdent, 3))
+        testRapid.sendTestMessage(currentVersionMessage(microfrontendId = "legacyNivå4mkf", ident = testIdent))
+        testRapid.sendTestMessage(
+            currentVersionMessage(
+                microfrontendId = "nivå3mkf",
+                ident = testIdent,
+                sensitivitet = Sensitivitet.SUBSTANTIAL
+            )
+        )
 
         expectedMicrofrontends["nivå3mkf"] = "https://cdn.test/nivå3mkf.json"
         expectedMicrofrontends["legacyNivå4mkf"] = "https://cdn.test/legacyNivå4mkf.json"
@@ -263,9 +271,15 @@ internal class ApiTest {
             )
 
             nivå4Mikrofrontends.keys.forEach {
-                testRapid.sendTestMessage(legacyMessagev2(it, testIdent))
+                testRapid.sendTestMessage(currentVersionMessage(microfrontendId = it, ident = testIdent))
             }
-            testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testIdent, 3))
+            testRapid.sendTestMessage(
+                currentVersionMessage(
+                    microfrontendId = "nivå3mkf",
+                    ident = testIdent,
+                    sensitivitet = Sensitivitet.SUBSTANTIAL
+                )
+            )
 
             gcpStorage.updateManifest(
                 nivå4Mikrofrontends.apply {
@@ -334,7 +348,13 @@ internal class ApiTest {
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
-            testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
+            testRapid.sendTestMessage(
+                currentVersionMessage(
+                    microfrontendId = "nivå3mkf",
+                    ident = testident2,
+                    sensitivitet = HIGH
+                )
+            )
 
             client.get("/din-oversikt").assert {
                 status shouldBe HttpStatusCode.MultiStatus
@@ -364,7 +384,13 @@ internal class ApiTest {
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
-            testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
+            testRapid.sendTestMessage(
+                currentVersionMessage(
+                    microfrontendId = "nivå3mkf",
+                    ident = testident2,
+                    sensitivitet = HIGH
+                )
+            )
 
             client.get("/din-oversikt").assert {
                 status shouldBe HttpStatusCode.MultiStatus
@@ -398,7 +424,13 @@ internal class ApiTest {
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
-            testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
+            testRapid.sendTestMessage(
+                currentVersionMessage(
+                    microfrontendId = "nivå3mkf",
+                    ident = testident2,
+                    sensitivitet = HIGH
+                )
+            )
 
             client.get("/din-oversikt").assert {
                 status shouldBe HttpStatusCode.MultiStatus

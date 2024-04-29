@@ -21,7 +21,6 @@ class EnableSink(
             validate { it.demandValue("@action", EnableMessage.action) }
             validate { message -> EnableMessage.requireCommonKeys(message) }
             validate { message -> EnableMessage.interestedInCurrentVersionKeys(message) }
-            validate { message -> EnableMessage.interestedInLegacyKeys(message) }
         }.register(this)
     }
 
@@ -29,7 +28,6 @@ class EnableSink(
         traceMicrofrontend(id = packet.microfrontendId, extra = packet.traceInfo("enable")) {
             try {
                 log.info { "Enablemelding motatt" }
-                EnableMessage.countVersion(packet)
                 personRepository.enableMicrofrontend(packet)
             } catch (e: Exception) {
                 log.error { "Feil i behandling av enablemelding" }

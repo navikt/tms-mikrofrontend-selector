@@ -73,17 +73,13 @@ internal class SinkTest {
 
         database.insertLegacyFormat(ident = testIdent, format = ::dbv1Format, oldAndRusty)
 
-        val enableMsg1 = legacyEnabledMessageUtenSikkerhetsnivå(
-            ident = testIdent,
-            microfrontendId = testmicrofeId1,
-            initiatedBy = "testteam"
-        )
-        val enableMsg2 = legacyMessagev2(microfrontendId = testmicrofeId2, ident = testIdent, initiatedBy = null)
-        val enableMsg3 = legacyMessagev2(microfrontendId = testmicrofeId2, ident = testIdent, sikkerhetsnivå = 3)
+        val enableMsg1 = currentVersionPacket(ident = testIdent, microfrontendId = testmicrofeId1, initiatedBy = "testteam")
+        val enableMsg2 = currentVersionPacket(microfrontendId = testmicrofeId2, ident = testIdent)
+        val enableMsg3 = currentVersionPacket(microfrontendId = testmicrofeId2, ident = testIdent, sensitivitet = Sensitivitet.SUBSTANTIAL)
 
-        testRapid.sendTestMessage(enableMsg1)
-        testRapid.sendTestMessage(enableMsg2)
-        testRapid.sendTestMessage(enableMsg3)
+        testRapid.sendTestMessage(enableMsg1.toJson())
+        testRapid.sendTestMessage(enableMsg2.toJson())
+        testRapid.sendTestMessage(enableMsg3.toJson())
 
         testRapid.sendTestMessage(
             currentVersionMessage(
@@ -123,7 +119,7 @@ internal class SinkTest {
             get(1).assert { originalData }.assert {
                 originalData.microfrontendids().size shouldBe 2
                 newData.microfrontendids().size shouldBe 3
-                initiatedBy shouldBe null
+                initiatedBy shouldBe "default-team"
             }
             get(2).assert { originalData }.assert {
                 originalData.microfrontendids().size shouldBe 3
@@ -147,15 +143,15 @@ internal class SinkTest {
         val testmicrofeId2 = "also-new-and-shiny"
 
         testRapid.sendTestMessage(
-            legacyMessagev2(
+            currentVersionMessage(
                 microfrontendId = testmicrofeId1,
                 ident = testFnr,
                 initiatedBy = "id1team"
             )
         )
-        testRapid.sendTestMessage(legacyMessagev2(microfrontendId = testmicrofeId1, ident = "9988776655"))
+        testRapid.sendTestMessage(currentVersionMessage(microfrontendId = testmicrofeId1, ident = "9988776655"))
         testRapid.sendTestMessage(
-            legacyMessagev2(
+            currentVersionMessage(
                 microfrontendId = testmicrofeId2,
                 ident = testFnr,
                 initiatedBy = "id2team"
@@ -200,9 +196,9 @@ internal class SinkTest {
     fun `Skal kunne re-enable mikrofrontend`() {
         val testFnr = "12345678910"
         val testmicrofeId1 = "same-same-but-different"
-        testRapid.sendTestMessage(legacyMessagev2(microfrontendId = testmicrofeId1, ident = testFnr))
+        testRapid.sendTestMessage(currentVersionMessage(microfrontendId = testmicrofeId1, ident = testFnr))
         testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
-        testRapid.sendTestMessage(legacyMessagev2(microfrontendId = testmicrofeId1, ident = testFnr))
+        testRapid.sendTestMessage(currentVersionMessage(microfrontendId = testmicrofeId1, ident = testFnr))
 
         database.getMicrofrontends(ident = testFnr).assert {
             require(this != null)
@@ -217,7 +213,7 @@ internal class SinkTest {
 
     @Test
     fun `fungerer med gammel versjon av initiatedBy`() {
-        val enableMsg = legacyEnabledMessageUtenSikkerhetsnivå(
+        val enableMsg = currentVersionMessage(
             ident = "12345678910",
             microfrontendId = "testingtesting",
             initiatedBy = "legacy-team"
@@ -243,16 +239,6 @@ private fun String?.microfrontendids(): List<String> {
     require(this != null)
     return objectMapper.readTree(this)["microfrontends"].toList().map { it["microfrontend_id"].asText() }
 }
-
-
-private fun legacyEnabledMessageUtenSikkerhetsnivå(microfrontendId: String, ident: String, initiatedBy: String) = """
-    {
-      "@action": "enable",
-      "ident": "$ident",
-      "microfrontend_id": "$microfrontendId",
-      "initiated_by":"$initiatedBy"
-    }
-    """.trimIndent()
 
 private fun disableMessage(microfrontendId: String, fnr: String, initiatedBy: String = "default-team") = """
     {

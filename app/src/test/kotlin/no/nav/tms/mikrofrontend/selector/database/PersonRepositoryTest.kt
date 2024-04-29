@@ -13,9 +13,6 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotliquery.queryOf
 import no.nav.tms.common.testutils.assert
-import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages.disableV2Message
-import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages.enableV2Message
-import no.nav.tms.mikrofrontend.selector.LegacyJsonMessages.v1Message
 import no.nav.tms.mikrofrontend.selector.currentVersionPacket
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.SUBSTANTIAL
@@ -43,19 +40,20 @@ internal class PersonRepositoryTest {
     fun `Skal sette inn mikrofrontend for ident`() {
         val personIdent = "13499"
         repository.enableMicrofrontend(
-            enableV2Message(
+            currentVersionPacket(
+                EnableMessage,
                 ident = personIdent,
                 microfrontendId = "mkf1",
                 initiatedBy = "test-team-1"
             )
         )
-        repository.enableMicrofrontend(v1Message(personIdent, "mkf3", EnableMessage))
-        repository.enableMicrofrontend(enableV2Message(personIdent, "mkf3"))
+        repository.enableMicrofrontend(currentVersionPacket(ident = personIdent, microfrontendId = "mkf3", messageRequirements = EnableMessage))
+        repository.enableMicrofrontend(currentVersionPacket(ident = personIdent, microfrontendId = "mkf3"))
         repository.enableMicrofrontend(
-            enableV2Message(
+            currentVersionPacket(
                 microfrontendId = "mkf4",
                 ident = personIdent,
-                sikkerhetsnivå = 3,
+                sensitivitet = SUBSTANTIAL,
                 initiatedBy = "test-team-2"
             )
         )
@@ -63,7 +61,7 @@ internal class PersonRepositoryTest {
             currentVersionPacket(
                 microfrontendId = "mfk5",
                 ident = personIdent,
-                initatedBy = "new-team"
+                initiatedBy = "new-team"
             )
         )
 
@@ -91,7 +89,7 @@ internal class PersonRepositoryTest {
     fun `Skal sette inn mikrofrontend for ident som har gamle innslag i tabellen`() {
         val testId1 = "7766"
         database.insertLegacyFormat(ident = testId1, format = ::dbv1Format, "m1", "m2", "m3")
-        repository.enableMicrofrontend(enableV2Message(microfrontendId = "mkf4", ident = testId1, sikkerhetsnivå = 3))
+        repository.enableMicrofrontend(currentVersionPacket(microfrontendId = "mkf4", ident = testId1, sensitivitet = SUBSTANTIAL))
         database.getMicrofrontends(testId1).assert {
             require(this != null)
             size shouldBe 4
@@ -120,12 +118,12 @@ internal class PersonRepositoryTest {
             currentVersionPacket(
                 microfrontendId = "mkf1",
                 ident = testIdent,
-                initatedBy = "test-team-3"
+                initiatedBy = "test-team-3"
             )
         )
         repository.enableMicrofrontend(currentVersionPacket(microfrontendId = "mkf3", ident = testIdent))
-        repository.enableMicrofrontend(enableV2Message(microfrontendId = "mkf4", ident = testIdent, sikkerhetsnivå = 3))
-        repository.enableMicrofrontend(enableV2Message(microfrontendId = "mkf4", ident = testIdent, sikkerhetsnivå = 3))
+        repository.enableMicrofrontend(currentVersionPacket(microfrontendId = "mkf4", ident = testIdent, sensitivitet = SUBSTANTIAL))
+        repository.enableMicrofrontend(currentVersionPacket(microfrontendId = "mkf4", ident = testIdent, sensitivitet = SUBSTANTIAL))
 
         require(database.getMicrofrontends(testIdent)!!.size == 3)
 
@@ -134,7 +132,7 @@ internal class PersonRepositoryTest {
                 messageRequirements = DisableMessage,
                 ident = testIdent,
                 microfrontendId = "mkf3",
-                initatedBy = "test-team5"
+                initiatedBy = "test-team5"
             )
         )
         database.getMicrofrontends(testIdent)!!.size shouldBe 2
@@ -144,7 +142,7 @@ internal class PersonRepositoryTest {
                 messageRequirements = DisableMessage,
                 ident = testIdent,
                 microfrontendId = "mkf4",
-                initatedBy = "test-team-4"
+                initiatedBy = "test-team-4"
             )
         )
 
@@ -169,7 +167,8 @@ internal class PersonRepositoryTest {
         val testId3 = "77882"
         database.insertLegacyFormat(ident = testId1, format = ::dbv1Format, "m1", "m2", "m3")
         repository.disableMicrofrontend(
-            disableV2Message(
+            currentVersionPacket(
+                messageRequirements = DisableMessage,
                 ident = testId1,
                 microfrontendId = "m1",
                 initiatedBy = "default-team"

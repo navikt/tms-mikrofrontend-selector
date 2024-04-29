@@ -2,74 +2,18 @@ package no.nav.tms.mikrofrontend.selector
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.mockk.coEvery
-import io.mockk.mockk
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.tms.mikrofrontend.selector.collector.Dokument
-import no.nav.tms.mikrofrontend.selector.collector.SafResponse
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
-import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.MessageRequirements
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
 import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
-import no.nav.tms.token.support.tokendings.exchange.TokendingsService
 import java.time.LocalDateTime
 
 internal val objectMapper = jacksonObjectMapper().apply {
     registerModule(JavaTimeModule())
 }
-
-object LegacyJsonMessages {
-
-    private fun v1Map(ident: String, microfrontendId: String, messageRequirements: MessageRequirements) = mapOf(
-        "@action" to messageRequirements.action,
-        "ident" to ident,
-        "microfrontend_id" to microfrontendId
-    )
-
-    fun v1Message(ident: String, microfrontendId: String, messageRequirements: MessageRequirements) =
-        JsonMessage.newMessage(
-            v1Map(ident, microfrontendId, messageRequirements)
-        ).apply { messageRequirements.addRequiredAndInterestedIn(this) }
-
-    fun enableV2Message(
-        ident: String,
-        microfrontendId: String,
-        initiatedBy: String = "defaultteam",
-        sikkerhetsnivå: Int = 4
-    ) =
-        JsonMessage.newMessage(
-            v1Map(ident, microfrontendId, EnableMessage) +
-                    mapOf(
-                        "initiated_by" to initiatedBy,
-                        "sikkerhetsnivå" to sikkerhetsnivå
-                    )
-        ).apply { EnableMessage.addRequiredAndInterestedIn(this) }
-
-    fun disableV2Message(ident: String, microfrontendId: String, initiatedBy: String) =
-        JsonMessage.newMessage(
-            v1Map(ident, microfrontendId, JsonMessageVersions.DisableMessage) +
-                    mapOf("initiated_by" to initiatedBy)
-        ).apply { JsonMessageVersions.DisableMessage.addRequiredAndInterestedIn(this) }
-}
-
-
-fun legacyMessagev2(
-    microfrontendId: String,
-    ident: String,
-    sikkerhetsnivå: Int = 4,
-    initiatedBy: String? = "default-team",
-) =
-    """
-    {
-      "@action": "enable",
-      "ident": "$ident",
-      "microfrontend_id": "$microfrontendId",
-      "sikkerhetsnivå" : $sikkerhetsnivå
-      ${initiatedBy?.let { """ ,"initiated_by": "$initiatedBy" """ } ?: ""}
-    }
-    """.trimIndent()
 
 
 fun currentVersionMessage(
@@ -93,12 +37,13 @@ fun currentVersionPacket(
     microfrontendId: String,
     ident: String,
     sensitivitet: Sensitivitet = HIGH,
-    initatedBy: String = "default-team"
+    initiatedBy: String = "default-team"
 ) =
     JsonMessage.newMessage(
-        currentVersionMap(messageRequirements, microfrontendId, ident, sensitivitet, initatedBy)
+        currentVersionMap(messageRequirements, microfrontendId, ident, sensitivitet, initiatedBy)
     ).apply {
-        messageRequirements.addRequiredAndInterestedIn(this)
+        messageRequirements.requireCommonKeys(this)
+        messageRequirements.interestedInCurrentVersionKeys(this)
     }
 
 fun currentVersionMap(
@@ -116,13 +61,6 @@ fun currentVersionMap(
     if (messageRequirements == EnableMessage)
         this["sensitivitet"] = sensitivitet.stringValue
     println(this)
-}
-
-
-private fun MessageRequirements.addRequiredAndInterestedIn(jsonMessage: JsonMessage) {
-    requireCommonKeys(jsonMessage)
-    interestedInLegacyKeys(jsonMessage)
-    interestedInCurrentVersionKeys(jsonMessage)
 }
 
 val testproduktkortCounter = ProduktkortCounter()
