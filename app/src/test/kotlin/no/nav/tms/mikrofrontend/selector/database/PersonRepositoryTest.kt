@@ -13,12 +13,13 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotliquery.queryOf
 import no.nav.tms.common.testutils.assert
+import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.tms.mikrofrontend.selector.testJsonMessage
-import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
-import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.SUBSTANTIAL
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.SUBSTANTIAL
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -53,7 +54,7 @@ internal class PersonRepositoryTest {
             testJsonMessage(
                 microfrontendId = "mkf4",
                 ident = personIdent,
-                sensitivitet = SUBSTANTIAL,
+                levelOfAssurance = SUBSTANTIAL,
                 initiatedBy = "test-team-2"
             )
         )
@@ -70,11 +71,11 @@ internal class PersonRepositoryTest {
             size shouldBe 4
             find { it["microfrontend_id"].asText() == "mkf4" }.assert {
                 require(this != null)
-                withClue("Feil i sikkerhetsnivå for mfk4") { get("sensitivitet")?.asText() shouldBe SUBSTANTIAL.stringValue }
+                withClue("Feil i sikkerhetsnivå for mfk4") { get("sensitivitet")?.asText() shouldBe Sensitivitet.SUBSTANTIAL.kafkaValue }
             }
             find { it["microfrontend_id"].asText() == "mkf1" }.assert {
                 require(this != null)
-                withClue("Feil i sikkerhetsnivå for mkf1") { get("sensitivitet")?.asText() shouldBe HIGH.stringValue }
+                withClue("Feil i sikkerhetsnivå for mkf1") { get("sensitivitet")?.asText() shouldBe Sensitivitet.HIGH.kafkaValue }
             }
         }
         database.getChangelog(personIdent).assertChangelog {
@@ -89,7 +90,7 @@ internal class PersonRepositoryTest {
     fun `Skal sette inn mikrofrontend for ident som har gamle innslag i tabellen`() {
         val testId1 = "7766"
         database.insertLegacyFormat(ident = testId1, format = ::dbv1Format, "m1", "m2", "m3")
-        repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf4", ident = testId1, sensitivitet = SUBSTANTIAL))
+        repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf4", ident = testId1, levelOfAssurance = SUBSTANTIAL))
         database.getMicrofrontends(testId1).assert {
             require(this != null)
             size shouldBe 4
@@ -102,9 +103,9 @@ internal class PersonRepositoryTest {
                 id shouldBeIn listOf("m1", "m2", "m3", "mkf4", "mfk6")
                 this.size shouldBe 5
                 find { it["microfrontend_id"].asText() == "mkf4" }?.get("sensitivitet")
-                    ?.asText() shouldBe SUBSTANTIAL.stringValue
+                    ?.asText() shouldBe SUBSTANTIAL.name.lowercase()
                 find { it["microfrontend_id"].asText() == "m1" }?.get("sensitivitet")
-                    ?.asText() shouldBe HIGH.stringValue
+                    ?.asText() shouldBe LevelOfAssurance.HIGH.name.lowercase()
             }
 
         }
@@ -122,8 +123,8 @@ internal class PersonRepositoryTest {
             )
         )
         repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf3", ident = testIdent))
-        repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf4", ident = testIdent, sensitivitet = SUBSTANTIAL))
-        repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf4", ident = testIdent, sensitivitet = SUBSTANTIAL))
+        repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf4", ident = testIdent, levelOfAssurance = SUBSTANTIAL))
+        repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf4", ident = testIdent, levelOfAssurance = SUBSTANTIAL))
 
         require(database.getMicrofrontends(testIdent)!!.size == 3)
 

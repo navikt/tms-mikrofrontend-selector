@@ -8,12 +8,12 @@ import io.kotest.matchers.string.shouldContain
 import io.prometheus.client.CollectorRegistry
 import kotliquery.queryOf
 import no.nav.tms.common.testutils.assert
-import no.nav.tms.kafka.application.MessageBroadcaster
+import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
-import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -78,7 +78,7 @@ internal class SubscriberTest {
         val enableMsg3 = testJsonString(
             microfrontendId = testmicrofeId2,
             ident = testIdent,
-            sensitivitet = Sensitivitet.SUBSTANTIAL
+            levelOfAssurance = LevelOfAssurance.SUBSTANTIAL
         )
 
         broadcaster.broadcastJson(enableMsg1)
@@ -90,7 +90,7 @@ internal class SubscriberTest {
                 messageRequirements = EnableMessage,
                 microfrontendId = microNewVersion,
                 ident = testIdent,
-                sensitivitet = Sensitivitet.HIGH,
+                levelOfAssurance = LevelOfAssurance.HIGH,
                 initiatedBy = "test-team"
             )
         )
@@ -105,13 +105,13 @@ internal class SubscriberTest {
                 microNewVersion
             )
             find { it["microfrontend_id"].asText() == testmicrofeId1 }!!
-                .get("sensitivitet")?.asText() shouldBe Sensitivitet.HIGH.stringValue
+                .get("sensitivitet")?.asText() shouldBe Sensitivitet.HIGH.kafkaValue
             find { it["microfrontend_id"].asText() == testmicrofeId2 }!!
-                .get("sensitivitet")?.asText() shouldBe Sensitivitet.SUBSTANTIAL.stringValue
+                .get("sensitivitet")?.asText() shouldBe Sensitivitet.SUBSTANTIAL.kafkaValue
             find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sensitivitet")
-                ?.asText() shouldBe Sensitivitet.HIGH.stringValue
+                ?.asText() shouldBe Sensitivitet.HIGH.kafkaValue
             find { it["microfrontend_id"].asText() == microNewVersion }!!.get("sensitivitet")
-                ?.asText() shouldBe Sensitivitet.HIGH.stringValue
+                ?.asText() shouldBe Sensitivitet.HIGH.kafkaValue
         }
 
         database.getChangelog(testIdent).assert {

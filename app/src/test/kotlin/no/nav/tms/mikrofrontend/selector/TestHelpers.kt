@@ -9,8 +9,8 @@ import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.MessageRequirements
-import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
-import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.HIGH
 import java.time.LocalDateTime
 
 internal val objectMapper = jacksonObjectMapper().apply {
@@ -21,14 +21,14 @@ fun testJsonString(
     messageRequirements: MessageRequirements = EnableMessage,
     microfrontendId: String,
     ident: String,
-    sensitivitet: Sensitivitet = HIGH,
+    levelOfAssurance: LevelOfAssurance = HIGH,
     initiatedBy: String = "default-team"
 ) = objectMapper.writeValueAsString(
     jsonTestMap(
         messageRequirements = messageRequirements,
         microfrontendId = microfrontendId,
         ident = ident,
-        sensitivitet = sensitivitet,
+        levelOfAssurance = levelOfAssurance,
         initiatedBy = initiatedBy
     )
 )
@@ -37,14 +37,14 @@ fun testJsonMessage(
     messageRequirements: MessageRequirements = EnableMessage,
     microfrontendId: String,
     ident: String,
-    sensitivitet: Sensitivitet = HIGH,
+    levelOfAssurance: LevelOfAssurance = HIGH,
     initiatedBy: String = "default-team"
 ): JsonMessage =
     jsonTestMap(
         messageRequirements,
         microfrontendId,
         ident,
-        sensitivitet,
+        levelOfAssurance,
         initiatedBy
     ).toJsonMessage()
 
@@ -53,7 +53,7 @@ fun jsonTestMap(
     messageRequirements: MessageRequirements,
     microfrontendId: String,
     ident: String,
-    sensitivitet: Sensitivitet = HIGH,
+    levelOfAssurance: LevelOfAssurance = HIGH,
     initiatedBy: String = "default-team"
 ) = mutableMapOf(
     //TODO: fiks i kafkalib
@@ -64,7 +64,7 @@ fun jsonTestMap(
     "@initiated_by" to initiatedBy
 ).apply {
     if (messageRequirements == EnableMessage)
-        this["sensitivitet"] = sensitivitet.stringValue
+        this["sensitivitet"] = levelOfAssurance.name.lowercase()
 }
 
 val testproduktkortCounter = ProduktkortCounter()

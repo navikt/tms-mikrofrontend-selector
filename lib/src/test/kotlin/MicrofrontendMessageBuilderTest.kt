@@ -95,14 +95,14 @@ internal class MicrofrontendMessageBuilderTest {
         }.apply {
             map().assert {
                 this["@action"] shouldBe "enable"
-                this["sensitivitet"] shouldBe Sensitivitet.HIGH.stringValue
+                this["sensitivitet"] shouldBe Sensitivitet.HIGH.kafkaValue
             }
             jsonNode().assert {
                 this["@action"].asText() shouldBe "enable"
-                this["sensitivitet"].asText() shouldBe Sensitivitet.HIGH.stringValue
+                this["sensitivitet"].asText() shouldBe Sensitivitet.HIGH.kafkaValue
                 assertCommonJsonFields(jsonNode())
             }
-            assertEnableText(text(), Sensitivitet.HIGH.stringValue)
+            assertEnableText(text(), Sensitivitet.HIGH.kafkaValue)
         }
 
         MicrofrontendMessageBuilder.enable {
@@ -112,11 +112,11 @@ internal class MicrofrontendMessageBuilderTest {
         }.apply {
             map().assert {
                 this["@action"] shouldBe "enable"
-                this["sensitivitet"] shouldBe Sensitivitet.HIGH.stringValue
+                this["sensitivitet"] shouldBe Sensitivitet.HIGH.kafkaValue
             }
             jsonNode().assert {
                 this["@action"].asText() shouldBe "enable"
-                this["sensitivitet"].asText() shouldBe Sensitivitet.HIGH.stringValue
+                this["sensitivitet"].asText() shouldBe Sensitivitet.HIGH.kafkaValue
                 assertCommonJsonFields(jsonNode())
             }
             assertEnableText(text(), "high")
@@ -130,11 +130,11 @@ internal class MicrofrontendMessageBuilderTest {
         }.apply {
             map().assert {
                 this["@action"] shouldBe "enable"
-                this["sensitivitet"] shouldBe Sensitivitet.SUBSTANTIAL.stringValue
+                this["sensitivitet"] shouldBe Sensitivitet.SUBSTANTIAL.kafkaValue
             }
             jsonNode().assert {
                 this["@action"].asText() shouldBe "enable"
-                this["sensitivitet"].asText() shouldBe Sensitivitet.SUBSTANTIAL.stringValue
+                this["sensitivitet"].asText() shouldBe Sensitivitet.SUBSTANTIAL.kafkaValue
                 assertCommonJsonFields(jsonNode())
             }
             assertEnableText(text(), "substantial")

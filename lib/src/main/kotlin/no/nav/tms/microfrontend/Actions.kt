@@ -39,7 +39,7 @@ class Enable(objectMapper: ObjectMapper) : Action(objectMapper) {
     var sensitivitet: Sensitivitet = Sensitivitet.HIGH
 
     override fun map() = super.map().apply {
-        this["sensitivitet"] = sensitivitet.stringValue
+        this["sensitivitet"] = sensitivitet.kafkaValue
     }
 }
 
@@ -49,7 +49,7 @@ class Disable(objectMapper: ObjectMapper) : Action(objectMapper) {
 
 enum class Sensitivitet{
     HIGH, SUBSTANTIAL;
-    val stringValue = name.lowercase()
+    val kafkaValue = name.lowercase()
 
 }
 

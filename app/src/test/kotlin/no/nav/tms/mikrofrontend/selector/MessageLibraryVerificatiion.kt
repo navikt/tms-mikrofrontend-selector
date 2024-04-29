@@ -9,11 +9,12 @@ import no.nav.tms.common.testutils.assert
 import no.nav.tms.kafka.application.JsonMessage
 import no.nav.tms.kafka.application.isMissingOrNull
 import no.nav.tms.microfrontend.MicrofrontendMessageBuilder
+import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.tms.microfrontend.Sensitivitet as BuilderSensitivitet
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
+import no.nav.tms.mikrofrontend.selector.database.microfrontendId
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
-import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -59,7 +60,7 @@ class MessageLibraryVerificatiion {
         jsonMessages.first { it.microfrontendId == "microf4" }.assert {
             get("ident").asText() shouldBe "12345678920"
             get("@initiated_by").asText() shouldBe "minside"
-            get("sensitivitet").asText() shouldBe Sensitivitet.HIGH.stringValue
+            get("sensitivitet").asText() shouldBe Sensitivitet.HIGH.kafkaValue
 
             EnableMessage.requiredFields.forEach { expectedKey ->
                 withClue("$expectedKey mangler i melding fra messagebuilder") { get(expectedKey).isMissingOrNull() shouldBe false }

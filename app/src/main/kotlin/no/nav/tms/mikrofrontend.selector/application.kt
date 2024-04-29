@@ -82,12 +82,3 @@ private fun startApplication(
         }
     }.start()
 }
-
-val JsonMessage.ident: String
-    get() {
-        return get("ident").asText()
-    }
-val JsonMessage.microfrontendId: String
-    get() {
-        return get("microfrontend_id").asText()
-    }

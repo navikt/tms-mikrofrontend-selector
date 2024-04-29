@@ -2,6 +2,7 @@ package no.nav.tms.mikrofrontend.selector.versions
 
 import com.nfeld.jsonpathkt.extension.read
 import no.nav.tms.kafka.application.JsonMessage
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 
 abstract class MessageRequirements(
     vararg eventFields: String
@@ -21,19 +22,12 @@ object JsonMessageVersions {
         override val action: String = "disable"
     }
 
-    /*
-    val JsonMessage.sensitivitet: Sensitivitet
-        get() = this["sensitivitet"].takeIf { !it.isMissingOrNull() }
-            ?.let { name -> Sensitivitet.fromString(name.asText()) }
-            ?: this["sikkerhetsnivå"].takeIf { !it.isMissingOrNull() }
-                ?.let { nivå -> Sensitivitet.fromSikkerhetsnivå(nivå.asInt()) }
-            ?: Sensitivitet.HIGH*/
-    val JsonMessage.sensitivitet: Sensitivitet
+    val JsonMessage.levelOfAssurance: LevelOfAssurance
         get() = this.json.read<String>("sensitivitet")
-            ?.let { value -> Sensitivitet.fromString(value) }
+            ?.let { value -> LevelOfAssuranceResolver.fromString(value) }
             ?: this.json.read<Int>("sikkerhetsnivå")
-                ?.let { nivå -> Sensitivitet.fromSikkerhetsnivå(nivå) }
-            ?: Sensitivitet.HIGH
+                ?.let { nivå -> LevelOfAssuranceResolver.fromSikkerhetsnivå(nivå) }
+            ?: LevelOfAssurance.HIGH
 
     val JsonMessage.initiatedBy: String?
         get() = json.read<String>("@initiated_by")

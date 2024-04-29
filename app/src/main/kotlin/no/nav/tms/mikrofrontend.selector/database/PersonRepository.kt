@@ -3,10 +3,8 @@ package no.nav.tms.mikrofrontend.selector.database
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.queryOf
 import no.nav.tms.kafka.application.JsonMessage
-import no.nav.tms.mikrofrontend.selector.ident
 import no.nav.tms.mikrofrontend.selector.metrics.ActionMetricsType
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
-import no.nav.tms.mikrofrontend.selector.microfrontendId
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.initiatedBy
 import java.time.LocalDateTime
 import java.time.ZoneId
