@@ -2,8 +2,11 @@ package no.nav.tms.mikrofrontend.selector.versions
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.helse.rapids_rivers.isMissingOrNull
+import no.nav.tms.kafka.application.JsonMessage
+import no.nav.tms.kafka.application.isMissingOrNull
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends.Companion.microfrontendMapper
+import no.nav.tms.mikrofrontend.selector.microfrontendId
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.sensitivitet
 
 private val log = KotlinLogging.logger { }
 
@@ -23,6 +26,9 @@ object DatabaseJsonVersions {
         }
       """.trimMargin()
     )
+
+    fun JsonMessage.toDbNode() =
+        currentVersionNode(microfrontendId, sensitivitet)
 
     val JsonNode.sensitivitet: Sensitivitet
         get() = this["sensitivitet"]?.let { name -> Sensitivitet.fromString(name.asText()) }

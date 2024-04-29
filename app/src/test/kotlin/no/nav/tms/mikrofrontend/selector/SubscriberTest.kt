@@ -7,8 +7,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.prometheus.client.CollectorRegistry
 import kotliquery.queryOf
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.common.testutils.assert
+import no.nav.tms.kafka.application.MessageBroadcaster
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
@@ -20,21 +20,20 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class SinkTest {
+internal class SubscriberTest {
 
     private val database = LocalPostgresDatabase.cleanDb()
     private val personRepository = PersonRepository(
         database = database,
         counter = MicrofrontendCounter()
     )
-    private val testRapid = TestRapid()
+    private val broadcaster = setupBroadcaster(personRepository)
 
 
     @BeforeAll
     fun setupSinks() {
         CollectorRegistry.defaultRegistry.clear()
-        EnableSink(testRapid, personRepository)
-        DisableSink(testRapid, personRepository)
+
     }
 
     @AfterEach
@@ -44,24 +43,24 @@ internal class SinkTest {
     }
 
     @Test
-     fun `skal håndtere gjeldene jsonversjon`(){
-         val enableMsg = currentVersionMessage(EnableMessage, "tadda-mc", "2456789")
-         val disableMsg = currentVersionMessage(DisableMessage, "tadda-mc", "2456789")
+    fun `skal håndtere gjeldene jsonversjon`() {
+        val enableMsg = testJsonString(EnableMessage, "tadda-mc", "2456789")
+        val disableMsg = testJsonString(DisableMessage, "tadda-mc", "2456789")
 
-        testRapid.sendTestMessage(enableMsg)
+        broadcaster.broadcastJson(enableMsg)
         database.getMicrofrontends(ident = "2456789").assert {
             require(this != null)
             size shouldBe 1
         }
 
-        testRapid.sendTestMessage(disableMsg)
+        broadcaster.broadcastJson(disableMsg)
         database.getMicrofrontends(ident = "2456789").assert {
             require(this != null)
             size shouldBe 0
         }
 
 
-     }
+    }
 
     @Test
     fun `Skal enable+oppdatere mikrofrontends og opprette historikk`() {
@@ -73,16 +72,21 @@ internal class SinkTest {
 
         database.insertLegacyFormat(ident = testIdent, format = ::dbv1Format, oldAndRusty)
 
-        val enableMsg1 = currentVersionPacket(ident = testIdent, microfrontendId = testmicrofeId1, initiatedBy = "testteam")
-        val enableMsg2 = currentVersionPacket(microfrontendId = testmicrofeId2, ident = testIdent)
-        val enableMsg3 = currentVersionPacket(microfrontendId = testmicrofeId2, ident = testIdent, sensitivitet = Sensitivitet.SUBSTANTIAL)
+        val enableMsg1 =
+            testJsonString(ident = testIdent, microfrontendId = testmicrofeId1, initiatedBy = "testteam")
+        val enableMsg2 = testJsonString(microfrontendId = testmicrofeId2, ident = testIdent)
+        val enableMsg3 = testJsonString(
+            microfrontendId = testmicrofeId2,
+            ident = testIdent,
+            sensitivitet = Sensitivitet.SUBSTANTIAL
+        )
 
-        testRapid.sendTestMessage(enableMsg1.toJson())
-        testRapid.sendTestMessage(enableMsg2.toJson())
-        testRapid.sendTestMessage(enableMsg3.toJson())
+        broadcaster.broadcastJson(enableMsg1)
+        broadcaster.broadcastJson(enableMsg2)
+        broadcaster.broadcastJson(enableMsg3)
 
-        testRapid.sendTestMessage(
-            currentVersionMessage(
+        broadcaster.broadcastJson(
+            testJsonString(
                 messageRequirements = EnableMessage,
                 microfrontendId = microNewVersion,
                 ident = testIdent,
@@ -104,7 +108,8 @@ internal class SinkTest {
                 .get("sensitivitet")?.asText() shouldBe Sensitivitet.HIGH.stringValue
             find { it["microfrontend_id"].asText() == testmicrofeId2 }!!
                 .get("sensitivitet")?.asText() shouldBe Sensitivitet.SUBSTANTIAL.stringValue
-            find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sensitivitet")?.asText() shouldBe Sensitivitet.HIGH.stringValue
+            find { it["microfrontend_id"].asText() == oldAndRusty }!!.get("sensitivitet")
+                ?.asText() shouldBe Sensitivitet.HIGH.stringValue
             find { it["microfrontend_id"].asText() == microNewVersion }!!.get("sensitivitet")
                 ?.asText() shouldBe Sensitivitet.HIGH.stringValue
         }
@@ -142,30 +147,30 @@ internal class SinkTest {
         val testmicrofeId1 = "new-and-shiny"
         val testmicrofeId2 = "also-new-and-shiny"
 
-        testRapid.sendTestMessage(
-            currentVersionMessage(
+        broadcaster.broadcastJson(
+            testJsonString(
                 microfrontendId = testmicrofeId1,
                 ident = testFnr,
                 initiatedBy = "id1team"
             )
         )
-        testRapid.sendTestMessage(currentVersionMessage(microfrontendId = testmicrofeId1, ident = "9988776655"))
-        testRapid.sendTestMessage(
-            currentVersionMessage(
+        broadcaster.broadcastJson(testJsonString(microfrontendId = testmicrofeId1, ident = "9988776655"))
+        broadcaster.broadcastJson(
+            testJsonString(
                 microfrontendId = testmicrofeId2,
                 ident = testFnr,
                 initiatedBy = "id2team"
             )
         )
 
-        testRapid.sendTestMessage(
+        broadcaster.broadcastJson(
             disableMessage(
                 fnr = testFnr,
                 microfrontendId = testmicrofeId1,
                 initiatedBy = "id1team2"
             )
         )
-        testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
+        broadcaster.broadcastJson(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
 
         database.getMicrofrontends(ident = testFnr).assert {
             require(this != null)
@@ -196,9 +201,9 @@ internal class SinkTest {
     fun `Skal kunne re-enable mikrofrontend`() {
         val testFnr = "12345678910"
         val testmicrofeId1 = "same-same-but-different"
-        testRapid.sendTestMessage(currentVersionMessage(microfrontendId = testmicrofeId1, ident = testFnr))
-        testRapid.sendTestMessage(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
-        testRapid.sendTestMessage(currentVersionMessage(microfrontendId = testmicrofeId1, ident = testFnr))
+        broadcaster.broadcastJson(testJsonString(microfrontendId = testmicrofeId1, ident = testFnr))
+        broadcaster.broadcastJson(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
+        broadcaster.broadcastJson(testJsonString(microfrontendId = testmicrofeId1, ident = testFnr))
 
         database.getMicrofrontends(ident = testFnr).assert {
             require(this != null)
@@ -213,13 +218,13 @@ internal class SinkTest {
 
     @Test
     fun `fungerer med gammel versjon av initiatedBy`() {
-        val enableMsg = currentVersionMessage(
+        val enableMsg = testJsonString(
             ident = "12345678910",
             microfrontendId = "testingtesting",
             initiatedBy = "legacy-team"
         )
 
-        testRapid.sendTestMessage(enableMsg)
+        broadcaster.broadcastJson(enableMsg)
         database.getMicrofrontends(ident = "12345678910").assert {
             require(this != null)
             size shouldBe 1
@@ -240,8 +245,10 @@ private fun String?.microfrontendids(): List<String> {
     return objectMapper.readTree(this)["microfrontends"].toList().map { it["microfrontend_id"].asText() }
 }
 
+//TODO: fiks i kafkalib
+
 private fun disableMessage(microfrontendId: String, fnr: String, initiatedBy: String = "default-team") = """
-    {
+    { "@event_name": "disable",
       "@action": "disable",
       "ident": "$fnr",
       "microfrontend_id": "$microfrontendId",

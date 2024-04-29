@@ -16,8 +16,8 @@ import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.common.testutils.assert
+import no.nav.tms.kafka.application.MessageBroadcaster
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
@@ -41,21 +41,19 @@ import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ApiTest {
-
-    private val testRapid = TestRapid()
     private val counter = MicrofrontendCounter()
     private val database = LocalPostgresDatabase.cleanDb()
     private val personRepository = PersonRepository(
         database = database,
         counter = counter
     )
+    private val broadcaster = setupBroadcaster(personRepository)
+
     private val gcpStorage = LocalGCPStorage.instance
 
     @BeforeAll
     fun setup() {
         CollectorRegistry.defaultRegistry.clear()
-        EnableSink(testRapid, personRepository)
-        DisableSink(testRapid, personRepository)
     }
 
     @AfterEach
@@ -82,15 +80,15 @@ internal class ApiTest {
 
             gcpStorage.updateManifest(mutableMapOf(kafkastyrtDinOversikt, kafkastyrtDinOversikt2))
 
-            testRapid.sendTestMessage(
-                currentVersionMessage(
+            broadcaster.broadcastJson(
+                testJsonString(
                     messageRequirements = EnableMessage,
                     ident = testIdent,
                     microfrontendId = kafkastyrtDinOversikt.first
                 )
             )
-            testRapid.sendTestMessage(
-                currentVersionMessage(
+            broadcaster.broadcastJson(
+                testJsonString(
                     messageRequirements = EnableMessage,
                     ident = testIdent,
                     microfrontendId = kafkastyrtDinOversikt2.first
@@ -156,20 +154,20 @@ internal class ApiTest {
         )
 
         expectedMicrofrontends.keys.forEach {
-            testRapid.sendTestMessage(
-                currentVersionMessage(
+            broadcaster.broadcastJson(
+                testJsonString(
                     messageRequirements = EnableMessage,
                     ident = testIdent,
                     microfrontendId = it
                 )
             )
         }
-        testRapid.sendTestMessage(currentVersionMessage(microfrontendId = "aia-ny", ident = testIdent))
+        broadcaster.broadcastJson(testJsonString(microfrontendId = "aia-ny", ident = testIdent))
 
         //legacy
-        testRapid.sendTestMessage(currentVersionMessage(microfrontendId = "legacyNivå4mkf", ident = testIdent))
-        testRapid.sendTestMessage(
-            currentVersionMessage(
+        broadcaster.broadcastJson(testJsonString(microfrontendId = "legacyNivå4mkf", ident = testIdent))
+        broadcaster.broadcastJson(
+            testJsonString(
                 microfrontendId = "nivå3mkf",
                 ident = testIdent,
                 sensitivitet = Sensitivitet.SUBSTANTIAL
@@ -222,8 +220,8 @@ internal class ApiTest {
         )
 
         expectedMicrofrontends.keys.forEach {
-            testRapid.sendTestMessage(
-                currentVersionMessage(
+            broadcaster.broadcastJson(
+                testJsonString(
                     messageRequirements = EnableMessage,
                     ident = testIdent,
                     microfrontendId = it
@@ -271,10 +269,10 @@ internal class ApiTest {
             )
 
             nivå4Mikrofrontends.keys.forEach {
-                testRapid.sendTestMessage(currentVersionMessage(microfrontendId = it, ident = testIdent))
+                broadcaster.broadcastJson(testJsonString(microfrontendId = it, ident = testIdent))
             }
-            testRapid.sendTestMessage(
-                currentVersionMessage(
+            broadcaster.broadcastJson(
+                testJsonString(
                     microfrontendId = "nivå3mkf",
                     ident = testIdent,
                     sensitivitet = Sensitivitet.SUBSTANTIAL
@@ -348,8 +346,8 @@ internal class ApiTest {
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
-            testRapid.sendTestMessage(
-                currentVersionMessage(
+            broadcaster.broadcastJson(
+                testJsonString(
                     microfrontendId = "nivå3mkf",
                     ident = testident2,
                     sensitivitet = HIGH
@@ -384,8 +382,8 @@ internal class ApiTest {
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
-            testRapid.sendTestMessage(
-                currentVersionMessage(
+            broadcaster.broadcastJson(
+                testJsonString(
                     microfrontendId = "nivå3mkf",
                     ident = testident2,
                     sensitivitet = HIGH
@@ -424,8 +422,8 @@ internal class ApiTest {
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
-            testRapid.sendTestMessage(
-                currentVersionMessage(
+            broadcaster.broadcastJson(
+                testJsonString(
                     microfrontendId = "nivå3mkf",
                     ident = testident2,
                     sensitivitet = HIGH

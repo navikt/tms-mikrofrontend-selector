@@ -39,7 +39,6 @@ dependencies {
     implementation(TmsKtorTokenSupport.tokenXValidation)
     implementation(TmsKtorTokenSupport.tokendingsExchange)
     implementation(Postgresql.postgresql)
-    implementation(RapidsAndRivers.rapidsAndRivers)
     implementation(KotliQuery.kotliquery)
     implementation(KotlinLogging.logging)
     implementation(TmsCommonLib.metrics)
@@ -48,6 +47,9 @@ dependencies {
     implementation(Kotlinx.coroutines)
     implementation(Kotlin.reflect)
     implementation(JacksonExt.dataformatYaml)
+    implementation(JacksonDatatype.datatypeJsr310)
+    implementation(TmsKafkaTools.kafkaApplication)
+    implementation(Prometheus.common)
     implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
 
     testImplementation(Junit.api)

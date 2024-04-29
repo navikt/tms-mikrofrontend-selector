@@ -22,7 +22,7 @@ data class Environment(
     val aivenBrokers: String = getEnvVar("KAFKA_BROKERS"),
     val aivenSchemaRegistry: String = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
     val securityVars: SecurityVars = SecurityVars(),
-    val rapidTopic: String = getEnvVar("RAPID_TOPIC"),
+    val microfrontendtopic: String = getEnvVar("RAPID_TOPIC"),
     val storageBucketName: String = getEnvVar("STORAGE_BUCKET_NAME"),
     val safUrl: String = getEnvVar("SAF_URL"),
     val safClientId: String = getEnvVar("SAF_CLIENT_ID"),
@@ -38,19 +38,6 @@ data class Environment(
     val digisosUrl: String = getEnvVar("DIGISOS_API_URL"),
     val pdlBehandlingsnummer: String = getEnvVar("PDL_BEHANDLINGSNUMMER"),
 ) {
-    fun rapidConfig(): Map<String, String> = mapOf(
-        "KAFKA_BROKERS" to aivenBrokers,
-        "KAFKA_CONSUMER_GROUP_ID" to groupId,
-        "KAFKA_RAPID_TOPIC" to rapidTopic,
-        "KAFKA_KEYSTORE_PATH" to securityVars.aivenKeystorePath,
-        "KAFKA_CREDSTORE_PASSWORD" to securityVars.aivenCredstorePassword,
-        "KAFKA_TRUSTSTORE_PATH" to securityVars.aivenTruststorePath,
-        "KAFKA_RESET_POLICY" to "earliest",
-        "HTTP_PORT" to "8080",
-        "NAIS_NAMESPACE" to namespace,
-        "NAIS_CLUSTER_NAME" to clusterName
-    )
-
     fun initGcpStorage(): Storage = StorageOptions
         .newBuilder()
         .setProjectId(getEnvVar("GCP_TEAM_PROJECT_ID"))
