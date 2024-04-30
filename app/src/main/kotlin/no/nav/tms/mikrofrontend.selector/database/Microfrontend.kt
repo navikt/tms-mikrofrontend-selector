@@ -66,12 +66,17 @@ class Microfrontends(initialJson: String? = null) {
     fun getDefinitions(innloggetnivå: Int, manifestMap: Map<String, String>): List<MicrofrontendsDefinition> =
         newData
             .filter { Sensitivitet.fromJsonNode(it["sensitivitet"]) <= innloggetnivå }
-            .mapNotNull { MicrofrontendsDefinition.create(it["microfrontend_id"].asText(),manifestMap) }
+            .mapNotNull { MicrofrontendsDefinition.create(it["microfrontend_id"].asText(), manifestMap) }
 
     fun offerStepup(innloggetnivå: Int): Boolean =
         newData.any { Sensitivitet.fromJsonNode(it["sensitivitet"]) > innloggetnivå }
 
-    fun ids(): List<String>? = newData.map { it["microfrontend_id"].asText() }
+    fun ids(innloggetnivå: Int): List<String> = newData.mapNotNull {
+        if (Sensitivitet.fromJsonNode(it["sensitivitet"]) >= innloggetnivå)
+            it["microfrontend_id"].asText()
+        else
+            null
+    }
 
 }
 

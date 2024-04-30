@@ -18,6 +18,7 @@ class PersonalContentCollector(
     val externalContentFecther: ExternalContentFecther,
     val produktkortCounter: ProduktkortCounter
 ) {
+
     suspend fun getContent(user: TokenXUser, innloggetnivå: Int): PersonalContentResponse {
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
         return asyncCollector(user).build(microfrontends, innloggetnivå, manifestStorage.getManifestBucketContent())
@@ -60,16 +61,20 @@ class PersonalContentFactory(
         microfrontends: Microfrontends?,
         innloggetnivå: Int,
         manifestMap: Map<String, String>,
-    ): PersonalContentResponse =
-        PersonalContentResponse(
+    ): PersonalContentResponse {
+        val useNewAia = ContentDefinition.arbeidsøkerSection.getMicrofrontendsForSection(microfrontends, innloggetnivå)
+            .isNotEmpty() || arbeidsøkerResponse.brukNyAia ?: false
+
+        return PersonalContentResponse(
             microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestMap) ?: emptyList(),
             produktkort = ContentDefinition.getProduktkort(
                 digisosResponse.dokumenter + safResponse.dokumenter
             ).filter { it.skalVises() }.map { it.id },
 
             offerStepup = microfrontends?.offerStepup(innloggetnivå) ?: false,
-            aiaStandard = arbeidsøkerResponse.isStandardInnsats(),
-            brukNyAia = arbeidsøkerResponse.brukNyAia == true,
+            aiaStandard = arbeidsøkerResponse.isStandardInnsats() && !useNewAia,
+            // || arbeidsøkerResponse.brukNyAia?:false skal fjernes når ny-aia er over på kafka
+            brukNyAia = useNewAia && innloggetnivå == 4,
             oppfolgingContent = oppfolgingResponse.underOppfolging,
             meldekort = meldekortResponse.harMeldekort,
             aktuelt = ContentDefinition.getAktueltContent(
@@ -87,6 +92,7 @@ class PersonalContentFactory(
                 pdlResponse
             ).mapNotNull { it.errorMessage() }.joinToString()
         }
+    }
 }
 
 class PersonalContentResponse(

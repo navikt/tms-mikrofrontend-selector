@@ -51,13 +51,13 @@ class PersonalContentFactoryTest {
     }
 
     @Test
-    fun `skal ha aia-standard, ny-aia og returstatus 207 pga SAF`() {
+    fun `skal ha aia-standard og returstatus 207 pga SAF`() {
         testFactory(
             safResponse = SafResponse(emptyList(), listOf("Saf feilet fordi det gikk feil")),
             arbeidsøkerResponse = ArbeidsøkerResponse(
                 erArbeidssoker = true,
                 erStandard = true,
-                brukNyAia = true
+                brukNyAia = false
             )
         ).build(
             microfrontends = Microfrontends(),
@@ -68,7 +68,7 @@ class PersonalContentFactoryTest {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
             aiaStandard shouldBe true
-            brukNyAia shouldBe true
+            brukNyAia shouldBe false
             oppfolgingContent shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.MultiStatus
             this.microfrontends shouldBe emptyList()
@@ -124,10 +124,10 @@ class PersonalContentFactoryTest {
     }
 
     @Test
-    fun `skal ha produkkort, aia-standard, ny-aia, oppfolging, meldekort og microfrontends`() {
+    fun `skal ha produkkort, ny-aia, oppfolging, meldekort og microfrontends`() {
         //TODO
         testFactory(
-            arbeidsøkerResponse = ArbeidsøkerResponse(erArbeidssoker = true, erStandard = true, brukNyAia = true),
+            arbeidsøkerResponse = ArbeidsøkerResponse(erArbeidssoker = true, erStandard = true, brukNyAia = false),
                 safResponse = SafResponse(
             dokumenter = listOf(Dokument("DAG", LocalDateTime.now())),
             errors = emptyList()
@@ -136,7 +136,9 @@ class PersonalContentFactoryTest {
         oppfolgingResponse = OppfolgingResponse(underOppfolging = true),
         ).build(
         microfrontends = microfrontendMocck(
-            level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5
+            level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5,
+            ids = listOf("aia-ny")
+
         ),
         innloggetnivå = 4,
         manifestMap = mapOf("regefrontend" to "https://micro.moc")
@@ -144,7 +146,7 @@ class PersonalContentFactoryTest {
             oppfolgingContent shouldBe true
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG")
-            aiaStandard shouldBe true
+            aiaStandard shouldBe false
             brukNyAia shouldBe true
             oppfolgingContent shouldBe true
             resolveStatus() shouldBe HttpStatusCode.OK
@@ -205,10 +207,11 @@ private fun testFactory(
 private fun microfrontendMocck(
     level3Microfrontends: List<MicrofrontendsDefinition> = emptyList(),
     level4Microfrontends: List<MicrofrontendsDefinition>? = null,
+    ids: List<String> = listOf("mock")
 ) = mockk<Microfrontends> {
     every { offerStepup(4) } returns false
     every { offerStepup(3) } returns (level3Microfrontends != level4Microfrontends)
     every { getDefinitions(3, any()) } returns level3Microfrontends
     every { getDefinitions(4, any()) } returns (level4Microfrontends ?: level3Microfrontends)
-    every { ids() } returns listOf("mock")
+    every { ids(any()) } returns ids
 }

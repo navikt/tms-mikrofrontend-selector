@@ -135,7 +135,7 @@ internal class ApiTest {
         }
 
     @Test
-    fun `Skal svare med liste over mikrofrontends,meldekort og manifest med for loa-high`() = testApplication {
+    fun `Skal svare med liste over mikrofrontends,meldekort,ny-aia og for loa-high`() = testApplication {
         val testIdent = "12345678910"
         val expectedMicrofrontends = mutableMapOf(
             "mk1" to "https://cdn.test/mk1.json",
@@ -148,7 +148,7 @@ internal class ApiTest {
             SafRoute(sakstemaer = listOf("DAG"), ident = testIdent),
             MeldekortRoute(harMeldekort = true),
             OppfolgingRoute(false),
-            ArbeidsøkerRoute(),
+            ArbeidsøkerRoute(erArbeidsøker = true, erStandard = true),
             PdlRoute(fødselsdato = "2004-05-05", 2004),
             DigisosRoute(),
         )
@@ -162,6 +162,7 @@ internal class ApiTest {
                 )
             )
         }
+        testRapid.sendTestMessage(currentVersionMessage(microfrontendId = "aia-ny", ident = testIdent))
 
         //legacy
         testRapid.sendTestMessage(legacyMessagev2(microfrontendId = "legacyNivå4mkf", ident = testIdent))
@@ -181,10 +182,10 @@ internal class ApiTest {
                     size shouldBe expectedMicrofrontends.size
                 }
                 getAll<String>("microfrontends..url")
-                getOrException<List<String>>("produktkort").size shouldBe 1
-                getOrException<List<String>>("aktuelt").size shouldBe 0
+                list<String>("produktkort").size shouldBe 1
+                list<String>("aktuelt").size shouldBe 0
                 boolean("aiaStandard") shouldBe false
-                boolean("brukNyAia") shouldBe false
+                boolean("brukNyAia") shouldBe true
                 boolean("oppfolgingContent") shouldBe false
                 boolean("meldekort") shouldBe true
                 boolean("offerStepup") shouldBe false
@@ -207,7 +208,7 @@ internal class ApiTest {
             SafRoute(expectedProduktkort, ident = testIdent),
             MeldekortRoute(),
             OppfolgingRoute(false),
-            ArbeidsøkerRoute(),
+            ArbeidsøkerRoute(erArbeidsøker = true, erStandard = true, brukNyAia = false),
             PdlRoute(),
             DigisosRoute(),
         )
@@ -235,6 +236,8 @@ internal class ApiTest {
                     size shouldBe 2
                     this.sorted() shouldBe expectedProduktkort.sorted()
                 }
+                boolean("aiaStandard") shouldBe true
+                boolean("brukNyAia") shouldBe false
             }
         }
     }
@@ -282,6 +285,8 @@ internal class ApiTest {
                     }
                     this["offerStepup"].asBoolean() shouldBe true
                     this["produktkort"].size() shouldBe 0
+                    this["aiaStandard"].asBoolean() shouldBe false
+                    this["brukNyAia"].asBoolean() shouldBe false
                 }
             }
         }
