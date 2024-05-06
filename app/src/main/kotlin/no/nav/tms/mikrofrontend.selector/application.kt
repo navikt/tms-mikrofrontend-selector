@@ -59,8 +59,8 @@ private fun startApplication(
         kafkaConfig {
             groupId = environment.groupId
             readTopic(environment.microfrontendtopic)
+            this.eventName = "@action"
         }
-        //hv gjør jeg med sikkerhetsgreiene?
         ktorModule {
             selectorApi(
                 PersonalContentCollector(
