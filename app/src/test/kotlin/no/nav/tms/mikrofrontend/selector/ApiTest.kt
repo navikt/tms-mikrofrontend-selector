@@ -24,6 +24,7 @@ import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherExce
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
+import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
@@ -46,7 +47,7 @@ internal class ApiTest {
         counter = counter
     )
     private val broadcaster = setupBroadcaster(personRepository)
-
+    private val produktkortCounter = ProduktkortCounter()
     private val gcpStorage = LocalGCPStorage.instance
 
     @BeforeAll
@@ -537,7 +538,7 @@ internal class ApiTest {
                         pdlBehandlingsnummer = "B000",
                         tokenFetcher = tokenFetcher
                     ),
-                    produktkortCounter = testproduktkortCounter
+                    produktkortCounter = produktkortCounter
                 ),
             ) {
                 authentication {

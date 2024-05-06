@@ -48,9 +48,9 @@ dependencies {
     implementation(Kotlin.reflect)
     implementation(JacksonExt.dataformatYaml)
     implementation(JacksonDatatype.datatypeJsr310)
-    implementation(TmsKafkaTools.kafkaApplication)
+    implementation(TmsKafkaToolsBeta.kafkaApplication)
     implementation(Prometheus.common)
-    implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
+    implementation(JacksonJsonPath.core)
 
     testImplementation(Junit.api)
     testImplementation(Junit.engine)
