@@ -162,8 +162,6 @@ internal class ApiTest {
             )
         }
         broadcaster.broadcastJson(testJsonString(microfrontendId = "aia-ny", ident = testIdent))
-
-        //legacy
         broadcaster.broadcastJson(testJsonString(microfrontendId = "legacyNivå4mkf", ident = testIdent))
         broadcaster.broadcastJson(
             testJsonString(

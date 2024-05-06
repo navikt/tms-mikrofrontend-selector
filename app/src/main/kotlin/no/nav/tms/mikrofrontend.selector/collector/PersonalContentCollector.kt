@@ -71,7 +71,6 @@ class PersonalContentFactory(
             produktkort = ContentDefinition.getProduktkort(
                 digisosResponse.dokumenter + safResponse.dokumenter
             ).filter { it.skalVises() }.map { it.id },
-
             offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
             aiaStandard = arbeidsøkerResponse.isStandardInnsats() && !useNewAia,
             // || arbeidsøkerResponse.brukNyAia?:false skal fjernes når ny-aia er over på kafka

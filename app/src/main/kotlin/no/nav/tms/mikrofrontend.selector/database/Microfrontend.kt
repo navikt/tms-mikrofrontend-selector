@@ -63,7 +63,10 @@ class Microfrontends(initialJson: String? = null) {
         value = this@jsonB
     }
 
-    fun getDefinitions(innloggetnivå: LevelOfAssurance, manifestMap: Map<String, String>): List<MicrofrontendsDefinition> =
+    fun getDefinitions(
+        innloggetnivå: LevelOfAssurance,
+        manifestMap: Map<String, String>
+    ): List<MicrofrontendsDefinition> =
         newData
             .filter { LevelOfAssuranceResolver.fromJsonNode(it["sensitivitet"]) <= innloggetnivå }
             .mapNotNull { MicrofrontendsDefinition.create(it["microfrontend_id"].asText(), manifestMap) }
@@ -79,9 +82,6 @@ class Microfrontends(initialJson: String? = null) {
     }
 
 }
-
-
-
 
 
 val JsonMessage.ident: String
