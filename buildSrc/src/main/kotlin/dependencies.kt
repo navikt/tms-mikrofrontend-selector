@@ -22,7 +22,7 @@ object JacksonExt : default.JacksonDatatypeDefaults {
 
 object TmsKafkaToolsBeta : TmsKafkaToolsDefaults{
     override val version: String
-        get() = "1.2.0-test-event-name"
+        get() = "1.2.0-test-event-name-2"
 }
 
 object JacksonJsonPath: DependencyGroup {
