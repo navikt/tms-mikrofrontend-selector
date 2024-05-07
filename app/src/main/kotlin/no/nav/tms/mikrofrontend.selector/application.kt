@@ -72,10 +72,7 @@ private fun startApplication(
             )
         }
 
-        subscriber {
-            EnableSubscriber(personRepository)
-            DisableSubscriber(personRepository)
-        }
+        subscribers (EnableSubscriber(personRepository), DisableSubscriber(personRepository))
 
         onStartup {
             Flyway.runFlywayMigrations(environment)
