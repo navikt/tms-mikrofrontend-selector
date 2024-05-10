@@ -2,17 +2,14 @@ package no.nav.tms.mikrofrontend.selector.database
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.queryOf
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.tms.mikrofrontend.selector.ident
+import no.nav.tms.kafka.application.JsonMessage
 import no.nav.tms.mikrofrontend.selector.metrics.ActionMetricsType
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
-import no.nav.tms.mikrofrontend.selector.microfrontendId
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.initiatedBy
 import java.time.LocalDateTime
 import java.time.ZoneId
 
 class PersonRepository(private val database: Database, private val counter: MicrofrontendCounter) {
-    private val secureLog = KotlinLogging.logger("secureLog")
     private val log = KotlinLogging.logger { }
 
     object LocalDateTimeHelper {

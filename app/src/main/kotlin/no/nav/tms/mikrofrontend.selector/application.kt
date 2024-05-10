@@ -1,10 +1,8 @@
 package no.nav.tms.mikrofrontend.selector
 
 import io.ktor.client.*
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.rapids_rivers.RapidApplication.RapidApplicationConfig.Companion.fromEnv
-import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.tms.kafka.application.JsonMessage
+import no.nav.tms.kafka.application.KafkaApplication
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
@@ -43,7 +41,7 @@ fun main() {
         ),
     )
 
-    startRapid(
+    startApplication(
         environment = environment,
         manifestStorage = ManifestsStorage(environment.initGcpStorage(), environment.storageBucketName),
         personRepository = personRepository,
@@ -51,15 +49,19 @@ fun main() {
     )
 }
 
-private fun startRapid(
+private fun startApplication(
     environment: Environment,
     manifestStorage: ManifestsStorage,
     personRepository: PersonRepository,
     externalContentFecther: ExternalContentFecther
 ) {
-    RapidApplication.Builder(fromEnv(environment.rapidConfig()))
-        .withKtorModule {
-
+    KafkaApplication.build {
+        kafkaConfig {
+            groupId = environment.groupId
+            readTopic(environment.microfrontendtopic)
+            this.eventName = "@action"
+        }
+        ktorModule {
             selectorApi(
                 PersonalContentCollector(
                     repository = personRepository,
@@ -69,23 +71,11 @@ private fun startRapid(
                 )
             )
         }
-        .build().apply {
-            DisableSink(this, personRepository)
-            EnableSink(this, personRepository)
-        }.apply {
-            register(object : RapidsConnection.StatusListener {
-                override fun onStartup(rapidsConnection: RapidsConnection) {
-                    Flyway.runFlywayMigrations(environment)
-                }
-            })
-        }.start()
-}
 
-val JsonMessage.ident: String
-    get() {
-        return get("ident").asText()
-    }
-val JsonMessage.microfrontendId: String
-    get() {
-        return get("microfrontend_id").asText()
-    }
+        subscribers (EnableSubscriber(personRepository), DisableSubscriber(personRepository))
+
+        onStartup {
+            Flyway.runFlywayMigrations(environment)
+        }
+    }.start()
+}

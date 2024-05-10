@@ -1,129 +1,110 @@
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+
 package no.nav.tms.mikrofrontend.selector
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.mockk.coEvery
 import io.mockk.mockk
-import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.tms.kafka.application.EventMetadata
+import no.nav.tms.kafka.application.JsonMessage
+import no.nav.tms.kafka.application.KafkaEvent
+import no.nav.tms.kafka.application.MessageBroadcaster
 import no.nav.tms.mikrofrontend.selector.collector.Dokument
-import no.nav.tms.mikrofrontend.selector.collector.SafResponse
+import no.nav.tms.mikrofrontend.selector.collector.ResponseWithErrors.Companion.default
+import no.nav.tms.mikrofrontend.selector.collector.ResponseWithErrors.Companion.isListType
+import no.nav.tms.mikrofrontend.selector.collector.ResponseWithErrors.Companion.isOfType
+import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
-import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.MessageRequirements
-import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet
-import no.nav.tms.mikrofrontend.selector.versions.Sensitivitet.HIGH
-import no.nav.tms.token.support.tokendings.exchange.TokendingsService
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.HIGH
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
+import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.full.starProjectedType
 
 internal val objectMapper = jacksonObjectMapper().apply {
     registerModule(JavaTimeModule())
 }
 
-object LegacyJsonMessages {
-
-    private fun v1Map(ident: String, microfrontendId: String, messageRequirements: MessageRequirements) = mapOf(
-        "@action" to messageRequirements.action,
-        "ident" to ident,
-        "microfrontend_id" to microfrontendId
-    )
-
-    fun v1Message(ident: String, microfrontendId: String, messageRequirements: MessageRequirements) =
-        JsonMessage.newMessage(
-            v1Map(ident, microfrontendId, messageRequirements)
-        ).apply { messageRequirements.addRequiredAndInterestedIn(this) }
-
-    fun enableV2Message(
-        ident: String,
-        microfrontendId: String,
-        initiatedBy: String = "defaultteam",
-        sikkerhetsnivå: Int = 4
-    ) =
-        JsonMessage.newMessage(
-            v1Map(ident, microfrontendId, EnableMessage) +
-                    mapOf(
-                        "initiated_by" to initiatedBy,
-                        "sikkerhetsnivå" to sikkerhetsnivå
-                    )
-        ).apply { EnableMessage.addRequiredAndInterestedIn(this) }
-
-    fun disableV2Message(ident: String, microfrontendId: String, initiatedBy: String) =
-        JsonMessage.newMessage(
-            v1Map(ident, microfrontendId, JsonMessageVersions.DisableMessage) +
-                    mapOf("initiated_by" to initiatedBy)
-        ).apply { JsonMessageVersions.DisableMessage.addRequiredAndInterestedIn(this) }
-}
-
-
-fun legacyMessagev2(
-    microfrontendId: String,
-    ident: String,
-    sikkerhetsnivå: Int = 4,
-    initiatedBy: String? = "default-team",
-) =
-    """
-    {
-      "@action": "enable",
-      "ident": "$ident",
-      "microfrontend_id": "$microfrontendId",
-      "sikkerhetsnivå" : $sikkerhetsnivå
-      ${initiatedBy?.let { """ ,"initiated_by": "$initiatedBy" """ } ?: ""}
-    }
-    """.trimIndent()
-
-
-fun currentVersionMessage(
+fun testJsonString(
     messageRequirements: MessageRequirements = EnableMessage,
     microfrontendId: String,
     ident: String,
-    sensitivitet: Sensitivitet = HIGH,
+    levelOfAssurance: LevelOfAssurance = HIGH,
     initiatedBy: String = "default-team"
-) = JsonMessage.newMessage(
-    currentVersionMap(
+) = objectMapper.writeValueAsString(
+    jsonTestMap(
         messageRequirements = messageRequirements,
         microfrontendId = microfrontendId,
         ident = ident,
-        sensitivitet = sensitivitet,
+        levelOfAssurance = levelOfAssurance,
         initiatedBy = initiatedBy
     )
-).toJson()
+)
 
-fun currentVersionPacket(
+fun testJsonMessage(
     messageRequirements: MessageRequirements = EnableMessage,
     microfrontendId: String,
     ident: String,
-    sensitivitet: Sensitivitet = HIGH,
-    initatedBy: String = "default-team"
-) =
-    JsonMessage.newMessage(
-        currentVersionMap(messageRequirements, microfrontendId, ident, sensitivitet, initatedBy)
-    ).apply {
-        messageRequirements.addRequiredAndInterestedIn(this)
-    }
+    levelOfAssurance: LevelOfAssurance = HIGH,
+    initiatedBy: String = "default-team"
+): JsonMessage =
+    jsonTestMap(
+        messageRequirements,
+        microfrontendId,
+        ident,
+        levelOfAssurance,
+        initiatedBy
+    ).toJsonMessage()
 
-fun currentVersionMap(
+
+fun jsonTestMap(
     messageRequirements: MessageRequirements,
     microfrontendId: String,
     ident: String,
-    sensitivitet: Sensitivitet = HIGH,
+    levelOfAssurance: LevelOfAssurance = HIGH,
     initiatedBy: String = "default-team"
 ) = mutableMapOf(
+    //TODO: fiks i kafkalib
+//    "@event_name" to messageRequirements.action,
     "@action" to messageRequirements.action,
     "ident" to ident,
     "microfrontend_id" to microfrontendId,
     "@initiated_by" to initiatedBy
 ).apply {
     if (messageRequirements == EnableMessage)
-        this["sensitivitet"] = sensitivitet.stringValue
-    println(this)
+        this["sensitivitet"] = levelOfAssurance.name.lowercase()
 }
 
-
-private fun MessageRequirements.addRequiredAndInterestedIn(jsonMessage: JsonMessage) {
-    requireCommonKeys(jsonMessage)
-    interestedInLegacyKeys(jsonMessage)
-    interestedInCurrentVersionKeys(jsonMessage)
-}
-
-val testproduktkortCounter = ProduktkortCounter()
 fun String.safTestDokument(sistEndret: LocalDateTime = LocalDateTime.now()) = Dokument(this, sistEndret)
+
+fun setupBroadcaster(personRepository: PersonRepository) = MessageBroadcaster(
+    listOf(
+        EnableSubscriber(personRepository),
+        DisableSubscriber(personRepository)
+    ),
+    "@action"
+)
+
+fun <K, V> Map<out K, V>.toJsonMessage(): JsonMessage {
+    val jsonNode: JsonNode = this.let { objectMapper.valueToTree(this) }
+    val constructor = JsonMessage::class.primaryConstructor?:throw IllegalArgumentException("class has no primaryconstructor")
+    val args = constructor.parameters.map { parameter ->
+        when {
+            parameter.name == "eventName" -> "@action"
+            parameter.name == "json" -> jsonNode
+            parameter.name == "metadata" -> EventMetadata(
+                topic = "Tevita",
+                kafkaEvent = KafkaEvent(key = "Cassaundra", value = "Sheina"),
+                createdAt = null,
+                readAt = ZonedDateTime.now()
+            )
+            else -> throw IllegalArgumentException("unexpected Ktype for parameter errors: ${parameter.type}")
+        }
+    }.toTypedArray()
+
+    return constructor.call(*args)
+}

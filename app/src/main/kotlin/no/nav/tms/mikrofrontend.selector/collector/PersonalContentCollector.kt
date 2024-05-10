@@ -10,6 +10,7 @@ import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
 
 class PersonalContentCollector(
@@ -19,7 +20,7 @@ class PersonalContentCollector(
     val produktkortCounter: ProduktkortCounter
 ) {
 
-    suspend fun getContent(user: TokenXUser, innloggetnivå: Int): PersonalContentResponse {
+    suspend fun getContent(user: TokenXUser, innloggetnivå: LevelOfAssurance): PersonalContentResponse {
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
         return asyncCollector(user).build(microfrontends, innloggetnivå, manifestStorage.getManifestBucketContent())
             .also {
@@ -59,22 +60,21 @@ class PersonalContentFactory(
 ) {
     fun build(
         microfrontends: Microfrontends?,
-        innloggetnivå: Int,
+        levelOfAssurance: LevelOfAssurance,
         manifestMap: Map<String, String>,
     ): PersonalContentResponse {
-        val useNewAia = ContentDefinition.arbeidsøkerSection.getMicrofrontendsForSection(microfrontends, innloggetnivå)
+        val useNewAia = ContentDefinition.arbeidsøkerSection.getMicrofrontendsForSection(microfrontends, levelOfAssurance)
             .isNotEmpty() || arbeidsøkerResponse.brukNyAia ?: false
 
         return PersonalContentResponse(
-            microfrontends = microfrontends?.getDefinitions(innloggetnivå, manifestMap) ?: emptyList(),
+            microfrontends = microfrontends?.getDefinitions(levelOfAssurance, manifestMap) ?: emptyList(),
             produktkort = ContentDefinition.getProduktkort(
                 digisosResponse.dokumenter + safResponse.dokumenter
             ).filter { it.skalVises() }.map { it.id },
-
-            offerStepup = microfrontends?.offerStepup(innloggetnivå) ?: false,
+            offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
             aiaStandard = arbeidsøkerResponse.isStandardInnsats() && !useNewAia,
             // || arbeidsøkerResponse.brukNyAia?:false skal fjernes når ny-aia er over på kafka
-            brukNyAia = useNewAia && innloggetnivå == 4,
+            brukNyAia = useNewAia && levelOfAssurance == LevelOfAssurance.HIGH,
             oppfolgingContent = oppfolgingResponse.underOppfolging,
             meldekort = meldekortResponse.harMeldekort,
             aktuelt = ContentDefinition.getAktueltContent(

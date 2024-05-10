@@ -79,9 +79,9 @@ internal fun Application.selectorApi(
     routing {
         authenticate {
             route("din-oversikt") {
-                get() {
+                get {
                     val user = TokenXUserFactory.createTokenXUser(call)
-                    val content = personalContentCollector.getContent(user, user.loginLevel)
+                    val content = personalContentCollector.getContent(user, user.levelOfAssurance)
                     content.errors?.takeIf { it.isNotEmpty() }?.let {
                         log.warn { it }
                     }

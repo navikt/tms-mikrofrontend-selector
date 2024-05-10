@@ -16,7 +16,6 @@ import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
@@ -25,11 +24,13 @@ import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherExce
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
+import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
-import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance
-import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.LEVEL_3
-import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance.LEVEL_4
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.HIGH
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.SUBSTANTIAL
+import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance as MockLevelOfAssurance
 import no.nav.tms.token.support.tokenx.validation.mock.tokenXMock
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
@@ -39,21 +40,19 @@ import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ApiTest {
-
-    private val testRapid = TestRapid()
     private val counter = MicrofrontendCounter()
     private val database = LocalPostgresDatabase.cleanDb()
     private val personRepository = PersonRepository(
         database = database,
         counter = counter
     )
+    private val broadcaster = setupBroadcaster(personRepository)
+    private val produktkortCounter = ProduktkortCounter()
     private val gcpStorage = LocalGCPStorage.instance
 
     @BeforeAll
     fun setup() {
         CollectorRegistry.defaultRegistry.clear()
-        EnableSink(testRapid, personRepository)
-        DisableSink(testRapid, personRepository)
     }
 
     @AfterEach
@@ -80,15 +79,15 @@ internal class ApiTest {
 
             gcpStorage.updateManifest(mutableMapOf(kafkastyrtDinOversikt, kafkastyrtDinOversikt2))
 
-            testRapid.sendTestMessage(
-                currentVersionMessage(
+            broadcaster.broadcastJson(
+                testJsonString(
                     messageRequirements = EnableMessage,
                     ident = testIdent,
                     microfrontendId = kafkastyrtDinOversikt.first
                 )
             )
-            testRapid.sendTestMessage(
-                currentVersionMessage(
+            broadcaster.broadcastJson(
+                testJsonString(
                     messageRequirements = EnableMessage,
                     ident = testIdent,
                     microfrontendId = kafkastyrtDinOversikt2.first
@@ -154,19 +153,23 @@ internal class ApiTest {
         )
 
         expectedMicrofrontends.keys.forEach {
-            testRapid.sendTestMessage(
-                currentVersionMessage(
+            broadcaster.broadcastJson(
+                testJsonString(
                     messageRequirements = EnableMessage,
                     ident = testIdent,
                     microfrontendId = it
                 )
             )
         }
-        testRapid.sendTestMessage(currentVersionMessage(microfrontendId = "aia-ny", ident = testIdent))
-
-        //legacy
-        testRapid.sendTestMessage(legacyMessagev2(microfrontendId = "legacyNivå4mkf", ident = testIdent))
-        testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testIdent, 3))
+        broadcaster.broadcastJson(testJsonString(microfrontendId = "aia-ny", ident = testIdent))
+        broadcaster.broadcastJson(testJsonString(microfrontendId = "legacyNivå4mkf", ident = testIdent))
+        broadcaster.broadcastJson(
+            testJsonString(
+                microfrontendId = "nivå3mkf",
+                ident = testIdent,
+                levelOfAssurance = SUBSTANTIAL
+            )
+        )
 
         expectedMicrofrontends["nivå3mkf"] = "https://cdn.test/nivå3mkf.json"
         expectedMicrofrontends["legacyNivå4mkf"] = "https://cdn.test/legacyNivå4mkf.json"
@@ -214,8 +217,8 @@ internal class ApiTest {
         )
 
         expectedMicrofrontends.keys.forEach {
-            testRapid.sendTestMessage(
-                currentVersionMessage(
+            broadcaster.broadcastJson(
+                testJsonString(
                     messageRequirements = EnableMessage,
                     ident = testIdent,
                     microfrontendId = it
@@ -252,7 +255,7 @@ internal class ApiTest {
                 "mk3" to "https://cdn.test/mk1.json",
             )
 
-            initSelectorApi(testident = testIdent, levelOfAssurance = LEVEL_3)
+            initSelectorApi(testident = testIdent, levelOfAssurance = SUBSTANTIAL)
             initExternalServices(
                 SafRoute(ident = testIdent),
                 MeldekortRoute(),
@@ -263,9 +266,15 @@ internal class ApiTest {
             )
 
             nivå4Mikrofrontends.keys.forEach {
-                testRapid.sendTestMessage(legacyMessagev2(it, testIdent))
+                broadcaster.broadcastJson(testJsonString(microfrontendId = it, ident = testIdent))
             }
-            testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testIdent, 3))
+            broadcaster.broadcastJson(
+                testJsonString(
+                    microfrontendId = "nivå3mkf",
+                    ident = testIdent,
+                    levelOfAssurance = SUBSTANTIAL
+                )
+            )
 
             gcpStorage.updateManifest(
                 nivå4Mikrofrontends.apply {
@@ -334,7 +343,13 @@ internal class ApiTest {
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
-            testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
+            broadcaster.broadcastJson(
+                testJsonString(
+                    microfrontendId = "nivå3mkf",
+                    ident = testident2,
+                    levelOfAssurance = HIGH
+                )
+            )
 
             client.get("/din-oversikt").assert {
                 status shouldBe HttpStatusCode.MultiStatus
@@ -364,7 +379,13 @@ internal class ApiTest {
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
-            testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
+            broadcaster.broadcastJson(
+                testJsonString(
+                    microfrontendId = "nivå3mkf",
+                    ident = testident2,
+                    levelOfAssurance = HIGH
+                )
+            )
 
             client.get("/din-oversikt").assert {
                 status shouldBe HttpStatusCode.MultiStatus
@@ -398,7 +419,13 @@ internal class ApiTest {
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
-            testRapid.sendTestMessage(legacyMessagev2("nivå3mkf", testident2, 4))
+            broadcaster.broadcastJson(
+                testJsonString(
+                    microfrontendId = "nivå3mkf",
+                    ident = testident2,
+                    levelOfAssurance = HIGH
+                )
+            )
 
             client.get("/din-oversikt").assert {
                 status shouldBe HttpStatusCode.MultiStatus
@@ -481,7 +508,7 @@ internal class ApiTest {
 
     fun ApplicationTestBuilder.initSelectorApi(
         testident: String,
-        levelOfAssurance: LevelOfAssurance = LEVEL_4,
+        levelOfAssurance: LevelOfAssurance = HIGH,
         httpClient: HttpClient? = null,
         tokenFetcher: TokenFetcher = mockk<TokenFetcher>().apply {
             coEvery { oppfolgingToken(any()) } returns "<oppfolging>"
@@ -509,7 +536,7 @@ internal class ApiTest {
                         pdlBehandlingsnummer = "B000",
                         tokenFetcher = tokenFetcher
                     ),
-                    produktkortCounter = testproduktkortCounter
+                    produktkortCounter = produktkortCounter
                 ),
             ) {
                 authentication {
@@ -517,12 +544,18 @@ internal class ApiTest {
                         alwaysAuthenticated = true
                         setAsDefault = true
                         staticUserPid = testident
-                        staticLevelOfAssurance = levelOfAssurance
+                        staticLevelOfAssurance = levelOfAssurance.toMockk()
                     }
                 }
             }
         }
     }
+}
+
+private fun LevelOfAssurance.toMockk(): no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance?  = when {
+    this == HIGH -> MockLevelOfAssurance.HIGH
+    this == SUBSTANTIAL -> MockLevelOfAssurance.SUBSTANTIAL
+    else -> throw IllegalArgumentException("Ukjent vedii for level of assurance; ${this.name}")
 }
 
 val mockEngine = MockEngine { _ ->
