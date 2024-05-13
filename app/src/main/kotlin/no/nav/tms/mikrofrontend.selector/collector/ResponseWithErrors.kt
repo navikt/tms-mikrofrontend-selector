@@ -143,6 +143,8 @@ class ArbeidsøkerResponse(
 ) : ResponseWithErrors(errors) {
     override val source = "aia-backend"
     fun isStandardInnsats(): Boolean = erArbeidssoker == true && erStandard == true
+
+    fun isLegacyAiaBruker(): Boolean = erArbeidssoker == true && erStandard == false
 }
 
 class PdlResponse(
