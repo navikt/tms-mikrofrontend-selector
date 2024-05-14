@@ -1,0 +1,29 @@
+name: Bygg og publiser bibliotek for release
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  packages: write
+
+jobs:
+  publish-lib:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sjekk ut koden
+        uses: actions/checkout@v4
+
+      - name: Sett opp java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Bygg bibliotek
+        run:  ./gradlew lib:build
+
+      - name: Publish packages
+        run: ./gradlew -Plib_version="${{ github.event.release.name }}" publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
