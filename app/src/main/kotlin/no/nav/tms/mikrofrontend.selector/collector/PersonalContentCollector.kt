@@ -72,6 +72,7 @@ class PersonalContentFactory(
                 digisosResponse.dokumenter + safResponse.dokumenter
             ).filter { it.skalVises() }.map { it.id },
             offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
+            aiaLegacy = arbeidsøkerResponse.isLegacyAiaBruker(),
             aiaStandard = arbeidsøkerResponse.isStandardInnsats() && !useNewAia,
             // || arbeidsøkerResponse.brukNyAia?:false skal fjernes når ny-aia er over på kafka
             brukNyAia = useNewAia && levelOfAssurance == LevelOfAssurance.HIGH,
@@ -99,6 +100,7 @@ class PersonalContentResponse(
     val microfrontends: List<MicrofrontendsDefinition>,
     val produktkort: List<String>,
     val offerStepup: Boolean,
+    val aiaLegacy: Boolean,
     val aiaStandard: Boolean,
     val brukNyAia: Boolean,
     val oppfolgingContent: Boolean,

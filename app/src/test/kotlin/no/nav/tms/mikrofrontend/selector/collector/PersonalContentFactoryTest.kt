@@ -127,6 +127,42 @@ class PersonalContentFactoryTest {
     }
 
     @Test
+    fun `skal ha aia-legacy`() {
+        testFactory(
+            arbeidsøkerResponse = ArbeidsøkerResponse(
+                erArbeidssoker = true,
+                erStandard = false,
+                brukNyAia = false
+            ),
+        ).build(
+            microfrontends = Microfrontends(),
+            levelOfAssurance = HIGH,
+            manifestMap = emptyMap()
+        ).assert {
+            aiaLegacy shouldBe true
+        }
+
+    }
+
+    @Test
+    fun `skal ikke ha aia-legacy`() {
+        testFactory(
+            arbeidsøkerResponse = ArbeidsøkerResponse(
+                erArbeidssoker = false,
+                erStandard = false,
+                brukNyAia = false
+            ),
+        ).build(
+            microfrontends = Microfrontends(),
+            levelOfAssurance = HIGH,
+            manifestMap = emptyMap()
+        ).assert {
+            aiaLegacy shouldBe false
+        }
+
+    }
+
+    @Test
     fun `skal ha produkkort, ny-aia, oppfolging, meldekort og microfrontends`() {
         //TODO
         testFactory(
