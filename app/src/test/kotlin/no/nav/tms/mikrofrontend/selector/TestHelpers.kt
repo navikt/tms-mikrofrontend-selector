@@ -86,7 +86,7 @@ fun setupBroadcaster(personRepository: PersonRepository) = MessageBroadcaster(
         EnableSubscriber(personRepository),
         DisableSubscriber(personRepository)
     ),
-    "@action"
+    listOf("@action")
 )
 
 fun <K, V> Map<out K, V>.toJsonMessage(): JsonMessage {
