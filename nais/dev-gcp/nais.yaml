@@ -27,6 +27,10 @@ spec:
     pool: nav-dev
   secureLogs:
     enabled: true
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   tokenx:
     enabled: true
   accessPolicy:
