@@ -23,6 +23,7 @@ spec:
     cpuThresholdPercentage: 100
   ingresses:
     - "https://tms-mikrofrontend-selector.intern.dev.nav.no"
+    - "https://tms-mikrofrontend-selector.ansatt.dev.nav.no"
   kafka:
     pool: nav-dev
   secureLogs:
