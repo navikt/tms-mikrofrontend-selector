@@ -8,7 +8,6 @@ class TokenFetcher(
     private val meldekortClientId: String,
     private val oppfølgingClientId: String,
     private val safClientId: String,
-    private val aiaClientId: String,
     private val pdlClientId: String,
     private val digisosClientId: String,
 
@@ -17,8 +16,6 @@ class TokenFetcher(
 
     suspend fun oppfolgingToken(user: TokenXUser): String =
         fetchWithErrorHandling("Oppfølging", oppfølgingClientId, user)
-
-    suspend fun aiaToken(user: TokenXUser): String = fetchWithErrorHandling("aia-backend", aiaClientId, user)
 
     suspend fun meldekortToken(user: TokenXUser): String = fetchWithErrorHandling("meldekort", meldekortClientId, user)
     suspend fun pdlToken(user: TokenXUser): String = fetchWithErrorHandling("pdl", pdlClientId, user)

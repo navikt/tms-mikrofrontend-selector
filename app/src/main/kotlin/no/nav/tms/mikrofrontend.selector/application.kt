@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector
 
 import io.ktor.client.*
-import no.nav.tms.kafka.application.JsonMessage
 import no.nav.tms.kafka.application.KafkaApplication
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
@@ -25,7 +24,6 @@ fun main() {
         safUrl = environment.safUrl,
         httpClient = HttpClient { configureClient() },
         oppfølgingBaseUrl = environment.oppfolgingUrl,
-        aiaBackendUrl = environment.aiaUrl,
         meldekortUrl = environment.meldekortUrl,
         pdlUrl = environment.pdlApiUrl,
         digisosUrl = environment.digisosUrl,
@@ -35,7 +33,6 @@ fun main() {
             meldekortClientId = environment.meldekortClientId,
             oppfølgingClientId = environment.oppfolgingClienId,
             safClientId = environment.safClientId,
-            aiaClientId = environment.aiaClientId,
             pdlClientId = environment.pdlClientId,
             digisosClientId = environment.digisosClientId,
         ),
@@ -59,7 +56,6 @@ private fun startApplication(
         kafkaConfig {
             groupId = environment.groupId
             readTopic(environment.microfrontendtopic)
-            eventNameFields("@action")
         }
         ktorModule {
             selectorApi(

@@ -25,8 +25,6 @@ object ContentDefinition {
 
     private val aktuelt = contentYaml.initContentRules("aktuelt", false)
 
-    val arbeidsøkerSection = contentYaml.getSection("arbeidsoker")
-
     fun getAktueltContent(
         alder: Int,
         safDokument: List<Dokument>,
