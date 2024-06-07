@@ -56,6 +56,7 @@ private fun startApplication(
         kafkaConfig {
             groupId = environment.groupId
             readTopic(environment.microfrontendtopic)
+            eventNameFields("@action")
         }
         ktorModule {
             selectorApi(
