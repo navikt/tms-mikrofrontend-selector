@@ -93,23 +93,6 @@ class OppfolgingRoute(private val underOppfølging: Boolean = false, val ovverid
     """.trimIndent()
 
 }
-
-class ArbeidsøkerRoute(
-    private val erArbeidsøker: Boolean = false,
-    private val erStandard: Boolean = false,
-    val ovverideContent: String? = null,
-    private val brukNyAia: Boolean = false
-) :
-    RouteProvider(path = "aia-backend/er-arbeidssoker", routeMethodFunction = Routing::get) {
-    override fun content(): String = ovverideContent ?: """
-        {
-          "erArbeidssoker": $erArbeidsøker,
-          "erStandard": $erStandard,
-          "brukNyAia": $brukNyAia
-        }
-    """.trimIndent()
-}
-
 class DigisosRoute(private val hasSosialhjelp: Boolean = false) :
     RouteProvider(path = "minesaker/innsendte", routeMethodFunction = Routing::get) {
     override fun content(): String = if (hasSosialhjelp) {

@@ -32,14 +32,12 @@ class PersonalContentCollector(
     suspend fun asyncCollector(user: TokenXUser): PersonalContentFactory {
         return coroutineScope {
             val safResponse = async { externalContentFecther.fetchSakstema(user) }
-            val arbeidsøkerResponse = async { externalContentFecther.fetchArbeidsøker(user) }
             val oppfolgingResponse = async { externalContentFecther.fetchOppfolging(user) }
             val meldekortResponse = async { externalContentFecther.fetchMeldekort(user) }
             val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
             val digisosResponse = async { externalContentFecther.fetchDigisosSakstema(user) }
 
             return@coroutineScope PersonalContentFactory(
-                arbeidsøkerResponse = arbeidsøkerResponse.await(),
                 safResponse = safResponse.await(),
                 meldekortResponse = meldekortResponse.await(),
                 oppfolgingResponse = oppfolgingResponse.await(),
@@ -51,7 +49,6 @@ class PersonalContentCollector(
 }
 
 class PersonalContentFactory(
-    val arbeidsøkerResponse: ArbeidsøkerResponse,
     val safResponse: SafResponse,
     val meldekortResponse: MeldekortResponse,
     val oppfolgingResponse: OppfolgingResponse,
@@ -63,8 +60,6 @@ class PersonalContentFactory(
         levelOfAssurance: LevelOfAssurance,
         manifestMap: Map<String, String>,
     ): PersonalContentResponse {
-        val useNewAia = ContentDefinition.arbeidsøkerSection.getMicrofrontendsForSection(microfrontends, levelOfAssurance)
-            .isNotEmpty() || arbeidsøkerResponse.brukNyAia ?: false
 
         return PersonalContentResponse(
             microfrontends = microfrontends?.getDefinitions(levelOfAssurance, manifestMap) ?: emptyList(),
@@ -72,10 +67,6 @@ class PersonalContentFactory(
                 digisosResponse.dokumenter + safResponse.dokumenter
             ).filter { it.skalVises() }.map { it.id },
             offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
-            aiaLegacy = arbeidsøkerResponse.isLegacyAiaBruker(),
-            aiaStandard = arbeidsøkerResponse.isStandardInnsats() && !useNewAia,
-            // || arbeidsøkerResponse.brukNyAia?:false skal fjernes når ny-aia er over på kafka
-            brukNyAia = useNewAia && levelOfAssurance == LevelOfAssurance.HIGH,
             oppfolgingContent = oppfolgingResponse.underOppfolging,
             meldekort = meldekortResponse.harMeldekort,
             aktuelt = ContentDefinition.getAktueltContent(
@@ -86,7 +77,6 @@ class PersonalContentFactory(
 
         ).apply {
             errors = listOf(
-                arbeidsøkerResponse,
                 safResponse,
                 meldekortResponse,
                 oppfolgingResponse,
@@ -100,9 +90,6 @@ class PersonalContentResponse(
     val microfrontends: List<MicrofrontendsDefinition>,
     val produktkort: List<String>,
     val offerStepup: Boolean,
-    val aiaLegacy: Boolean,
-    val aiaStandard: Boolean,
-    val brukNyAia: Boolean,
     val oppfolgingContent: Boolean,
     val meldekort: Boolean,
     val aktuelt: List<MicrofrontendsDefinition>

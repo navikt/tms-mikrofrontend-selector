@@ -135,18 +135,6 @@ class MeldekortResponse(
         }
 }
 
-class ArbeidsøkerResponse(
-    val erArbeidssoker: Boolean?,
-    val erStandard: Boolean?,
-    val brukNyAia: Boolean?,
-    errors: String? = null,
-) : ResponseWithErrors(errors) {
-    override val source = "aia-backend"
-    fun isStandardInnsats(): Boolean = erArbeidssoker == true && erStandard == true
-
-    fun isLegacyAiaBruker(): Boolean = erArbeidssoker == true && erStandard == false
-}
-
 class PdlResponse(
     val fødselsdato: LocalDate? = null,
     val fødselsår: Int?,

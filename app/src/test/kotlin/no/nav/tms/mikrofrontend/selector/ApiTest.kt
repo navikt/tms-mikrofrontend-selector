@@ -72,7 +72,6 @@ internal class ApiTest {
                 SafRoute(sakstemaer = listOf("DAG"), ident = testIdent),
                 MeldekortRoute(harMeldekort = true),
                 OppfolgingRoute(false),
-                ArbeidsøkerRoute(),
                 PdlRoute(fødselssår = 1960),
                 DigisosRoute()
             )
@@ -134,7 +133,7 @@ internal class ApiTest {
         }
 
     @Test
-    fun `Skal svare med liste over mikrofrontends,meldekort, ny-aia, legacy-aia og for loa-high`() = testApplication {
+    fun `Skal svare med liste over mikrofrontends og meldekort for loa-high`() = testApplication {
         val testIdent = "12345678910"
         val expectedMicrofrontends = mutableMapOf(
             "mk1" to "https://cdn.test/mk1.json",
@@ -147,7 +146,6 @@ internal class ApiTest {
             SafRoute(sakstemaer = listOf("DAG"), ident = testIdent),
             MeldekortRoute(harMeldekort = true),
             OppfolgingRoute(false),
-            ArbeidsøkerRoute(erArbeidsøker = true, erStandard = true),
             PdlRoute(fødselsdato = "2004-05-05", 2004),
             DigisosRoute(),
         )
@@ -187,9 +185,6 @@ internal class ApiTest {
                 getAll<String>("microfrontends..url")
                 list<String>("produktkort").size shouldBe 1
                 list<String>("aktuelt").size shouldBe 0
-                boolean("aiaStandard") shouldBe false
-                boolean("aiaLegacy") shouldBe false
-                boolean("brukNyAia") shouldBe true
                 boolean("oppfolgingContent") shouldBe false
                 boolean("meldekort") shouldBe true
                 boolean("offerStepup") shouldBe false
@@ -212,7 +207,6 @@ internal class ApiTest {
             SafRoute(expectedProduktkort, ident = testIdent),
             MeldekortRoute(),
             OppfolgingRoute(false),
-            ArbeidsøkerRoute(erArbeidsøker = true, erStandard = true, brukNyAia = false),
             PdlRoute(),
             DigisosRoute(),
         )
@@ -240,8 +234,6 @@ internal class ApiTest {
                     size shouldBe 2
                     this.sorted() shouldBe expectedProduktkort.sorted()
                 }
-                boolean("aiaStandard") shouldBe true
-                boolean("brukNyAia") shouldBe false
             }
         }
     }
@@ -261,7 +253,6 @@ internal class ApiTest {
                 SafRoute(ident = testIdent),
                 MeldekortRoute(),
                 OppfolgingRoute(),
-                ArbeidsøkerRoute(),
                 PdlRoute(),
                 DigisosRoute(),
             )
@@ -295,8 +286,6 @@ internal class ApiTest {
                     }
                     this["offerStepup"].asBoolean() shouldBe true
                     this["produktkort"].size() shouldBe 0
-                    this["aiaStandard"].asBoolean() shouldBe false
-                    this["brukNyAia"].asBoolean() shouldBe false
                 }
             }
         }
@@ -312,7 +301,6 @@ internal class ApiTest {
                 SafRoute(ident = testident2),
                 MeldekortRoute(),
                 OppfolgingRoute(false),
-                ArbeidsøkerRoute(),
                 PdlRoute(),
                 DigisosRoute(),
             )
@@ -338,7 +326,6 @@ internal class ApiTest {
                 SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999", ident = testident2),
                 MeldekortRoute(),
                 OppfolgingRoute(false),
-                ArbeidsøkerRoute(),
                 DigisosRoute(),
             )
 
@@ -374,7 +361,6 @@ internal class ApiTest {
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 OppfolgingRoute(false, ovverideContent = ""),
                 PdlRoute("2000-05-05", 2000),
-                ArbeidsøkerRoute(ovverideContent = "{}"),
                 DigisosRoute(),
             )
 
@@ -414,7 +400,6 @@ internal class ApiTest {
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 OppfolgingRoute(false, ovverideContent = ""),
                 PdlRoute(errorMsg = "Kall til PDL feilet"),
-                ArbeidsøkerRoute(ovverideContent = "{}"),
                 DigisosRoute(),
             )
 
@@ -461,7 +446,6 @@ internal class ApiTest {
                 )
                 coEvery { meldekortToken(any()) } returns "<meldekort>"
                 coEvery { safToken(any()) } returns "<saf>"
-                coEvery { aiaToken(any()) } returns "<aia>"
                 coEvery { pdlToken(any()) } returns "<pdl>"
             })
 
@@ -469,7 +453,6 @@ internal class ApiTest {
                 SafRoute(),
                 MeldekortRoute(),
                 OppfolgingRoute(false),
-                ArbeidsøkerRoute(),
                 PdlRoute(),
                 DigisosRoute(),
             )
@@ -487,7 +470,6 @@ internal class ApiTest {
             SafRoute(),
             MeldekortRoute(),
             OppfolgingRoute(false),
-            ArbeidsøkerRoute(),
             PdlRoute(),
             DigisosRoute(true)
         )
@@ -515,7 +497,6 @@ internal class ApiTest {
             coEvery { oppfolgingToken(any()) } returns "<oppfolging>"
             coEvery { meldekortToken(any()) } returns "<meldekort>"
             coEvery { safToken(any()) } returns "<saf>"
-            coEvery { aiaToken(any()) } returns "<aia>"
             coEvery { pdlToken(any()) } returns "<pdl>"
             coEvery { digisosToken(any()) } returns "<digisos>"
         }
@@ -530,7 +511,6 @@ internal class ApiTest {
                         safUrl = testHost,
                         httpClient = apiClient,
                         oppfølgingBaseUrl = testHost,
-                        aiaBackendUrl = testHost,
                         meldekortUrl = testHost,
                         pdlUrl = "$testHost/pdl",
                         digisosUrl = testHost,

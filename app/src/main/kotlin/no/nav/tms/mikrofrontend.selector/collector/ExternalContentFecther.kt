@@ -17,7 +17,6 @@ class ExternalContentFecther(
     val safUrl: String,
     val httpClient: HttpClient,
     val oppfølgingBaseUrl: String,
-    val aiaBackendUrl: String,
     val meldekortUrl: String,
     val pdlUrl: String,
     val digisosUrl: String,
@@ -71,20 +70,6 @@ class ExternalContentFecther(
         token = tokenFetcher.oppfolgingToken(user),
         url = "$oppfølgingBaseUrl/api/niva3/underoppfolging",
         map = { OppfolgingResponse(underOppfolging = it.boolean("underOppfolging")) }
-    )
-
-
-    suspend fun fetchArbeidsøker(user: TokenXUser): ArbeidsøkerResponse = getResponseAsJsonPath(
-        tjeneste = "aia-backend",
-        token = tokenFetcher.aiaToken(user),
-        url = "$aiaBackendUrl/aia-backend/er-arbeidssoker",
-        map = { jsonPath ->
-            ArbeidsøkerResponse(
-                erArbeidssoker = jsonPath.booleanOrNull("erArbeidssoker"),
-                erStandard = jsonPath.booleanOrNull("erStandard"),
-                brukNyAia = jsonPath.booleanOrNull("brukNyAia")
-            )
-        }
     )
 
     suspend fun fetchMeldekort(user: TokenXUser): MeldekortResponse = getResponseAsJsonPath(
