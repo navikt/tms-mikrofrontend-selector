@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.matchers.shouldBe
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -546,5 +547,8 @@ val mockEngine = MockEngine { _ ->
 private val sockettimeoutClient = HttpClient(mockEngine) {
     install(ContentNegotiation) {
         jackson()
+    }
+    install(HttpTimeout) {
+        
     }
 }

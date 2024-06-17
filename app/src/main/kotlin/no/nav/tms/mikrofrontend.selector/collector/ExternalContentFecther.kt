@@ -48,8 +48,10 @@ class ExternalContentFecther(
             url("$safUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
             header("Content-Type", "application/json")
-
             setBody(safQuery(user.ident))
+            timeout {
+                requestTimeoutMillis = 5000
+            }
         }
             .let { response ->
                 if (response.status != HttpStatusCode.OK) {
