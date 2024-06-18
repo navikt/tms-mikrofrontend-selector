@@ -195,7 +195,7 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
             ),
             navn  = it.read<String>(navnPath) ?: "ukjent",
             dokumentarkivUrlResolver = dokumentarkivUrlResolver,
-            sistEndret = it.read<List<String>>(datoPath)
+            sistEndret = it.read<List<String>>(datoPath)?.also { value -> log.info { "Fra Saf: ${value.joinToString()}" } }
                 ?.map { json -> LocalDateTime.parse(json) }
                 ?.maxByOrNull { parsedDate -> parsedDate }
                 ?: throw JsonPathSearchException(
