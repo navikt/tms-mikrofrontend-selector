@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import no.nav.tms.mikrofrontend.selector.collector.Dokument.Companion.getLatest
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
@@ -31,7 +32,7 @@ class PersonalContentCollector(
 
     suspend fun asyncCollector(user: TokenXUser): PersonalContentFactory {
         return coroutineScope {
-            val safResponse = async { externalContentFecther.fetchSakstema(user) }
+            val safResponse = async { externalContentFecther.fetchDocumentsFromSaf(user) }
             val oppfolgingResponse = async { externalContentFecther.fetchOppfolging(user) }
             val meldekortResponse = async { externalContentFecther.fetchMeldekort(user) }
             val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
@@ -69,6 +70,7 @@ class PersonalContentFactory(
             offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
             oppfolgingContent = oppfolgingResponse.underOppfolging,
             meldekort = meldekortResponse.harMeldekort,
+            dokumenter = (digisosResponse.dokumenter + safResponse.dokumenter).getLatest(),
             aktuelt = ContentDefinition.getAktueltContent(
                 pdlResponse.calculateAge(),
                 safResponse.dokumenter,
@@ -92,6 +94,7 @@ class PersonalContentResponse(
     val offerStepup: Boolean,
     val oppfolgingContent: Boolean,
     val meldekort: Boolean,
+    val dokumenter: List<Dokument>,
     val aktuelt: List<MicrofrontendsDefinition>
 ) {
     @JsonIgnore

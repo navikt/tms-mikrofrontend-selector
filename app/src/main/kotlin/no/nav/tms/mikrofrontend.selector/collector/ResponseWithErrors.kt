@@ -2,6 +2,7 @@ package no.nav.tms.mikrofrontend.selector.collector
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.statement.*
+import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.redactedMessage
 import java.time.LocalDate
@@ -106,7 +107,25 @@ class SafResponse(
     override val source: String = "SAF"
 }
 
-class Dokument(val sakstemakode: String, val sistEndret: LocalDateTime)
+class Dokument(
+    val kode: String,
+    dokumentarkivUrlResolver: DokumentarkivUrlResolver,
+    val sistEndret: LocalDateTime,
+    val navn: String,
+) {
+    val url = dokumentarkivUrlResolver.urlFor(kode)
+    companion object {
+        fun List<Dokument>.getLatest(): List<Dokument> =
+            sortedByDescending { it.sistEndret }.let {
+                when(it.size) {
+                    0 -> emptyList()
+                    1 -> listOf(it.first())
+                    else -> it.slice(0..1)
+                }
+            }
+    }
+
+}
 
 class OppfolgingResponse(
     underOppfolging: Boolean? = false,

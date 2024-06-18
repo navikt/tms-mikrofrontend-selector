@@ -2,6 +2,7 @@ package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 
 import io.kotest.matchers.shouldBe
 import no.nav.tms.common.testutils.assert
+import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.Dokument
 
 import org.junit.jupiter.api.Test
@@ -10,12 +11,16 @@ import org.junit.jupiter.params.provider.CsvSource
 import java.time.LocalDateTime
 
 class ProduktkortTest {
+    val dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dagpenger"))
+
     @Test
     fun `avgjør om ett produktkort skal vises eller ikke`() {
 
         ContentDefinition.getProduktkort(listOf(
             Dokument(
-                sakstemakode = "PEN",
+                kode = "PEN",
+                navn = "Pensjon",
+                dokumentarkivUrlResolver = dokumentarkivUrlResolver,
                 sistEndret = LocalDateTime.now()
             )
         ))
@@ -28,7 +33,9 @@ class ProduktkortTest {
 
         ContentDefinition.getProduktkort(listOf(
             Dokument(
-                sakstemakode = "DAG",
+                kode = "DAG",
+                navn = "Dagpenger",
+                dokumentarkivUrlResolver = dokumentarkivUrlResolver,
                 sistEndret = LocalDateTime.now()
             )
         ))
@@ -53,7 +60,7 @@ class ProduktkortTest {
     )
     fun `skal mappes til riktige koder og navn`(kode: String, forventetKode: String) {
         ContentDefinition.getProduktkort(
-            listOf(Dokument(kode, LocalDateTime.now()))
+            listOf(Dokument(kode, navn = "Pensjon", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now()))
         ).first().assert {
             id shouldBe forventetKode
         }
@@ -61,7 +68,7 @@ class ProduktkortTest {
     @Test
     fun `skal ikke legge til produktkort for ukjente verdier`() {
         ContentDefinition.getProduktkort(
-            listOf(Dokument("ABC", LocalDateTime.now()))
+            listOf(Dokument("ABC", navn = "Pensjon", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now()))
         ).size shouldBe 0
     }
 }

@@ -5,9 +5,9 @@ import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.tms.common.testutils.assert
+import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.HIGH
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.SUBSTANTIAL
 import org.junit.jupiter.api.Test
@@ -15,6 +15,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 class PersonalContentFactoryTest {
+    val dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dagpenger"))
+
     @Test
     fun `Skal være tom`() {
         testFactory().build(
@@ -34,8 +36,8 @@ class PersonalContentFactoryTest {
     @Test
     fun `skal ha microfrontends og produktkort innlogingsnivå 4`() {
         testFactory(
-            safResponse = SafResponse(listOf(Dokument("DAG", LocalDateTime.now()))),
-            digisosResponse = DigisosResponse(listOf(Dokument(sakstemakode = "KOM", LocalDateTime.now())))
+            safResponse = SafResponse(listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now()))),
+            digisosResponse = DigisosResponse(listOf(Dokument(kode = "KOM", navn = "Sosialhjelp", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now())))
         ).build(
             microfrontends = microfrontendMocck(level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5),
             levelOfAssurance = HIGH,
@@ -110,7 +112,7 @@ class PersonalContentFactoryTest {
     fun `skal ha produkkort, ny-aia, oppfolging, meldekort og microfrontends`() {
         testFactory(
             safResponse = SafResponse(
-                dokumenter = listOf(Dokument("DAG", LocalDateTime.now())),
+                dokumenter = listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now())),
                 errors = emptyList()
             ),
             meldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
@@ -139,7 +141,7 @@ class PersonalContentFactoryTest {
         //er både aia og oppfolging og meldekort nivå 4? Hva med produktkort?
         testFactory(
             safResponse = SafResponse(
-                listOf(Dokument("DAG", LocalDateTime.now())),
+                listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now())),
                 emptyList()
             )
         ).build(

@@ -79,7 +79,7 @@ fun jsonTestMap(
         this["sensitivitet"] = levelOfAssurance.name.lowercase()
 }
 
-fun String.safTestDokument(sistEndret: LocalDateTime = LocalDateTime.now()) = Dokument(this, sistEndret)
+fun String.safTestDokument(sistEndret: LocalDateTime = LocalDateTime.now()) = Dokument(this, DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dagpenger")), navn = "Dagpenger", sistEndret = sistEndret)
 
 fun setupBroadcaster(personRepository: PersonRepository) = MessageBroadcaster(
     listOf(

@@ -2,6 +2,7 @@ package no.nav.tms.mikrofrontend.selector
 
 import LocalPostgresDatabase
 import com.fasterxml.jackson.databind.JsonNode
+import com.nfeld.jsonpathkt.extension.read
 import io.kotest.matchers.shouldBe
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -37,6 +38,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.time.ZonedDateTime
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -70,7 +72,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testIdent)
             initExternalServices(
-                SafRoute(sakstemaer = listOf("DAG"), ident = testIdent),
+                SafRoute(sakstemaer = listOf("SYK"), ident = testIdent),
                 MeldekortRoute(harMeldekort = true),
                 OppfolgingRoute(false),
                 PdlRoute(fødselssår = 1960),
@@ -127,6 +129,16 @@ internal class ApiTest {
                             this["url"].asText() shouldBe "https://cdn.pensjon/manifest.json"
                         }
                     }
+
+                    list<JsonNode>("dokumenter").assert {
+                        this.size shouldBe 1
+                        this[0].assert {
+                            this["navn"].asText() shouldBe "dummyNavn"
+                            this["kode"].asText() shouldBe "SYK"
+                            this["url"].asText() shouldBe "https://www.nav.no/SYK"
+                        }
+                    }
+
                 }
 
             }
@@ -189,6 +201,14 @@ internal class ApiTest {
                 boolean("oppfolgingContent") shouldBe false
                 boolean("meldekort") shouldBe true
                 boolean("offerStepup") shouldBe false
+                list<JsonNode>("dokumenter").assert {
+                        this.size shouldBe 1
+                        this[0].assert {
+                            this["navn"].asText() shouldBe "dummyNavn"
+                            this["kode"].asText() shouldBe "DAG"
+                            this["url"].asText() shouldBe "https://www.nav.no/dokumentarkiv/dag"
+                        }
+                }
             }
         }
     }
@@ -516,7 +536,8 @@ internal class ApiTest {
                         pdlUrl = "$testHost/pdl",
                         digisosUrl = testHost,
                         pdlBehandlingsnummer = "B000",
-                        tokenFetcher = tokenFetcher
+                        tokenFetcher = tokenFetcher,
+                        dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag"))
                     ),
                     produktkortCounter = produktkortCounter
                 ),
@@ -549,6 +570,6 @@ private val sockettimeoutClient = HttpClient(mockEngine) {
         jackson()
     }
     install(HttpTimeout) {
-        
+
     }
 }

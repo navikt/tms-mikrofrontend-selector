@@ -82,6 +82,10 @@ spec:
       value: microfrontend-manifest-dev
     - name: SAF_URL
       value: https://safselvbetjening-q1.dev-fss-pub.nais.io
+    - name: SOSIALHJELP_INNSYN
+      value: https://www-q0.dev.nav.no/sosialhjelp/innsyn
+    - name: DEFAULT_INNSYN_LENKE
+      value: https://www.intern.dev.nav.no/dokumentarkiv/tema
     - name: SAF_CLIENT_ID
       value: dev-fss:teamdokumenthandtering:safselvbetjening-q1
     - name: OPPFOLGING_API_URL

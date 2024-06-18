@@ -15,6 +15,8 @@ import no.nav.tms.token.support.tokendings.exchange.TokendingsServiceBuilder
 
 fun main() {
     val environment = Environment()
+    val dokumentarkivUrlResolver = DokumentarkivUrlResolver(environment.innsynsLenker, environment.defaultInnsynLenke)
+
     val personRepository = PersonRepository(
         database = PostgresDatabase(environment),
         counter = MicrofrontendCounter()
@@ -28,6 +30,7 @@ fun main() {
         pdlUrl = environment.pdlApiUrl,
         digisosUrl = environment.digisosUrl,
         pdlBehandlingsnummer = environment.pdlBehandlingsnummer,
+        dokumentarkivUrlResolver = dokumentarkivUrlResolver,
         tokenFetcher = TokenFetcher(
             tokendingsService = TokendingsServiceBuilder.buildTokendingsService(),
             meldekortClientId = environment.meldekortClientId,
@@ -50,7 +53,7 @@ private fun startApplication(
     environment: Environment,
     manifestStorage: ManifestsStorage,
     personRepository: PersonRepository,
-    externalContentFecther: ExternalContentFecther
+    externalContentFecther: ExternalContentFecther,
 ) {
     KafkaApplication.build {
         kafkaConfig {
