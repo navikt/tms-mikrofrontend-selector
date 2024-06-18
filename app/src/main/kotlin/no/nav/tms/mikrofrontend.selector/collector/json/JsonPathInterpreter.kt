@@ -182,7 +182,7 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
             initPathInterpreter(bodyAsText(), debugLog)
     }
 
-    fun safDokument(dokumentarkivUrlResolver: DokumentarkivUrlResolver) = jsonNode.read<JsonNode>("\$.data.dokumentoversiktSelvbetjening.tema")?.map {
+    fun safDokument(dokumentarkivUrlResolver: DokumentarkivUrlResolver) = jsonNode.read<JsonNode>("\$.data.dokumentoversiktSelvbetjening.tema")?.map { it ->
         val datoPath = "\$.journalposter..relevanteDatoer..dato"
         val kodePath = "\$.kode"
         val navnPath = "\$.navn"
@@ -196,7 +196,8 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
             navn  = it.read<String>(navnPath) ?: "ukjent",
             dokumentarkivUrlResolver = dokumentarkivUrlResolver,
             sistEndret = it.read<List<String>>(datoPath)
-                ?.let { json -> LocalDateTime.parse(json.first()) }
+                ?.map { json -> LocalDateTime.parse(json) }
+                ?.maxByOrNull { parsedDate -> parsedDate }
                 ?: throw JsonPathSearchException(
                     jsonPath =datoPath,
                     jsonNode = it,
