@@ -2,6 +2,7 @@ package no.nav.tms.mikrofrontend.selector.collector
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -56,11 +57,15 @@ class PersonalContentFactory(
     val pdlResponse: PdlResponse,
     val digisosResponse: DigisosResponse
 ) {
+    private val log = KotlinLogging.logger {}
+
     fun build(
         microfrontends: Microfrontends?,
         levelOfAssurance: LevelOfAssurance,
         manifestMap: Map<String, String>,
     ): PersonalContentResponse {
+
+        log.info { "DigiSos: ${digisosResponse.dokumenter.joinToString { "${it.kode} : ${it.sistEndret}" }} Saf: ${safResponse.dokumenter.joinToString { "${it.kode} : ${it.sistEndret}" }}" }
 
         return PersonalContentResponse(
             microfrontends = microfrontends?.getDefinitions(levelOfAssurance, manifestMap) ?: emptyList(),
