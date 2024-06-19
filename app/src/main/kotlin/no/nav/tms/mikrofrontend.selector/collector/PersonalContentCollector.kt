@@ -2,7 +2,6 @@ package no.nav.tms.mikrofrontend.selector.collector
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -31,22 +30,21 @@ class PersonalContentCollector(
     }
 
 
-    suspend fun asyncCollector(user: TokenXUser): PersonalContentFactory {
-        return coroutineScope {
-            val safResponse = async { externalContentFecther.fetchDocumentsFromSaf(user) }
-            val oppfolgingResponse = async { externalContentFecther.fetchOppfolging(user) }
-            val meldekortResponse = async { externalContentFecther.fetchMeldekort(user) }
-            val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
-            val digisosResponse = async { externalContentFecther.fetchDigisosSakstema(user) }
+    suspend fun asyncCollector(user: TokenXUser) = coroutineScope {
+        val safResponse = async { externalContentFecther.fetchDocumentsFromSaf(user) }
+        val oppfolgingResponse = async { externalContentFecther.fetchOppfolging(user) }
+        val meldekortResponse = async { externalContentFecther.fetchMeldekort(user) }
+        val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
+        val digisosResponse = async { externalContentFecther.fetchDigisosSakstema(user) }
 
-            return@coroutineScope PersonalContentFactory(
-                safResponse = safResponse.await(),
-                meldekortResponse = meldekortResponse.await(),
-                oppfolgingResponse = oppfolgingResponse.await(),
-                pdlResponse = pdlResponse.await(),
-                digisosResponse = digisosResponse.await()
-            )
-        }
+        return@coroutineScope PersonalContentFactory(
+            safResponse = safResponse.await(),
+            meldekortResponse = meldekortResponse.await(),
+            oppfolgingResponse = oppfolgingResponse.await(),
+            pdlResponse = pdlResponse.await(),
+            digisosResponse = digisosResponse.await()
+        )
+
     }
 }
 
@@ -57,39 +55,33 @@ class PersonalContentFactory(
     val pdlResponse: PdlResponse,
     val digisosResponse: DigisosResponse
 ) {
-    private val log = KotlinLogging.logger {}
 
     fun build(
         microfrontends: Microfrontends?,
         levelOfAssurance: LevelOfAssurance,
         manifestMap: Map<String, String>,
-    ): PersonalContentResponse {
+    ) = PersonalContentResponse(
+        microfrontends = microfrontends?.getDefinitions(levelOfAssurance, manifestMap) ?: emptyList(),
+        produktkort = ContentDefinition.getProduktkort(
+            digisosResponse.dokumenter + safResponse.dokumenter
+        ).filter { it.skalVises() }.map { it.id },
+        offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
+        oppfolgingContent = oppfolgingResponse.underOppfolging,
+        meldekort = meldekortResponse.harMeldekort,
+        dokumenter = (digisosResponse.dokumenter + safResponse.dokumenter).getLatest(),
+        aktuelt = ContentDefinition.getAktueltContent(
+            pdlResponse.calculateAge(),
+            safResponse.dokumenter,
+            manifestMap
+        )
 
-        log.info { "DigiSos: ${digisosResponse.dokumenter.joinToString { "${it.kode} : ${it.sistEndret}" }} Saf: ${safResponse.dokumenter.joinToString { "${it.kode} : ${it.sistEndret}" }}" }
-
-        return PersonalContentResponse(
-            microfrontends = microfrontends?.getDefinitions(levelOfAssurance, manifestMap) ?: emptyList(),
-            produktkort = ContentDefinition.getProduktkort(
-                digisosResponse.dokumenter + safResponse.dokumenter
-            ).filter { it.skalVises() }.map { it.id },
-            offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
-            oppfolgingContent = oppfolgingResponse.underOppfolging,
-            meldekort = meldekortResponse.harMeldekort,
-            dokumenter = (digisosResponse.dokumenter + safResponse.dokumenter).getLatest(),
-            aktuelt = ContentDefinition.getAktueltContent(
-                pdlResponse.calculateAge(),
-                safResponse.dokumenter,
-                manifestMap
-            )
-
-        ).apply {
-            errors = listOf(
-                safResponse,
-                meldekortResponse,
-                oppfolgingResponse,
-                pdlResponse
-            ).mapNotNull { it.errorMessage() }.joinToString()
-        }
+    ).apply {
+        errors = listOf(
+            safResponse,
+            meldekortResponse,
+            oppfolgingResponse,
+            pdlResponse
+        ).mapNotNull { it.errorMessage() }.joinToString()
     }
 }
 

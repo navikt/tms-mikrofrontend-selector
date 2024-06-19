@@ -187,13 +187,6 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
         val kodePath = "\$.kode"
         val navnPath = "\$.navn"
 
-        val kode = it.read<String>(kodePath) ?: throw JsonPathSearchException(
-            jsonPath = kodePath,
-            jsonNode = it,
-            originalJson = jsonNode
-        )
-
-
         Dokument(
             kode = it.read<String>(kodePath) ?: throw JsonPathSearchException(
                 jsonPath = kodePath,
@@ -202,7 +195,7 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
             ),
             navn  = it.read<String>(navnPath) ?: "ukjent",
             dokumentarkivUrlResolver = dokumentarkivUrlResolver,
-            sistEndret = it.read<List<String>>(datoPath)?.also { value -> log.info { "Fra Saf($kode): ${value.joinToString()}" } }
+            sistEndret = it.read<List<String>>(datoPath)
                 ?.map { json -> LocalDateTime.parse(json) }
                 ?.maxByOrNull { parsedDate -> parsedDate }
                 ?: throw JsonPathSearchException(
