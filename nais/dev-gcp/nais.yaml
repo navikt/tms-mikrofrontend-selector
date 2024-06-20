@@ -46,7 +46,7 @@ spec:
           namespace: pto
           cluster: dev-fss
       external:
-        - host: "safselvbetjening-q1.dev-fss-pub.nais.io"
+        - host: "safselvbetjening.dev-fss-pub.nais.io"
         - host: "sosialhjelp-soknad-api.dev-fss-pub.nais.io"
   gcp:
     sqlInstances:
@@ -81,9 +81,13 @@ spec:
     - name: STORAGE_BUCKET_NAME
       value: microfrontend-manifest-dev
     - name: SAF_URL
-      value: https://safselvbetjening-q1.dev-fss-pub.nais.io
+      value: https://safselvbetjening.dev-fss-pub.nais.io
+    - name: SOSIALHJELP_INNSYN
+      value: https://www-q0.dev.nav.no/sosialhjelp/innsyn
+    - name: DEFAULT_INNSYN_LENKE
+      value: https://www.intern.dev.nav.no/dokumentarkiv/tema
     - name: SAF_CLIENT_ID
-      value: dev-fss:teamdokumenthandtering:safselvbetjening-q1
+      value: dev-fss:teamdokumenthandtering:safselvbetjening
     - name: OPPFOLGING_API_URL
       value: https://veilarboppfolging.dev-fss-pub.nais.io/veilarboppfolging
     - name: OPPFOLGING_CLIENT_ID

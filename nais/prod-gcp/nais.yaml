@@ -80,6 +80,10 @@ spec:
       value: microfrontend-manifest-prod
     - name: SAF_URL
       value: https://safselvbetjening.prod-fss-pub.nais.io
+    - name: SOSIALHJELP_INNSYN
+      value: https://www.nav.no/sosialhjelp/innsyn
+    - name: DEFAULT_INNSYN_LENKE
+      value: https://person.nav.no/dokumentarkiv/tema
     - name: SAF_CLIENT_ID
       value: prod-fss:teamdokumenthandtering:safselvbetjening
     - name: OPPFOLGING_API_URL

@@ -23,8 +23,8 @@ class ContentRulesDefinition(
 ) {
 
     fun createRules(safDokumenter: List<Dokument>, alder: Int?) = mutableListOf<ContentResolver>().apply {
-        includeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.sakstemakode })?.let { add(it) }
-        exludeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.sakstemakode })?.let { add(it) }
+        includeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.kode })?.let { add(it) }
+        exludeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.kode })?.let { add(it) }
         usersAgeOver?.resolverOrNull(alder)?.let { add(it) }
         weeksSinceLastDocument?.resolverOrNull(safDokumenter)?.let { add(it) }
     }
@@ -110,7 +110,7 @@ class WeeksSinceLastDocumentContentRule(
             object : ContentResolver {
                 override fun skalVises(): Boolean =
                     safDokumenter.none {
-                        it.sakstemakode == sakstemakode && it.sistEndret.isBefore(
+                        it.kode == sakstemakode && it.sistEndret.isBefore(
                             LocalDateTime.now().minusWeeks(periodInWeeks.toLong() + 1)
                         )
                     }

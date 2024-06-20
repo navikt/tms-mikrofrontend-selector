@@ -25,7 +25,7 @@ class SafRoute(
     val callBody = call.receiveText().let { objectMapper.readTree(it) }
     callBody.read<String>("$.query").assert {
         this shouldNotBe null
-        this shouldBe "query(${'$'}ident: String!) { dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) { tema { kode journalposter{ relevanteDatoer { dato } } } } }"
+        this shouldBe "query(${'$'}ident: String!) { dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) { tema { kode navn journalposter{ relevanteDatoer { dato } } } } }"
     }
     callBody.read<String>("$.variables.ident") shouldBe ident
 }) {
@@ -34,7 +34,8 @@ class SafRoute(
             "dokumentoversiktSelvbetjening": {
               "tema": ${
         sakstemaer.joinToString(prefix = "[", postfix = "]") {
-            """ { "kode": "$it",  
+            """ { "kode": "$it",
+                        "navn": "dummyNavn",
                         "journalposter": [{
                             "relevanteDatoer": [ {
                             

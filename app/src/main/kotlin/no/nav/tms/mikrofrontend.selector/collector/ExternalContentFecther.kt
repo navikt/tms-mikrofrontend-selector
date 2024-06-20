@@ -6,6 +6,7 @@ import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
@@ -21,7 +22,8 @@ class ExternalContentFecther(
     val pdlUrl: String,
     val digisosUrl: String,
     val pdlBehandlingsnummer: String,
-    val tokenFetcher: TokenFetcher
+    val tokenFetcher: TokenFetcher,
+    val dokumentarkivUrlResolver: DokumentarkivUrlResolver
 ) {
 
     val log = KotlinLogging.logger { }
@@ -31,6 +33,7 @@ class ExternalContentFecther(
             dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
                 tema {
                     kode
+                    navn
                     journalposter{
                         relevanteDatoer {
                             dato
@@ -43,7 +46,7 @@ class ExternalContentFecther(
         }
     """.compactJson()
 
-    suspend fun fetchSakstema(user: TokenXUser): SafResponse = withErrorHandling("SAF", "$safUrl/graphql") {
+    suspend fun fetchDocumentsFromSaf(user: TokenXUser): SafResponse = withErrorHandling("SAF", "$safUrl/graphql") {
         httpClient.post {
             url("$safUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
@@ -60,7 +63,7 @@ class ExternalContentFecther(
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     SafResponse(
-                        dokumenter = jsonResponse?.safDokument(),
+                        dokumenter = jsonResponse?.safDokument(dokumentarkivUrlResolver),
                         errors = jsonResponse?.getAll<String>("errors..message")
                     )
                 }
@@ -91,7 +94,7 @@ class ExternalContentFecther(
         },
         map = { jsonPath ->
             DigisosResponse(
-                dokumenter = jsonPath.digisosDokument()
+                dokumenter = jsonPath.digisosDokument(dokumentarkivUrlResolver)
             )
         }
     )

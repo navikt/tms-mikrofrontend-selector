@@ -35,6 +35,10 @@ data class Environment(
     val digisosClientId: String = getEnvVar("DIGISOS_CLIENT_ID"),
     val digisosUrl: String = getEnvVar("DIGISOS_API_URL"),
     val pdlBehandlingsnummer: String = getEnvVar("PDL_BEHANDLINGSNUMMER"),
+    val defaultInnsynLenke: String = getEnvVar("DEFAULT_INNSYN_LENKE"),
+    val innsynsLenker: Map<String, String> = mapOf(
+        "KOM" to getEnvVar("SOSIALHJELP_INNSYN")
+    ),
 ) {
     fun initGcpStorage(): Storage = StorageOptions
         .newBuilder()

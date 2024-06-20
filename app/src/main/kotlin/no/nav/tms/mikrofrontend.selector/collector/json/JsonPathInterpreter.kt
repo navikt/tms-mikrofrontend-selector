@@ -5,6 +5,7 @@ import com.nfeld.jsonpathkt.JsonPath
 import com.nfeld.jsonpathkt.extension.read
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.statement.*
+import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.Dokument
 import java.lang.NullPointerException
 import java.time.LocalDate
@@ -181,18 +182,22 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
             initPathInterpreter(bodyAsText(), debugLog)
     }
 
-    fun safDokument() = jsonNode.read<JsonNode>("\$.data.dokumentoversiktSelvbetjening.tema")?.map {
+    fun safDokument(dokumentarkivUrlResolver: DokumentarkivUrlResolver) = jsonNode.read<JsonNode>("\$.data.dokumentoversiktSelvbetjening.tema")?.map { it ->
         val datoPath = "\$.journalposter..relevanteDatoer..dato"
         val kodePath = "\$.kode"
+        val navnPath = "\$.navn"
 
         Dokument(
-            sakstemakode = it.read<String>(kodePath) ?: throw JsonPathSearchException(
+            kode = it.read<String>(kodePath) ?: throw JsonPathSearchException(
                 jsonPath = kodePath,
                 jsonNode = it,
                 originalJson = jsonNode
             ),
+            navn  = it.read<String>(navnPath) ?: "ukjent",
+            dokumentarkivUrlResolver = dokumentarkivUrlResolver,
             sistEndret = it.read<List<String>>(datoPath)
-                ?.let { json -> LocalDateTime.parse(json.first()) }
+                ?.map { json -> LocalDateTime.parse(json) }
+                ?.maxByOrNull { parsedDate -> parsedDate }
                 ?: throw JsonPathSearchException(
                     jsonPath =datoPath,
                     jsonNode = it,
@@ -201,16 +206,19 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
         )
     }
 
-    fun digisosDokument() = jsonNode.read<JsonNode>("$")?.map {
+    fun digisosDokument(dokumentarkivUrlResolver: DokumentarkivUrlResolver) = jsonNode.read<JsonNode>("$")?.map {
         val kodePath = "$.kode"
         val datoPath = "$.sistEndret"
+        val navnPath = "\$.navn"
 
         Dokument(
-            sakstemakode = it.read<String>(kodePath) ?: throw JsonPathSearchException(
+            kode = it.read<String>(kodePath) ?: throw JsonPathSearchException(
                 jsonPath = kodePath,
                 jsonNode = it,
                 originalJson = jsonNode
             ),
+            navn  = it.read<String>(navnPath) ?: "ukjent",
+            dokumentarkivUrlResolver = dokumentarkivUrlResolver,
             sistEndret = it.read<String>(datoPath)
                 ?.let { json -> LocalDateTime.parse(json) }
                 ?: throw JsonPathSearchException(
