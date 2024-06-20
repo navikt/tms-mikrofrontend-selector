@@ -24,12 +24,6 @@ repositories {
 
 dependencies {
 
-    constraints {
-        implementation("org.apache.zookeeper:zookeeper:3.9.1") {
-            because("CWE-639: Authorization Bypass Through User-Controlled Key")
-        }
-    }
-
     implementation(TmsCommonLib.utils)
     implementation(Flyway9.core)
     implementation(Hikari.cp)
