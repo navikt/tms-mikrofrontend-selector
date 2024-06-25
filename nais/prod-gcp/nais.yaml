@@ -73,8 +73,8 @@ spec:
       memory: 128Mi
   env:
     - name: GROUP_ID
-      value: tms-mikrofrontend-selector-01
-    - name: RAPID_TOPIC
+      value: tms-mikrofrontend-selector-02
+    - name: KAFKA_TOPIC
       value: min-side.aapen-microfrontend-v1
     - name: STORAGE_BUCKET_NAME
       value: microfrontend-manifest-prod

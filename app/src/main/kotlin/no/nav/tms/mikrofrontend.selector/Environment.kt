@@ -22,7 +22,7 @@ data class Environment(
     val aivenBrokers: String = getEnvVar("KAFKA_BROKERS"),
     val aivenSchemaRegistry: String = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
     val securityVars: SecurityVars = SecurityVars(),
-    val microfrontendtopic: String = getEnvVar("RAPID_TOPIC"),
+    val microfrontendtopic: String = getEnvVar("KAFKA_TOPIC"),
     val storageBucketName: String = getEnvVar("STORAGE_BUCKET_NAME"),
     val safUrl: String = getEnvVar("SAF_URL"),
     val safClientId: String = getEnvVar("SAF_CLIENT_ID"),
