@@ -90,3 +90,12 @@ I din oversikt skal bruker få spesifikk informasjon knyttet til hens forhold ti
 Produktkort er strengt talt ikke mikrofrontender, men regelbaserte lenker som peker til innloggede produktsider for ett område. Vi anbefaler heller å bruke kafka, siden dette er mer treffsikkert i forhold til brukers situasjon, men hvis kafka ikke er en mulighet kan dette være ett alternativ. 
 ### Kanskje aktuelt for deg
 Under kanskje aktuelt for deg skal bruker få forslag til annet innhold som kan være relevant for hen, for eksempel andre stønader eller støttetjenester en bruker kan ha rett på gitt at hen har en spesifikk ytelse. Foreløbig er det kun regelbaserte mikrofrontender som vises i den her seksjonen.
+
+## Kjøreregler for batch-oppdateringer
+Systemet takler helt fint store mengder meldinger på kafka, men om en skal kjøre en batch-oppdtaering som fører til mer enn 200 000
+meldinger kan dette føre til betydelig lag før mikrofrontendene fra alle team blir synlig på brukernes side, det er derfor fint om en 
+prøver å legge slike oppdatering til tidspunkt der det vanligvis er mindre trafikk.
+
+1. Aldri på mandag eller tirsdag morgen.
+2. Helst senere på dagen
+3. Gjerne etter arbeidstid om det er mulig
