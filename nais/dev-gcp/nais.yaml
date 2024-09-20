@@ -89,9 +89,9 @@ spec:
     - name: SAF_CLIENT_ID
       value: dev-fss:teamdokumenthandtering:safselvbetjening
     - name: OPPFOLGING_API_URL
-      value: https://veilarboppfolging.dev-fss-pub.nais.io/veilarboppfolging
+      value: https://veilarboppfolging.dev.intern.nav.no/veilarboppfolging
     - name: OPPFOLGING_CLIENT_ID
-      value: dev-fss:pto:veilarboppfolging
+      value: dev-gcp:poao:veilarboppfolging
     - name: MELDEKORT_BASE_URL
       value: http://meldekort-api-q2.meldekort/meldekort/meldekort-api
     - name: MELDEKORT_CLIENT_ID
