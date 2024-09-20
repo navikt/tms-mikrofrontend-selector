@@ -43,8 +43,7 @@ spec:
         - application: meldekort-api-q2
           namespace: meldekort
         - application: veilarboppfolging
-          namespace: pto
-          cluster: dev-fss
+          namespace: poao
       external:
         - host: "safselvbetjening.dev-fss-pub.nais.io"
         - host: "sosialhjelp-soknad-api.dev-fss-pub.nais.io"
@@ -89,9 +88,9 @@ spec:
     - name: SAF_CLIENT_ID
       value: dev-fss:teamdokumenthandtering:safselvbetjening
     - name: OPPFOLGING_API_URL
-      value: https://veilarboppfolging.dev-fss-pub.nais.io/veilarboppfolging
+      value: http://veilarboppfolging.poao/veilarboppfolging
     - name: OPPFOLGING_CLIENT_ID
-      value: dev-fss:pto:veilarboppfolging
+      value: dev-gcp:poao:veilarboppfolging
     - name: MELDEKORT_BASE_URL
       value: http://meldekort-api-q2.meldekort/meldekort/meldekort-api
     - name: MELDEKORT_CLIENT_ID
