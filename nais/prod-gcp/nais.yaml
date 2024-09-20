@@ -42,8 +42,8 @@ spec:
         - application: meldekort-api
           namespace: meldekort
         - application: veilarboppfolging
-          namespace: pto
-          cluster: prod-fss
+          namespace: poao
+          cluster: prod-gcp
       external:
         - host: "sosialhjelp-soknad-api.prod-fss-pub.nais.io"
         - host: "safselvbetjening.prod-fss-pub.nais.io"
