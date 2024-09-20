@@ -44,7 +44,6 @@ spec:
           namespace: meldekort
         - application: veilarboppfolging
           namespace: poao
-          cluster: dev-gcp
       external:
         - host: "safselvbetjening.dev-fss-pub.nais.io"
         - host: "sosialhjelp-soknad-api.dev-fss-pub.nais.io"
