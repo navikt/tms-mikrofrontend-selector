@@ -89,7 +89,7 @@ spec:
     - name: SAF_CLIENT_ID
       value: dev-fss:teamdokumenthandtering:safselvbetjening
     - name: OPPFOLGING_API_URL
-      value: https://veilarboppfolging.dev.intern.nav.no/veilarboppfolging
+      value: http://veilarboppfolging.poao/veilarboppfolging
     - name: OPPFOLGING_CLIENT_ID
       value: dev-gcp:poao:veilarboppfolging
     - name: MELDEKORT_BASE_URL
