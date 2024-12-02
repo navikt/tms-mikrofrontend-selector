@@ -483,33 +483,6 @@ internal class ApiTest {
             }
         }
 
-    @Test
-    fun `Retunere sosialhjelp produktkort`() = testApplication {
-
-        initSelectorApi(testident = "12345678910")
-        initExternalServices(
-            SafRoute(),
-            MeldekortRoute(),
-            OppfolgingRoute(false),
-            PdlRoute(),
-            DigisosRoute(true)
-        )
-
-
-        client.get("/din-oversikt").assert {
-            status shouldBe HttpStatusCode.OK
-            objectMapper.readTree(bodyAsText()).assert {
-                this["microfrontends"].size() shouldBe 0
-                this["produktkort"].toList().assert {
-                    size shouldBe 1
-                    first().asText() shouldBe "KOM"
-                }
-            }
-
-        }
-    }
-
-
     fun ApplicationTestBuilder.initSelectorApi(
         testident: String,
         levelOfAssurance: LevelOfAssurance = HIGH,

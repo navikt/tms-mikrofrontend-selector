@@ -35,14 +35,14 @@ class PersonalContentCollector(
         val oppfolgingResponse = async { externalContentFecther.fetchOppfolging(user) }
         val meldekortResponse = async { externalContentFecther.fetchMeldekort(user) }
         val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
-        val digisosResponse = async { externalContentFecther.fetchDigisosSakstema(user) }
+        val digisosResponse = ResponseWithErrors
 
         return@coroutineScope PersonalContentFactory(
             safResponse = safResponse.await(),
             meldekortResponse = meldekortResponse.await(),
             oppfolgingResponse = oppfolgingResponse.await(),
             pdlResponse = pdlResponse.await(),
-            digisosResponse = digisosResponse.await()
+            digisosResponse = DigisosResponse()
         )
 
     }
