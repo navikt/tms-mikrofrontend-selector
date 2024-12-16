@@ -5,7 +5,7 @@ import dbv1Format
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import io.prometheus.client.CollectorRegistry
+import io.prometheus.metrics.model.registry.PrometheusRegistry
 import kotliquery.queryOf
 import no.nav.tms.common.testutils.assert
 import no.nav.tms.microfrontend.Sensitivitet
@@ -32,7 +32,7 @@ internal class SubscriberTest {
 
     @BeforeAll
     fun setupSinks() {
-        CollectorRegistry.defaultRegistry.clear()
+        PrometheusRegistry.defaultRegistry.clear()
 
     }
 

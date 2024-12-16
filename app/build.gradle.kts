@@ -50,7 +50,7 @@ dependencies {
     implementation(JacksonExt.dataformatYaml)
     implementation(JacksonDatatype.datatypeJsr310)
     implementation(TmsKafkaTools.kafkaApplication)
-    implementation(Prometheus.common)
+    implementation(Prometheus.metricsCore)
     implementation(JacksonJsonPath.core)
 
     testImplementation(Junit.api)
