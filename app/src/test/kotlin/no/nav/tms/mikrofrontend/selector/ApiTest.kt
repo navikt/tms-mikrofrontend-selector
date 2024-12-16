@@ -17,7 +17,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
-import io.prometheus.client.CollectorRegistry
+import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
@@ -38,7 +38,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.time.ZonedDateTime
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -55,7 +54,7 @@ internal class ApiTest {
 
     @BeforeAll
     fun setup() {
-        CollectorRegistry.defaultRegistry.clear()
+        PrometheusRegistry.defaultRegistry.clear()
     }
 
     @AfterEach

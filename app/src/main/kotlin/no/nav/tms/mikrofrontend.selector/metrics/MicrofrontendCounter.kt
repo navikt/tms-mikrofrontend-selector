@@ -1,11 +1,12 @@
 package no.nav.tms.mikrofrontend.selector.metrics
 
-import io.prometheus.client.Counter
+import io.prometheus.metrics.core.metrics.Counter
+
 
 const val METRIC_PREFIX = "tms_mikrofrontend_selector"
 
 class MicrofrontendCounter {
-    private val counter = Counter.build()
+    private val counter = Counter.builder()
         .name("${METRIC_PREFIX}_changed")
         .help("Endringer i mikrofrontender på min side")
         .labelNames("action", "microfrontendId")
@@ -13,7 +14,7 @@ class MicrofrontendCounter {
 
     fun countMicrofrontendActions(actionMetricsType: ActionMetricsType, microfrontendId: String) {
         counter
-            .labels(actionMetricsType.name, microfrontendId)
+            .labelValues(actionMetricsType.name, microfrontendId)
             .inc()
     }
 }
