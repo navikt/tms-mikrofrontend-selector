@@ -3,7 +3,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 plugins {
     kotlin("jvm").version(Kotlin.version)
 
-    id(Shadow.pluginId) version (Shadow.version)
+    id(TmsJarBundling.plugin)
 
     application
 }
