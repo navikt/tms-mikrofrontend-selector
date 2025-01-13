@@ -18,6 +18,7 @@ class TokenFetcher(
         fetchWithErrorHandling("Oppfølging", oppfølgingClientId, user)
 
     suspend fun meldekortToken(user: TokenXUser): String = fetchWithErrorHandling("meldekort", meldekortClientId, user)
+
     suspend fun pdlToken(user: TokenXUser): String = fetchWithErrorHandling("pdl", pdlClientId, user)
 
     private suspend fun fetchWithErrorHandling(forService: String, appClientId: String, user: TokenXUser): String =

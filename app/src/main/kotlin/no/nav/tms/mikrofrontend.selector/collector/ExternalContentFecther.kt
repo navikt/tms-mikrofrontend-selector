@@ -11,7 +11,7 @@ import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
 import java.net.SocketTimeoutException
-import java.util.UUID
+import java.util.*
 import kotlin.reflect.full.primaryConstructor
 
 class ExternalContentFecther(
@@ -71,21 +71,24 @@ class ExternalContentFecther(
     }
 
     suspend fun fetchOppfolging(user: TokenXUser): OppfolgingResponse = getResponseAsJsonPath(
-        tjeneste = "Oppfølging",
-        token = tokenFetcher.oppfolgingToken(user),
+        tokenFetcher = tokenFetcher::oppfolgingToken,
+        user = user,
         url = "$oppfølgingBaseUrl/api/niva3/underoppfolging",
-        map = { OppfolgingResponse(underOppfolging = it.boolean("underOppfolging")) }
+        tjeneste = "Oppfølging",
+        map = { OppfolgingResponse(underOppfolging = it.boolean("underOppfolging")) },
     )
 
     suspend fun fetchMeldekort(user: TokenXUser): MeldekortResponse = getResponseAsJsonPath(
-        tjeneste = "meldekort",
-        token = tokenFetcher.meldekortToken(user),
+        tokenFetcher = tokenFetcher::meldekortToken,
+        user = user,
         url = "$meldekortUrl/api/person/meldekortstatus",
-        map = { jsonPath -> MeldekortResponse(meldekortApiResponse = jsonPath) }
+        tjeneste = "meldekort",
+        map = { jsonPath -> MeldekortResponse(meldekortApiResponse = jsonPath) },
     )
 
     suspend fun fetchDigisosSakstema(user: TokenXUser): DigisosResponse = getResponseAsJsonPath(
-        token = tokenFetcher.digisosToken(user),
+        tokenFetcher = tokenFetcher::digisosToken,
+        user = user,
         url = "$digisosUrl/minesaker/innsendte",
         tjeneste = "digisos",
         requestOptions = {
@@ -96,7 +99,7 @@ class ExternalContentFecther(
             DigisosResponse(
                 dokumenter = jsonPath.digisosDokument(dokumentarkivUrlResolver)
             )
-        }
+        },
     )
 
     suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling("pdl", "$pdlUrl/graphql") {
@@ -144,14 +147,15 @@ class ExternalContentFecther(
             throw ApiException(tjeneste, url, e)
         }
 
-
     private suspend inline fun <reified T : ResponseWithErrors> getResponseAsJsonPath(
-        token: String,
+        tokenFetcher: suspend (TokenXUser) -> String,
+        user: TokenXUser,
         url: String,
         tjeneste: String,
         requestOptions: HttpRequestBuilder.() -> Unit = {},
-        crossinline map: (JsonPathInterpreter) -> T
+        crossinline map: (JsonPathInterpreter) -> T,
     ): T = try {
+        val token = tokenFetcher(user)
         httpClient.get {
             url(url)
             header("Authorization", "Bearer $token")
@@ -177,7 +181,14 @@ class ExternalContentFecther(
             errorMessage = "Requesttimeout ${errorDetails(requestTimeoutException)}",
             className = T::class.qualifiedName ?: "unknown"
         )
-    } catch (e: Exception) {
+    } catch (tokenFetcherException: TokenFetcher.TokenFetcherException){
+        ResponseWithErrors.createWithError(
+            constructor = T::class.primaryConstructor,
+            errorMessage = "error fetching token ${errorDetails(tokenFetcherException)}",
+            className = T::class.qualifiedName ?: "unknown"
+        )
+    }
+    catch (e: Exception) {
         throw ApiException(tjeneste, url, e)
     }
 }
