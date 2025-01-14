@@ -1,21 +1,14 @@
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-
 package no.nav.tms.mikrofrontend.selector
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.mockk.mockk
 import no.nav.tms.kafka.application.EventMetadata
 import no.nav.tms.kafka.application.JsonMessage
 import no.nav.tms.kafka.application.KafkaEvent
 import no.nav.tms.kafka.application.MessageBroadcaster
 import no.nav.tms.mikrofrontend.selector.collector.Dokument
-import no.nav.tms.mikrofrontend.selector.collector.ResponseWithErrors.Companion.default
-import no.nav.tms.mikrofrontend.selector.collector.ResponseWithErrors.Companion.isListType
-import no.nav.tms.mikrofrontend.selector.collector.ResponseWithErrors.Companion.isOfType
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
-import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.MessageRequirements
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
@@ -23,7 +16,6 @@ import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.HIGH
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import kotlin.reflect.full.primaryConstructor
-import kotlin.reflect.full.starProjectedType
 
 internal val objectMapper = jacksonObjectMapper().apply {
     registerModule(JavaTimeModule())

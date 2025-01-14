@@ -24,8 +24,9 @@ dependencies {
     implementation(JacksonExt.core)
     implementation(JacksonExt.databind)
 
-    testImplementation(Junit.api)
-    testImplementation(Junit.engine)
+    testImplementation(JunitPlatform.launcher)
+    testImplementation(JunitJupiter.api)
+    testImplementation(JunitJupiter.engine)
     testImplementation(Kotest.runnerJunit5)
     testImplementation(Kotest.assertionsCore)
 }

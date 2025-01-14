@@ -53,9 +53,9 @@ dependencies {
     implementation(Prometheus.metricsCore)
     implementation(JacksonJsonPath.core)
 
-    testImplementation(Junit.api)
-    testImplementation(Junit.engine)
-    testImplementation(Junit.params)
+    testImplementation(JunitPlatform.launcher)
+    testImplementation(JunitJupiter.api)
+    testImplementation(JunitJupiter.params)
     testImplementation(TestContainers.postgresql)
     testImplementation(Kotest.runnerJunit5)
     testImplementation(Kotest.assertionsCore)
