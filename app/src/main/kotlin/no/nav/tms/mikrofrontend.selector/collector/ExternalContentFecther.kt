@@ -184,7 +184,7 @@ class ExternalContentFecther(
     } catch (tokenFetcherException: TokenFetcher.TokenFetcherException){
         ResponseWithErrors.createWithError(
             constructor = T::class.primaryConstructor,
-            errorMessage = "error fetching token ${errorDetails(tokenFetcherException)}",
+            errorMessage = "error fetching token $tjeneste",
             className = T::class.qualifiedName ?: "unknown"
         )
     }

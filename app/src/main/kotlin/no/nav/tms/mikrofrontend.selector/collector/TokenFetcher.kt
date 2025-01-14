@@ -28,7 +28,7 @@ class TokenFetcher(
             throw TokenFetcherException(e, forService, appClientId)
         }
 
-    suspend fun digisosToken(user: TokenXUser): String = fetchWithErrorHandling("digisos", digisosClientId, user)
+    suspend fun digisosToken(user: TokenXUser): String = fetchWithErrorHandling("digisos", "digisosClientId", user)
 
     class TokenFetcherException(originalException: Exception, forService: String, appClientId: String) :
         Exception("henting av token for $forService med clientId $appClientId feiler: ${errorDetails(originalException)}")
