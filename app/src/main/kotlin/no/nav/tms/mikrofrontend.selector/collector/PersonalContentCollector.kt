@@ -80,7 +80,8 @@ class PersonalContentFactory(
             safResponse,
             meldekortResponse,
             oppfolgingResponse,
-            pdlResponse
+            pdlResponse,
+            digisosResponse
         ).mapNotNull { it.errorMessage() }.joinToString()
     }
 }

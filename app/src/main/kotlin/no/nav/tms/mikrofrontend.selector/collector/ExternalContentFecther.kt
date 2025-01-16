@@ -124,6 +124,29 @@ class ExternalContentFecther(
             }
     }
 
+    private suspend inline fun <reified T : ResponseWithErrors> getResponseAsJsonPath(
+        tokenFetcher: suspend (TokenXUser) -> String,
+        user: TokenXUser,
+        url: String,
+        tjeneste: String,
+        requestOptions: HttpRequestBuilder.() -> Unit = {},
+        crossinline map: (JsonPathInterpreter) -> T,
+    ): T =  withErrorHandling(tjeneste, url){
+        val token = tokenFetcher(user)
+        httpClient.get {
+            url(url)
+            header("Authorization", "Bearer $token")
+            header("Content-Type", "application/json")
+            header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
+            requestOptions()
+        }.let { response ->
+            if (response.status != HttpStatusCode.OK)
+                ResponseWithErrors.createFromHttpError(response)
+            else
+                response.bodyAsNullOrJsonNode()?.let(map)
+                    ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText())
+        }
+    }
     private inline fun <reified T : ResponseWithErrors> withErrorHandling(
         tjeneste: String,
         url: String,
@@ -143,56 +166,18 @@ class ExternalContentFecther(
                 errorMessage = "Requesttimeout ${errorDetails(requestTimeoutException)}",
                 className = T::class.qualifiedName ?: "unknown"
             )
-        } catch (e: Exception) {
+        }
+        catch (tokenFetcherException: TokenFetcher.TokenFetcherException){
+            ResponseWithErrors.createWithError(
+                constructor = T::class.primaryConstructor,
+                errorMessage = "errors fetching token $tjeneste",
+                className = T::class.qualifiedName ?: "unknown"
+            )
+        }
+        catch (e: Exception) {
             throw ApiException(tjeneste, url, e)
         }
-
-    private suspend inline fun <reified T : ResponseWithErrors> getResponseAsJsonPath(
-        tokenFetcher: suspend (TokenXUser) -> String,
-        user: TokenXUser,
-        url: String,
-        tjeneste: String,
-        requestOptions: HttpRequestBuilder.() -> Unit = {},
-        crossinline map: (JsonPathInterpreter) -> T,
-    ): T = try {
-        val token = tokenFetcher(user)
-        httpClient.get {
-            url(url)
-            header("Authorization", "Bearer $token")
-            header("Content-Type", "application/json")
-            header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
-            requestOptions()
-        }.let { response ->
-            if (response.status != HttpStatusCode.OK)
-                ResponseWithErrors.createFromHttpError(response)
-            else
-                response.bodyAsNullOrJsonNode()?.let(map)
-                    ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText())
-        }
-    } catch (socketTimout: SocketTimeoutException) {
-        ResponseWithErrors.createWithError(
-            constructor = T::class.primaryConstructor,
-            errorMessage = "Sockettimeout ${errorDetails(socketTimout)}",
-            className = T::class.qualifiedName ?: "unknown"
-        )
-    } catch (requestTimeoutException: HttpRequestTimeoutException) {
-        ResponseWithErrors.createWithError(
-            constructor = T::class.primaryConstructor,
-            errorMessage = "Requesttimeout ${errorDetails(requestTimeoutException)}",
-            className = T::class.qualifiedName ?: "unknown"
-        )
-    } catch (tokenFetcherException: TokenFetcher.TokenFetcherException){
-        ResponseWithErrors.createWithError(
-            constructor = T::class.primaryConstructor,
-            errorMessage = "error fetching token $tjeneste",
-            className = T::class.qualifiedName ?: "unknown"
-        )
-    }
-    catch (e: Exception) {
-        throw ApiException(tjeneste, url, e)
-    }
 }
-
 
 class ApiException(tjeneste: String, url: String, e: Exception) :
     Exception(
