@@ -3,14 +3,14 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 plugins {
     kotlin("jvm").version(Kotlin.version)
 
-    id(Shadow.pluginId) version (Shadow.version)
+    id(TmsJarBundling.plugin)
 
     application
 }
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
@@ -53,9 +53,9 @@ dependencies {
     implementation(Prometheus.metricsCore)
     implementation(JacksonJsonPath.core)
 
-    testImplementation(Junit.api)
-    testImplementation(Junit.engine)
-    testImplementation(Junit.params)
+    testImplementation(JunitPlatform.launcher)
+    testImplementation(JunitJupiter.api)
+    testImplementation(JunitJupiter.params)
     testImplementation(TestContainers.postgresql)
     testImplementation(Kotest.runnerJunit5)
     testImplementation(Kotest.assertionsCore)
@@ -71,12 +71,6 @@ dependencies {
 
 application {
     mainClass.set("no.nav.tms.mikrofrontend.selector.ApplicationKt")
-}
-
-tasks {
-    shadowJar {
-        mergeServiceFiles()
-    }
 }
 
 tasks {
