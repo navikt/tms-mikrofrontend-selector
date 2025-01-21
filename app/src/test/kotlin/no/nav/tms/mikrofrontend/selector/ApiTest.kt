@@ -454,9 +454,9 @@ internal class ApiTest {
         }
 
     @Test
-    fun `Skal returnere 503 når tokendings feiler`() =
+    fun `Skal retunerer 207 validering av token til andre baksystemer feiler`() =
         testApplication {
-            val testident2 = "12345678912"
+            val testident2 = "12345678910"
 
             initSelectorApi(testident = testident2, tokenFetcher = mockk<TokenFetcher>().apply {
                 coEvery { oppfolgingToken(any()) } throws TokenFetcherException(
@@ -467,18 +467,26 @@ internal class ApiTest {
                 coEvery { meldekortToken(any()) } returns "<meldekort>"
                 coEvery { safToken(any()) } returns "<saf>"
                 coEvery { pdlToken(any()) } returns "<pdl>"
+                coEvery { digisosToken(any()) } returns "<digisos>"
             })
 
             initExternalServices(
                 SafRoute(),
                 MeldekortRoute(),
-                OppfolgingRoute(false),
+                OppfolgingRoute(true),
                 PdlRoute(),
-                DigisosRoute(),
+                DigisosRoute(true)
             )
 
             client.get("/din-oversikt").assert {
-                status shouldBe HttpStatusCode.ServiceUnavailable
+                status shouldBe HttpStatusCode.MultiStatus
+                objectMapper.readTree(bodyAsText()).assert {
+                    this["oppfolgingContent"].asBoolean() shouldBe false
+                    this["produktkort"].toList().assert {
+                        size shouldBe 1
+                        first().asText() shouldBe "KOM"
+                    }
+                }
             }
         }
 
@@ -507,7 +515,6 @@ internal class ApiTest {
 
         }
     }
-
 
     fun ApplicationTestBuilder.initSelectorApi(
         testident: String,

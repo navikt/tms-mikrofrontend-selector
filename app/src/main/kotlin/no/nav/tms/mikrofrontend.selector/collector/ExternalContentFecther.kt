@@ -71,21 +71,24 @@ class ExternalContentFecther(
     }
 
     suspend fun fetchOppfolging(user: TokenXUser): OppfolgingResponse = getResponseAsJsonPath(
-        tjeneste = "Oppfølging",
-        token = tokenFetcher.oppfolgingToken(user),
+        tokenFetcher = tokenFetcher::oppfolgingToken,
+        user = user,
         url = "$oppfølgingBaseUrl/api/niva3/underoppfolging",
-        map = { OppfolgingResponse(underOppfolging = it.boolean("underOppfolging")) }
+        tjeneste = "Oppfølging",
+        map = { OppfolgingResponse(underOppfolging = it.boolean("underOppfolging")) },
     )
 
     suspend fun fetchMeldekort(user: TokenXUser): MeldekortResponse = getResponseAsJsonPath(
-        tjeneste = "meldekort",
-        token = tokenFetcher.meldekortToken(user),
+        tokenFetcher = tokenFetcher::meldekortToken,
+        user = user,
         url = "$meldekortUrl/api/person/meldekortstatus",
-        map = { jsonPath -> MeldekortResponse(meldekortApiResponse = jsonPath) }
+        tjeneste = "meldekort",
+        map = { jsonPath -> MeldekortResponse(meldekortApiResponse = jsonPath) },
     )
 
     suspend fun fetchDigisosSakstema(user: TokenXUser): DigisosResponse = getResponseAsJsonPath(
-        token = tokenFetcher.digisosToken(user),
+        tokenFetcher = tokenFetcher::digisosToken,
+        user = user,
         url = "$digisosUrl/minesaker/innsendte",
         tjeneste = "digisos",
         requestOptions = {
@@ -96,7 +99,7 @@ class ExternalContentFecther(
             DigisosResponse(
                 dokumenter = jsonPath.digisosDokument(dokumentarkivUrlResolver)
             )
-        }
+        },
     )
 
     suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling("pdl", "$pdlUrl/graphql") {
@@ -121,6 +124,29 @@ class ExternalContentFecther(
             }
     }
 
+    private suspend inline fun <reified T : ResponseWithErrors> getResponseAsJsonPath(
+        tokenFetcher: suspend (TokenXUser) -> String,
+        user: TokenXUser,
+        url: String,
+        tjeneste: String,
+        requestOptions: HttpRequestBuilder.() -> Unit = {},
+        crossinline map: (JsonPathInterpreter) -> T,
+    ): T =  withErrorHandling(tjeneste, url){
+        val token = tokenFetcher(user)
+        httpClient.get {
+            url(url)
+            header("Authorization", "Bearer $token")
+            header("Content-Type", "application/json")
+            header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
+            requestOptions()
+        }.let { response ->
+            if (response.status != HttpStatusCode.OK)
+                ResponseWithErrors.createFromHttpError(response)
+            else
+                response.bodyAsNullOrJsonNode()?.let(map)
+                    ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText())
+        }
+    }
     private inline fun <reified T : ResponseWithErrors> withErrorHandling(
         tjeneste: String,
         url: String,
@@ -140,48 +166,18 @@ class ExternalContentFecther(
                 errorMessage = "Requesttimeout ${errorDetails(requestTimeoutException)}",
                 className = T::class.qualifiedName ?: "unknown"
             )
-        } catch (e: Exception) {
+        }
+        catch (tokenFetcherException: TokenFetcher.TokenFetcherException){
+            ResponseWithErrors.createWithError(
+                constructor = T::class.primaryConstructor,
+                errorMessage = "errors fetching token $tjeneste",
+                className = T::class.qualifiedName ?: "unknown"
+            )
+        }
+        catch (e: Exception) {
             throw ApiException(tjeneste, url, e)
         }
-
-
-    private suspend inline fun <reified T : ResponseWithErrors> getResponseAsJsonPath(
-        token: String,
-        url: String,
-        tjeneste: String,
-        requestOptions: HttpRequestBuilder.() -> Unit = {},
-        crossinline map: (JsonPathInterpreter) -> T
-    ): T = try {
-        httpClient.get {
-            url(url)
-            header("Authorization", "Bearer $token")
-            header("Content-Type", "application/json")
-            header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
-            requestOptions()
-        }.let { response ->
-            if (response.status != HttpStatusCode.OK)
-                ResponseWithErrors.createFromHttpError(response)
-            else
-                response.bodyAsNullOrJsonNode()?.let(map)
-                    ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText())
-        }
-    } catch (socketTimout: SocketTimeoutException) {
-        ResponseWithErrors.createWithError(
-            constructor = T::class.primaryConstructor,
-            errorMessage = "Sockettimeout ${errorDetails(socketTimout)}",
-            className = T::class.qualifiedName ?: "unknown"
-        )
-    } catch (requestTimeoutException: HttpRequestTimeoutException) {
-        ResponseWithErrors.createWithError(
-            constructor = T::class.primaryConstructor,
-            errorMessage = "Requesttimeout ${errorDetails(requestTimeoutException)}",
-            className = T::class.qualifiedName ?: "unknown"
-        )
-    } catch (e: Exception) {
-        throw ApiException(tjeneste, url, e)
-    }
 }
-
 
 class ApiException(tjeneste: String, url: String, e: Exception) :
     Exception(
