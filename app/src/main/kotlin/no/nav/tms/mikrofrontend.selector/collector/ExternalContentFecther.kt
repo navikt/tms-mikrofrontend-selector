@@ -11,7 +11,7 @@ import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
 import java.net.SocketTimeoutException
-import java.util.*
+import java.util.UUID
 import kotlin.reflect.full.primaryConstructor
 
 class ExternalContentFecther(
