@@ -44,6 +44,8 @@ spec:
           namespace: meldekort
         - application: veilarboppfolging
           namespace: poao
+        - application: sosialhjelp-soknad-api
+          namespace: teamdigisos
       external:
         - host: "safselvbetjening.dev-fss-pub.nais.io"
         - host: "sosialhjelp-soknad-api.dev-fss-pub.nais.io"
@@ -99,9 +101,11 @@ spec:
       value: "https://pdl-api.dev-fss-pub.nais.io"
     - name: PDL_API_CLIENT_ID
       value: "dev-fss:pdl:pdl-api"
-    - name: DIGISOS_API_URL
+    - name: LEGACY_DIGISOS_API_URL
       value: https://sosialhjelp-soknad-api.dev-fss-pub.nais.io/sosialhjelp/soknad-api
-    - name: DIGISOS_CLIENT_ID
+    - name: DIGISOS_API_URL
+      value: http://sosialhjelp-soknad-api.teamdigisos/sosialhjelp/soknad-api
+    - name: LEGACY_DIGISOS_CLIENT_ID
       value: dev-fss:teamdigisos:sosialhjelp-soknad-api
     - name: PDL_BEHANDLINGSNUMMER
       value: "B769"

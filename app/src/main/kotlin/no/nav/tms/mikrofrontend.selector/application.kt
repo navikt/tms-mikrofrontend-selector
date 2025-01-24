@@ -28,7 +28,8 @@ fun main() {
         oppfølgingBaseUrl = environment.oppfolgingUrl,
         meldekortUrl = environment.meldekortUrl,
         pdlUrl = environment.pdlApiUrl,
-        digisosUrl = environment.digisosUrl,
+        legacyDigisosUrl = environment.legacyDigisosUrl,
+        digisosUrl = environment.legacyDigisosUrl,
         pdlBehandlingsnummer = environment.pdlBehandlingsnummer,
         dokumentarkivUrlResolver = dokumentarkivUrlResolver,
         tokenFetcher = TokenFetcher(
@@ -37,7 +38,8 @@ fun main() {
             oppfølgingClientId = environment.oppfolgingClienId,
             safClientId = environment.safClientId,
             pdlClientId = environment.pdlClientId,
-            digisosClientId = environment.digisosClientId,
+            legacyDigisosClientId = environment.legacyDigisosClientId,
+            digisosClientId = environment.digisosClientId
         ),
     )
 
