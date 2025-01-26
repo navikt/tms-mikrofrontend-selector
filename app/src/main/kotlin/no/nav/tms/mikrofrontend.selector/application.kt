@@ -29,7 +29,7 @@ fun main() {
         meldekortUrl = environment.meldekortUrl,
         pdlUrl = environment.pdlApiUrl,
         legacyDigisosUrl = environment.legacyDigisosUrl,
-        digisosUrl = environment.legacyDigisosUrl,
+        digisosUrl = environment.digisosUrl,
         pdlBehandlingsnummer = environment.pdlBehandlingsnummer,
         dokumentarkivUrlResolver = dokumentarkivUrlResolver,
         tokenFetcher = TokenFetcher(
