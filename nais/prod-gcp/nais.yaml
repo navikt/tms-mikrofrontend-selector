@@ -105,5 +105,7 @@ spec:
       value: http://sosialhjelp-soknad-api.teamdigisos/sosialhjelp/soknad-api
     - name: LEGACY_DIGISOS_CLIENT_ID
       value: prod-fss:teamdigisos:sosialhjelp-soknad-api
+    - name: DIGISOS_CLIENT_ID
+      value: prod-gcp:teamdigisos:sosialhjelp-soknad-api
     - name: PDL_BEHANDLINGSNUMMER
       value: "B769"
