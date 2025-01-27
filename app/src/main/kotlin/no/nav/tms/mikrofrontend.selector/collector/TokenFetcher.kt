@@ -29,7 +29,7 @@ class TokenFetcher(
             throw TokenFetcherException(e, forService, appClientId)
         }
 
-    suspend fun legacyDigisosToken(user: TokenXUser): String = fetchWithErrorHandling("digisos", legacyDigisosClientId, user)
+    suspend fun legacyDigisosToken(user: TokenXUser): String = fetchWithErrorHandling("legacy-fss-digisos", legacyDigisosClientId, user)
     suspend fun digisosToken(user: TokenXUser): String = fetchWithErrorHandling("digisos", digisosClientId, user)
 
     class TokenFetcherException(originalException: Exception, forService: String, appClientId: String) :
