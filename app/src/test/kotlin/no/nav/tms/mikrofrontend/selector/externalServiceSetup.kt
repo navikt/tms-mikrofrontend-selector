@@ -94,7 +94,21 @@ class OppfolgingRoute(private val underOppfølging: Boolean = false, val ovverid
     """.trimIndent()
 
 }
-class DigisosRoute(private val hasSosialhjelp: Boolean = false) :
+class LegacyDigisosRoute(private val hasLegacySosialhjelp: Boolean = false) :
+    RouteProvider(path = "digisos-legacy-api/minesaker/innsendte", routeMethodFunction = Routing::get) {
+    override fun content(): String = if (hasLegacySosialhjelp) {
+        """ [
+                {
+                 "navn":"Økonomisk sosialhjelp",
+                 "kode":"KOM",
+                 "sistEndret": "${LocalDateTime.now().minusWeeks(1)}"
+                }
+            ]
+        """.trimMargin()
+    } else "[]"
+
+
+}class DigisosRoute(private val hasSosialhjelp: Boolean = false) :
     RouteProvider(path = "minesaker/innsendte", routeMethodFunction = Routing::get) {
     override fun content(): String = if (hasSosialhjelp) {
         """ [

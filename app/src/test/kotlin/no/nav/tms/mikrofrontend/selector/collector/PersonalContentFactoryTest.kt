@@ -37,7 +37,7 @@ class PersonalContentFactoryTest {
     fun `skal ha microfrontends og produktkort innlogingsnivå 4`() {
         testFactory(
             safResponse = SafResponse(listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now()))),
-            digisosResponse = DigisosResponse(listOf(Dokument(kode = "KOM", navn = "Sosialhjelp", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now())))
+            legacyDigisosResponse = DigisosResponse(listOf(Dokument(kode = "KOM", navn = "Sosialhjelp", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now())))
         ).build(
             microfrontends = microfrontendMocck(level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5),
             levelOfAssurance = HIGH,
@@ -171,14 +171,16 @@ private fun testFactory(
     meldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{meldekort:0}")),
     oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false),
     pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"), 1988),
-    digisosResponse: DigisosResponse = DigisosResponse()
+    legacyDigisosResponse: DigisosResponse = DigisosResponse(),
+    digisosResponse: DigisosResponse = DigisosResponse(),
 ) =
     PersonalContentFactory(
         safResponse = safResponse,
         meldekortResponse = meldekortResponse,
         oppfolgingResponse = oppfolgingResponse,
         pdlResponse = pdlResponse,
-        digisosResponse = digisosResponse
+        legacyDigisosResponse = legacyDigisosResponse,
+        digisosResponse = digisosResponse,
     )
 
 private fun microfrontendMocck(

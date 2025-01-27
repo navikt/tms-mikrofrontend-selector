@@ -2,7 +2,6 @@ package no.nav.tms.mikrofrontend.selector
 
 import LocalPostgresDatabase
 import com.fasterxml.jackson.databind.JsonNode
-import com.nfeld.jsonpathkt.extension.read
 import io.kotest.matchers.shouldBe
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -468,6 +467,7 @@ internal class ApiTest {
                 coEvery { safToken(any()) } returns "<saf>"
                 coEvery { pdlToken(any()) } returns "<pdl>"
                 coEvery { digisosToken(any()) } returns "<digisos>"
+                coEvery { legacyDigisosToken(any()) } returns "<legacy digisos>"
             })
 
             initExternalServices(
@@ -515,6 +515,32 @@ internal class ApiTest {
 
         }
     }
+    @Test
+    fun `Retunere sosialhjelp produktkort dersom digisos gir respons fra FSS men ikke GCP `() = testApplication {
+
+        initSelectorApi(testident = "12345678910")
+        initExternalServices(
+            SafRoute(),
+            MeldekortRoute(),
+            OppfolgingRoute(),
+            PdlRoute(),
+            DigisosRoute(),
+            LegacyDigisosRoute(true),
+            )
+
+
+        client.get("/din-oversikt").assert {
+            status shouldBe HttpStatusCode.OK
+            objectMapper.readTree(bodyAsText()).assert {
+                this["microfrontends"].size() shouldBe 0
+                this["produktkort"].toList().assert {
+                    size shouldBe 1
+                    first().asText() shouldBe "KOM"
+                }
+            }
+
+        }
+    }
 
     fun ApplicationTestBuilder.initSelectorApi(
         testident: String,
@@ -526,6 +552,7 @@ internal class ApiTest {
             coEvery { safToken(any()) } returns "<saf>"
             coEvery { pdlToken(any()) } returns "<pdl>"
             coEvery { digisosToken(any()) } returns "<digisos>"
+            coEvery { legacyDigisosToken(any()) } returns "<legacy digisos>"
         }
     ) {
         val apiClient = httpClient ?: createClient { configureClient() }
@@ -543,7 +570,8 @@ internal class ApiTest {
                         digisosUrl = testHost,
                         pdlBehandlingsnummer = "B000",
                         tokenFetcher = tokenFetcher,
-                        dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag"))
+                        dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
+                        legacyDigisosUrl = "${testHost}/digisos-legacy-api"
                     ),
                     produktkortCounter = produktkortCounter
                 ),
