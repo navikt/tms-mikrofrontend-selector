@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import no.nav.tms.mikrofrontend.selector.collector.Dokument.Companion.getLatest
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
@@ -72,7 +71,6 @@ class PersonalContentFactory(
         offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
         oppfolgingContent = oppfolgingResponse.underOppfolging,
         meldekort = meldekortResponse.harMeldekort,
-        dokumenter = (legacyDigisosResponse.dokumenter + safResponse.dokumenter).getLatest(),
         aktuelt = ContentDefinition.getAktueltContent(
             pdlResponse.calculateAge(),
             safResponse.dokumenter,
@@ -96,7 +94,6 @@ class PersonalContentResponse(
     val offerStepup: Boolean,
     val oppfolgingContent: Boolean,
     val meldekort: Boolean,
-    val dokumenter: List<Dokument>,
     val aktuelt: List<MicrofrontendsDefinition>
 ) {
     @JsonIgnore

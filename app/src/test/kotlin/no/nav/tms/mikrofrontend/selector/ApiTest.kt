@@ -127,20 +127,8 @@ internal class ApiTest {
                             this["url"].asText() shouldBe "https://cdn.pensjon/manifest.json"
                         }
                     }
-
-                    list<JsonNode>("dokumenter").assert {
-                        this.size shouldBe 1
-                        this[0].assert {
-                            this["navn"].asText() shouldBe "dummyNavn"
-                            this["kode"].asText() shouldBe "SYK"
-                            this["url"].asText() shouldBe "https://www.nav.no/SYK"
-                        }
-                    }
-
                 }
-
             }
-
         }
 
     @Test
@@ -199,14 +187,6 @@ internal class ApiTest {
                 boolean("oppfolgingContent") shouldBe false
                 boolean("meldekort") shouldBe true
                 boolean("offerStepup") shouldBe false
-                list<JsonNode>("dokumenter").assert {
-                        this.size shouldBe 1
-                        this[0].assert {
-                            this["navn"].asText() shouldBe "dummyNavn"
-                            this["kode"].asText() shouldBe "DAG"
-                            this["url"].asText() shouldBe "https://www.nav.no/dokumentarkiv/dag"
-                        }
-                }
             }
         }
     }
