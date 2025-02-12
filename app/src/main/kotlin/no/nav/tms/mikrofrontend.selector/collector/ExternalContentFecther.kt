@@ -133,8 +133,8 @@ class ExternalContentFecther(
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     PdlResponse(
-                        fødselsdato = jsonResponse?.localDateOrNull("foedselsdato"),
-                        fødselsår = jsonResponse?.intOrNull("foedselsaar"),
+                        fødselsdato = jsonResponse?.localDateOrNull("foedselsdato..foedselsdato"),
+                        fødselsår = jsonResponse?.intOrNull("foedselsdato..foedselsaar"),
                         errors = jsonResponse?.getAll<String>("errors..message") ?: emptyList(),
                     )
                 }
@@ -209,7 +209,7 @@ private class HentAlder(ident: String) {
     val query = """
         query(${'$'}ident: ID!) {
             hentPerson(ident: ${'$'}ident) {
-                foedsel {
+                foedselsdato {
                     foedselsdato,
                     foedselsaar,
                 }
