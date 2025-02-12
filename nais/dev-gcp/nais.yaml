@@ -94,9 +94,9 @@ spec:
     - name: OPPFOLGING_CLIENT_ID
       value: dev-gcp:poao:veilarboppfolging
     - name: MELDEKORT_BASE_URL
-      value: http://meldekort-api-q2.meldekort/meldekort/meldekort-api
+      value: http://meldekort-api-q1.meldekort/meldekort/meldekort-api
     - name: MELDEKORT_CLIENT_ID
-      value: dev-gcp:meldekort:meldekort-api-q2
+      value: dev-gcp:meldekort:meldekort-api-q1
     - name: PDL_API_URL
       value: "https://pdl-api.dev-fss-pub.nais.io"
     - name: PDL_API_CLIENT_ID
