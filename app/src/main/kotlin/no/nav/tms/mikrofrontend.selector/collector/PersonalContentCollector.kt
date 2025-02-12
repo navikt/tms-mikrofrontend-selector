@@ -28,7 +28,6 @@ class PersonalContentCollector(
             }
     }
 
-
     suspend fun asyncCollector(user: TokenXUser) = coroutineScope {
         val safResponse = async { externalContentFecther.fetchDocumentsFromSaf(user) }
         val oppfolgingResponse = async { externalContentFecther.fetchOppfolging(user) }
@@ -36,7 +35,6 @@ class PersonalContentCollector(
         val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
         val digisosResponse = async { externalContentFecther.fetchDigisosSakstema(user) }
         val legacyDigisosResponse = async { externalContentFecther.fetchLegacyDigisosSakstema(user) }
-
 
         return@coroutineScope PersonalContentFactory(
             safResponse = safResponse.await(),
