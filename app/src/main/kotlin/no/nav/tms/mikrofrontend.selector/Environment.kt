@@ -32,8 +32,6 @@ data class Environment(
     val meldekortClientId: String = getEnvVar("MELDEKORT_CLIENT_ID"),
     val pdlClientId: String = getEnvVar("PDL_API_CLIENT_ID"),
     val pdlApiUrl: String = getEnvVar("PDL_API_URL"),
-    val legacyDigisosClientId: String = getEnvVar("LEGACY_DIGISOS_CLIENT_ID"),
-    val legacyDigisosUrl: String = getEnvVar("LEGACY_DIGISOS_API_URL"),
     val digisosClientId: String = getEnvVar("DIGISOS_CLIENT_ID"),
     val digisosUrl: String = getEnvVar("DIGISOS_API_URL"),
     val pdlBehandlingsnummer: String = getEnvVar("PDL_BEHANDLINGSNUMMER"),

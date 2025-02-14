@@ -447,7 +447,6 @@ internal class ApiTest {
                 coEvery { safToken(any()) } returns "<saf>"
                 coEvery { pdlToken(any()) } returns "<pdl>"
                 coEvery { digisosToken(any()) } returns "<digisos>"
-                coEvery { legacyDigisosToken(any()) } returns "<legacy digisos>"
             })
 
             initExternalServices(
@@ -506,7 +505,6 @@ internal class ApiTest {
             coEvery { safToken(any()) } returns "<saf>"
             coEvery { pdlToken(any()) } returns "<pdl>"
             coEvery { digisosToken(any()) } returns "<digisos>"
-            coEvery { legacyDigisosToken(any()) } returns "<legacy digisos>"
         }
     ) {
         val apiClient = httpClient ?: createClient { configureClient() }
@@ -525,7 +523,6 @@ internal class ApiTest {
                         pdlBehandlingsnummer = "B000",
                         tokenFetcher = tokenFetcher,
                         dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
-                        legacyDigisosUrl = "${testHost}/digisos-legacy-api"
                     ),
                     produktkortCounter = produktkortCounter
                 ),

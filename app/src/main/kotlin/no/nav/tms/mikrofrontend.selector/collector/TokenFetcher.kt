@@ -9,7 +9,6 @@ class TokenFetcher(
     private val oppfølgingClientId: String,
     private val safClientId: String,
     private val pdlClientId: String,
-    private val legacyDigisosClientId: String,
     private val digisosClientId: String,
 
     ) {
@@ -29,7 +28,6 @@ class TokenFetcher(
             throw TokenFetcherException(e, forService, appClientId)
         }
 
-    suspend fun legacyDigisosToken(user: TokenXUser): String = fetchWithErrorHandling("legacy-fss-digisos", legacyDigisosClientId, user)
     suspend fun digisosToken(user: TokenXUser): String = fetchWithErrorHandling("digisos", digisosClientId, user)
 
     class TokenFetcherException(originalException: Exception, forService: String, appClientId: String) :

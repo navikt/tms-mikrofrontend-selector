@@ -45,9 +45,7 @@ spec:
           namespace: poao
         - application: sosialhjelp-soknad-api
           namespace: teamdigisos
-      external:
-        - host: "sosialhjelp-soknad-api.prod-fss-pub.nais.io"
-        - host: "safselvbetjening.prod-fss-pub.nais.io"
+
   gcp:
     sqlInstances:
       - name: microfrontend
@@ -99,12 +97,8 @@ spec:
       value: "https://pdl-api.prod-fss-pub.nais.io"
     - name: PDL_API_CLIENT_ID
       value: "prod-fss:pdl:pdl-api"
-    - name: LEGACY_DIGISOS_API_URL
-      value: https://sosialhjelp-soknad-api.prod-fss-pub.nais.io/sosialhjelp/soknad-api
     - name: DIGISOS_API_URL
       value: http://sosialhjelp-soknad-api.teamdigisos/sosialhjelp/soknad-api
-    - name: LEGACY_DIGISOS_CLIENT_ID
-      value: prod-fss:teamdigisos:sosialhjelp-soknad-api
     - name: DIGISOS_CLIENT_ID
       value: prod-gcp:teamdigisos:sosialhjelp-soknad-api
     - name: PDL_BEHANDLINGSNUMMER
