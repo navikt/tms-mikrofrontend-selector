@@ -45,7 +45,8 @@ spec:
           namespace: poao
         - application: sosialhjelp-soknad-api
           namespace: teamdigisos
-
+      external:
+        - host: "safselvbetjening.prod-fss-pub.nais.io"
   gcp:
     sqlInstances:
       - name: microfrontend
