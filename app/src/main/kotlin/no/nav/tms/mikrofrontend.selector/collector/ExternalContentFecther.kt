@@ -20,7 +20,6 @@ class ExternalContentFecther(
     val oppfølgingBaseUrl: String,
     val meldekortUrl: String,
     val pdlUrl: String,
-    val legacyDigisosUrl: String,
     val digisosUrl: String,
     val pdlBehandlingsnummer: String,
     val tokenFetcher: TokenFetcher,
@@ -87,21 +86,6 @@ class ExternalContentFecther(
         map = { jsonPath -> MeldekortResponse(meldekortApiResponse = jsonPath) },
     )
 
-    suspend fun fetchLegacyDigisosSakstema(user: TokenXUser): DigisosResponse = getResponseAsJsonPath(
-        tokenFetcher = tokenFetcher::legacyDigisosToken,
-        user = user,
-        url = "$legacyDigisosUrl/minesaker/innsendte",
-        tjeneste = "legacy digisos fss",
-        requestOptions = {
-            accept(ContentType.Application.Json)
-            header("Nav-Callid", UUID.randomUUID())
-        },
-        map = { jsonPath ->
-            DigisosResponse(
-                dokumenter = jsonPath.digisosDokument(dokumentarkivUrlResolver)
-            )
-        },
-    )
     suspend fun fetchDigisosSakstema(user: TokenXUser): DigisosResponse = getResponseAsJsonPath(
         tokenFetcher = tokenFetcher::digisosToken,
         user = user,

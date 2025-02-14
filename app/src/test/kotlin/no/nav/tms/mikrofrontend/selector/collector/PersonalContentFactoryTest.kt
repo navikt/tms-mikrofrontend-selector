@@ -171,7 +171,6 @@ private fun testFactory(
     meldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{meldekort:0}")),
     oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false),
     pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"), 1988),
-    legacyDigisosResponse: DigisosResponse = DigisosResponse(),
     digisosResponse: DigisosResponse = DigisosResponse(),
 ) =
     PersonalContentFactory(
