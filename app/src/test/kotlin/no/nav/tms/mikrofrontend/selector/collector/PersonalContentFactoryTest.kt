@@ -8,6 +8,7 @@ import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.HIGH
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.SUBSTANTIAL
 import org.junit.jupiter.api.Test
@@ -108,7 +109,7 @@ class PersonalContentFactoryTest {
     }
 
     @Test
-    fun `skal ha microfrontends og produktkort innloggingsnivå 3`() {
+    fun `skal ha microfrontends men ikke produktkort innloggingsnivå 3`() {
         // er både aia og meldekort nivå 4? Hva med produktkort?
         testFactory(
             safResponse = SafResponse(
@@ -124,7 +125,7 @@ class PersonalContentFactoryTest {
             manifestMap = emptyMap()
         ).assert {
             offerStepup shouldBe true
-            produktkort shouldBe listOf("DAG")
+            produktkort shouldBe listOf()
             this.resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends.size shouldBe 2
         }
@@ -140,12 +141,14 @@ private fun testFactory(
     meldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{meldekort:0}")),
     pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"), 1988),
     digisosResponse: DigisosResponse = DigisosResponse(),
+    levelOfAssurance: LevelOfAssurance = HIGH
 ) =
     PersonalContentFactory(
         safResponse = safResponse,
         meldekortResponse = meldekortResponse,
         pdlResponse = pdlResponse,
         digisosResponse = digisosResponse,
+        levelOfAssurance = levelOfAssurance
     )
 
 private fun microfrontendMocck(

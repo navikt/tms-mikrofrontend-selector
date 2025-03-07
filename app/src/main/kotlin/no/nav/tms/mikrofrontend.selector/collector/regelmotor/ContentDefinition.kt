@@ -7,6 +7,7 @@ import no.nav.tms.mikrofrontend.selector.collector.Dokument
 import no.nav.tms.mikrofrontend.selector.collector.MicrofrontendsDefinition
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentRulesDefinition.Companion.initContentRules
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.Section.Companion.getSection
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 
 object ContentDefinition {
     private fun yamlObjectMapper() =
@@ -28,17 +29,18 @@ object ContentDefinition {
     fun getAktueltContent(
         alder: Int,
         safDokument: List<Dokument>,
-        manifestMap: Map<String, String>
+        manifestMap: Map<String, String>,
+        levelOfAssurance: LevelOfAssurance
     ): List<MicrofrontendsDefinition> =
         aktuelt.map {
             RegelstyrtMicrofrontend(id = it.id, manifestMap = manifestMap).apply {
-                contentResolvers = it.createRules(safDokument, alder)
+                contentResolvers = it.createRules(safDokument, alder, levelOfAssurance)
             }
         }.filter { it.skalVises() }.mapNotNull { it.definition }
 
-    fun getProduktkort(safDokument: List<Dokument>) = produktkort.map { definition ->
+    fun getProduktkort(safDokument: List<Dokument>, levelOfAssurance: LevelOfAssurance) = produktkort.map { definition ->
         Produktkort(id = definition.id).apply {
-            rules = definition.createRules(safDokumenter = safDokument, alder = null)
+            rules = definition.createRules(safDokumenter = safDokument, alder = null, userLevelOfAssurance = levelOfAssurance)
         }
     }.filter { it.skalVises() }
 }

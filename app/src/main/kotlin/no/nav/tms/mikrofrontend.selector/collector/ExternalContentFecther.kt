@@ -123,7 +123,7 @@ class ExternalContentFecther(
         tjeneste: String,
         requestOptions: HttpRequestBuilder.() -> Unit = {},
         crossinline map: (JsonPathInterpreter) -> T,
-    ): T =  withErrorHandling(tjeneste, url){
+    ): T = withErrorHandling(tjeneste, url) {
         val token = tokenFetcher(user)
         httpClient.get {
             url(url)
@@ -158,15 +158,13 @@ class ExternalContentFecther(
                 errorMessage = "Requesttimeout ${errorDetails(requestTimeoutException)}",
                 className = T::class.qualifiedName ?: "unknown"
             )
-        }
-        catch (tokenFetcherException: TokenFetcher.TokenFetcherException){
+        } catch (tokenFetcherException: TokenFetcher.TokenFetcherException) {
             ResponseWithErrors.createWithError(
                 constructor = T::class.primaryConstructor,
                 errorMessage = "errors fetching token $tjeneste",
                 className = T::class.qualifiedName ?: "unknown"
             )
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             throw ApiException(tjeneste, url, e)
         }
 }

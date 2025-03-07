@@ -38,7 +38,8 @@ class PersonalContentCollector(
             safResponse = safResponse.await(),
             meldekortResponse = meldekortResponse.await(),
             pdlResponse = pdlResponse.await(),
-            digisosResponse = digisosResponse.await()
+            digisosResponse = digisosResponse.await(),
+            levelOfAssurance = user.levelOfAssurance
         )
 
     }
@@ -48,7 +49,8 @@ class PersonalContentFactory(
     val safResponse: SafResponse,
     val meldekortResponse: MeldekortResponse,
     val pdlResponse: PdlResponse,
-    val digisosResponse: DigisosResponse
+    val digisosResponse: DigisosResponse,
+    val levelOfAssurance: LevelOfAssurance
 ) {
 
     fun build(
@@ -58,14 +60,15 @@ class PersonalContentFactory(
     ) = PersonalContentResponse(
         microfrontends = microfrontends?.getDefinitions(levelOfAssurance, manifestMap) ?: emptyList(),
         produktkort = ContentDefinition.getProduktkort(
-            digisosResponse.dokumenter + safResponse.dokumenter
+            digisosResponse.dokumenter + safResponse.dokumenter, levelOfAssurance
         ).filter { it.skalVises() }.map { it.id },
         offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
         meldekort = meldekortResponse.harMeldekort,
         aktuelt = ContentDefinition.getAktueltContent(
             pdlResponse.calculateAge(),
             safResponse.dokumenter,
-            manifestMap
+            manifestMap,
+            levelOfAssurance
         )
 
     ).apply {
