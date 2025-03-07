@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
 import no.nav.tms.mikrofrontend.selector.safTestDokument
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import org.junit.jupiter.api.Test
 
 class RegelstyrteMicrofrontendsTest {
@@ -12,7 +13,12 @@ class RegelstyrteMicrofrontendsTest {
 
     @Test
     fun `pensjon skal vises hvis personen er over 40 år og ikke har sakstema pensjon`() {
-        ContentDefinition.getAktueltContent(41, listOf("DAG".safTestDokument()), manifestMapWithPensjon).assert {
+        ContentDefinition.getAktueltContent(41, listOf("DAG".safTestDokument()), manifestMapWithPensjon, LevelOfAssurance.SUBSTANTIAL).assert {
+            size shouldBe 1
+            first().id shouldBe "pensjonskalkulator-microfrontend"
+            first().url shouldBe "https://cdn.pensjon/manifest.json"
+        }
+        ContentDefinition.getAktueltContent(41, listOf("DAG".safTestDokument()), manifestMapWithPensjon, LevelOfAssurance.HIGH).assert {
             size shouldBe 1
             first().id shouldBe "pensjonskalkulator-microfrontend"
             first().url shouldBe "https://cdn.pensjon/manifest.json"
@@ -20,23 +26,27 @@ class RegelstyrteMicrofrontendsTest {
         ContentDefinition.getAktueltContent(
             alder = 41,
             listOf("PEN".safTestDokument()),
-            manifestMapWithPensjon
+            manifestMapWithPensjon,
+            LevelOfAssurance.HIGH
         ).size shouldBe 0
         ContentDefinition.getAktueltContent(
             alder = 39,
             listOf("FOR".safTestDokument(), "DAG".safTestDokument()),
-            manifestMapWithPensjon
+            manifestMapWithPensjon,
+            levelOfAssurance = LevelOfAssurance.HIGH
         ).size shouldBe 0
         ContentDefinition.getAktueltContent(
             alder = 39,
             listOf("PEN".safTestDokument()),
-            manifestMapWithPensjon
+            manifestMapWithPensjon,
+            levelOfAssurance = LevelOfAssurance.SUBSTANTIAL
         ).size shouldBe 0
 
         ContentDefinition.getAktueltContent(
             alder = 39,
             listOf(),
-            manifestMapWithPensjon
+            manifestMapWithPensjon,
+            levelOfAssurance = LevelOfAssurance.HIGH
         ).size shouldBe 0
     }
 }
