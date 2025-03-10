@@ -1,33 +1,33 @@
 produktkort:
   - id: PEN
-    includeIfLevelOfAssuranceIsHigh: true
+    includeOnlyIfLoAIsHigh: true
     includeIfSakstema:
       - PEN
   - id: DAG
-    includeIfLevelOfAssuranceIsHigh: true
+    includeOnlyIfLoAIsHigh: true
     includeIfSakstema:
       - DAG
     weeksSinceLastDocument:
       sakstemakode: DAG
       numberOfWeeks: 6
   - id: FOR
-    includeIfLevelOfAssuranceIsHigh: true
+    includeOnlyIfLoAIsHigh: true
     includeIfSakstema:
       - FOR
   - id: HJE
-    includeIfLevelOfAssuranceIsHigh: true
+    includeOnlyIfLoAIsHigh: true
     includeIfSakstema:
       - HJE
   - id: KOM
-    includeIfLevelOfAssuranceIsHigh: true
+    includeOnlyIfLoAIsHigh: true
     includeIfSakstema:
       - KOM
   - id: UFO
-    includeIfLevelOfAssuranceIsHigh: true
+    includeOnlyIfLoAIsHigh: true
     includeIfSakstema:
       - UFO
   - id: SYK
-    includeIfLevelOfAssuranceIsHigh: true
+    includeOnlyIfLoAIsHigh: true
     includeIfSakstema:
       - SYK
       - SYM
