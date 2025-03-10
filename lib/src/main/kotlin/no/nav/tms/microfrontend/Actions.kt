@@ -47,10 +47,9 @@ class Disable(objectMapper: ObjectMapper) : Action(objectMapper) {
     override val action = "disable"
 }
 
-enum class Sensitivitet{
+enum class Sensitivitet {
     HIGH, SUBSTANTIAL;
     val kafkaValue = name.lowercase()
-
 }
 
 object MicrofrontendMessageBuilder {
