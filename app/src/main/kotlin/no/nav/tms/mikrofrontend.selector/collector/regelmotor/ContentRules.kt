@@ -21,7 +21,7 @@ class ContentRulesDefinition(
     val exludeIfSakstema: ExcludeIfSakstemaContentRule?,
     val usersAgeOver: UsersAgeOverContentRule?,
     val weeksSinceLastDocument: WeeksSinceLastDocumentContentRule?,
-    val includeIfLevelOfAssuranceIsHigh: IncludeIfLevelOfAssuranceIsHighRule?
+    val includeOnlyIfLoAIsHigh: IncludeOnlyIfLoAIsHighRule?
 ) {
 
     fun createRules(safDokumenter: List<Dokument>, alder: Int?, userLevelOfAssurance: LevelOfAssurance) = mutableListOf<ContentResolver>().apply {
@@ -29,7 +29,7 @@ class ContentRulesDefinition(
         exludeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.kode })?.let { add(it) }
         usersAgeOver?.resolverOrNull(alder)?.let { add(it) }
         weeksSinceLastDocument?.resolverOrNull(safDokumenter)?.let { add(it) }
-        includeIfLevelOfAssuranceIsHigh?.resolverOrNull(userLevelOfAssurance)?.let { add(it) }
+        includeOnlyIfLoAIsHigh?.resolverOrNull(userLevelOfAssurance)?.let { add(it) }
     }
 
     companion object {
@@ -41,7 +41,7 @@ class ContentRulesDefinition(
                     weeksSinceLastDocument = WeeksSinceLastDocumentContentRule.parseRuleOrNull(it),
                     exludeIfSakstema = ExcludeIfSakstemaContentRule.parseRuleOrNull(it),
                     usersAgeOver = UsersAgeOverContentRule.parseRuleOrNull(it),
-                    includeIfLevelOfAssuranceIsHigh = IncludeIfLevelOfAssuranceIsHighRule.parseRuleOrNull(it)
+                    includeOnlyIfLoAIsHigh = IncludeOnlyIfLoAIsHighRule.parseRuleOrNull(it)
                 )
             }
     }
@@ -135,23 +135,23 @@ class WeeksSinceLastDocumentContentRule(
     }
 }
 
-class IncludeIfLevelOfAssuranceIsHighRule(val requireHighLevelOfAssurance: Boolean ) :
+class IncludeOnlyIfLoAIsHighRule(val requireHighLevelOfAssurance: Boolean) :
     ContentRule<LevelOfAssurance> {
     override fun resolverOrNull(input: LevelOfAssurance?): ContentResolver? =
         input?.let {
             object : ContentResolver {
                 override fun skalVises(): Boolean = if(requireHighLevelOfAssurance && input != LevelOfAssurance.HIGH) {
                     false
-                }else {
+                } else {
                     true
                 }
             }
         }
 
     companion object {
-        const val ruleId = "includeIfLevelOfAssuranceIsHigh"
+        const val ruleId = "includeOnlyIfLoAIsHigh"
         fun parseRuleOrNull(jsonNode: JsonNode) = jsonNode.read<Boolean>("$.$ruleId")?.let {
-            IncludeIfLevelOfAssuranceIsHighRule(it)
+            IncludeOnlyIfLoAIsHighRule(it)
         }
     }
 }
