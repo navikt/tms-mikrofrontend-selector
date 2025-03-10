@@ -31,12 +31,15 @@ object ContentDefinition {
         safDokument: List<Dokument>,
         manifestMap: Map<String, String>,
         levelOfAssurance: LevelOfAssurance
-    ): List<MicrofrontendsDefinition> =
-        aktuelt.map {
+    ): List<MicrofrontendsDefinition> {
+        return aktuelt.map {
             RegelstyrtMicrofrontend(id = it.id, manifestMap = manifestMap).apply {
                 contentResolvers = it.createRules(safDokument, alder, levelOfAssurance)
             }
-        }.filter { it.skalVises() }.mapNotNull { it.definition }
+        }
+            .filter { it.skalVises() }
+            .mapNotNull { it.definition }
+    }
 
     fun getProduktkort(safDokument: List<Dokument>, levelOfAssurance: LevelOfAssurance) = produktkort.map { definition ->
         Produktkort(id = definition.id).apply {

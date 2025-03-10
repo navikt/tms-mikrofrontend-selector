@@ -11,57 +11,57 @@ class ContentRuleTest {
         WeeksSinceLastDocumentContentRule(
             sakstemakode = "DAG",
             periodInWeeks = 3,
-        ).resolverOrNull(listOf("DAG".safTestDokument(LocalDateTime.now())))?.skalVises() shouldBe true
+        ).resolver(listOf("DAG".safTestDokument(LocalDateTime.now())))?.skalVises() shouldBe true
         WeeksSinceLastDocumentContentRule(
             sakstemakode = "DAG",
             periodInWeeks = 3,
-        ).resolverOrNull(listOf("DAG".safTestDokument(LocalDateTime.now().minusWeeks(4))))?.skalVises() shouldBe false
+        ).resolver(listOf("DAG".safTestDokument(LocalDateTime.now().minusWeeks(4))))?.skalVises() shouldBe false
         WeeksSinceLastDocumentContentRule(
             sakstemakode = "DAG",
             periodInWeeks = 3,
-        ).resolverOrNull(listOf("DAG".safTestDokument(LocalDateTime.now().minusWeeks(3))))?.skalVises() shouldBe true
+        ).resolver(listOf("DAG".safTestDokument(LocalDateTime.now().minusWeeks(3))))?.skalVises() shouldBe true
     }
 
     @Test
     fun `bruker er eldre enn`() {
-        UsersAgeOverContentRule(shouldBeOlderThan = 40).resolverOrNull(39)?.skalVises() shouldBe false
-        UsersAgeOverContentRule(shouldBeOlderThan = 40).resolverOrNull(40)?.skalVises() shouldBe false
-        UsersAgeOverContentRule(shouldBeOlderThan = 40).resolverOrNull(41)?.skalVises() shouldBe true
-        UsersAgeOverContentRule(shouldBeOlderThan = 0).resolverOrNull(null) shouldBe null
-        UsersAgeOverContentRule(shouldBeOlderThan = 30).resolverOrNull(null) shouldBe null
+        UsersAgeOverContentRule(shouldBeOlderThan = 40).resolver(39).skalVises() shouldBe false
+        UsersAgeOverContentRule(shouldBeOlderThan = 40).resolver(40).skalVises() shouldBe false
+        UsersAgeOverContentRule(shouldBeOlderThan = 40).resolver(41).skalVises() shouldBe true
+        UsersAgeOverContentRule(shouldBeOlderThan = 0).resolver(null).skalVises() shouldBe true
+        UsersAgeOverContentRule(shouldBeOlderThan = 30).resolver(null).skalVises() shouldBe true
     }
 
     @Test
     fun `Eksluderer på gitte sakstema`() {
-        ExcludeIfSakstemaContentRule(excludeList = listOf("SAF", "SYM")).resolverOrNull(listOf("DAG", "UFO"))
-            ?.skalVises() shouldBe true
-        ExcludeIfSakstemaContentRule(excludeList = listOf()).resolverOrNull(listOf("DAG"))
-            ?.skalVises() shouldBe true
-        ExcludeIfSakstemaContentRule(excludeList = listOf()).resolverOrNull(listOf())
-            ?.skalVises() shouldBe true
-        ExcludeIfSakstemaContentRule(excludeList = listOf("SAF", "SYM")).resolverOrNull(listOf("SAF"))
-            ?.skalVises() shouldBe false
-        ExcludeIfSakstemaContentRule(excludeList = listOf("DAG")).resolverOrNull(listOf("SAF", "SYM", "DAG"))
-            ?.skalVises() shouldBe false
+        ExcludeIfSakstemaContentRule(excludeList = listOf("SAF", "SYM")).resolver(listOf("DAG", "UFO"))
+            .skalVises() shouldBe true
+        ExcludeIfSakstemaContentRule(excludeList = listOf()).resolver(listOf("DAG"))
+            .skalVises() shouldBe true
+        ExcludeIfSakstemaContentRule(excludeList = listOf()).resolver(listOf())
+            .skalVises() shouldBe true
+        ExcludeIfSakstemaContentRule(excludeList = listOf("SAF", "SYM")).resolver(listOf("SAF"))
+            .skalVises() shouldBe false
+        ExcludeIfSakstemaContentRule(excludeList = listOf("DAG")).resolver(listOf("SAF", "SYM", "DAG"))
+            .skalVises() shouldBe false
     }
 
     @Test
     fun `Inkluderer på gitte sakstema`() {
         IncludeIfSakstemaContentRule(includeList = listOf("SAF", "SYM"))
-            .resolverOrNull(listOf("DAG", "UFO"))
-            ?.skalVises() shouldBe false
+            .resolver(listOf("DAG", "UFO"))
+            .skalVises() shouldBe false
         IncludeIfSakstemaContentRule(includeList = listOf("FOR"))
-            .resolverOrNull(listOf("DAG"))
-            ?.skalVises() shouldBe false
+            .resolver(listOf("DAG"))
+            .skalVises() shouldBe false
         IncludeIfSakstemaContentRule(includeList = listOf("FOR"))
-            .resolverOrNull(listOf())
-            ?.skalVises() shouldBe false
+            .resolver(listOf())
+            .skalVises() shouldBe false
         IncludeIfSakstemaContentRule(includeList = listOf("SAF", "SYM"))
-            .resolverOrNull(listOf("SAF"))
-            ?.skalVises() shouldBe true
+            .resolver(listOf("SAF"))
+            .skalVises() shouldBe true
         IncludeIfSakstemaContentRule(includeList = listOf("DAG"))
-            .resolverOrNull(listOf("SAF", "SYM", "DAG"))
-            ?.skalVises() shouldBe true
+            .resolver(listOf("SAF", "SYM", "DAG"))
+            .skalVises() shouldBe true
     }
 
 }

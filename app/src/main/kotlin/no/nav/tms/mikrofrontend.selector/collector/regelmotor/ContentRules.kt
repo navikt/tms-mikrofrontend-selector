@@ -11,8 +11,8 @@ interface ContentResolver {
     fun skalVises(): Boolean
 }
 
-interface ContentRule<I> {
-    fun resolverOrNull(input: I?): ContentResolver?
+interface ContentRule<T> {
+    fun resolver(input: T): ContentResolver
 }
 
 class ContentRulesDefinition(
@@ -25,11 +25,13 @@ class ContentRulesDefinition(
 ) {
 
     fun createRules(safDokumenter: List<Dokument>, alder: Int?, userLevelOfAssurance: LevelOfAssurance) = mutableListOf<ContentResolver>().apply {
-        includeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.kode })?.let { add(it) }
-        exludeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.kode })?.let { add(it) }
-        usersAgeOver?.resolverOrNull(alder)?.let { add(it) }
-        weeksSinceLastDocument?.resolverOrNull(safDokumenter)?.let { add(it) }
-        includeOnlyIfLoAIsHigh?.resolverOrNull(userLevelOfAssurance)?.let { add(it) }
+        includeIfSakstema?.resolver(safDokumenter.map { dok -> dok.kode })?.let { add(it) }
+        exludeIfSakstema?.resolver(safDokumenter.map { dok -> dok.kode })?.let { add(it) }
+        weeksSinceLastDocument?.resolver(safDokumenter)?.let { add(it) }
+        includeOnlyIfLoAIsHigh?.resolver(userLevelOfAssurance)?.let { add(it) }
+        if (alder != null) {
+            usersAgeOver?.resolver(alder)?.let { add(it) }
+        }
     }
 
     companion object {
@@ -48,11 +50,9 @@ class ContentRulesDefinition(
 }
 
 class UsersAgeOverContentRule(val shouldBeOlderThan: Int) : ContentRule<Int?> {
-    override fun resolverOrNull(input: Int?): ContentResolver? =
-        input?.let {
-            object : ContentResolver {
-                override fun skalVises(): Boolean = input > shouldBeOlderThan
-            }
+    override fun resolver(input: Int?): ContentResolver =
+        object : ContentResolver {
+            override fun skalVises(): Boolean = input == null || input > shouldBeOlderThan
         }
 
     companion object {
@@ -64,14 +64,10 @@ class UsersAgeOverContentRule(val shouldBeOlderThan: Int) : ContentRule<Int?> {
 }
 
 
-class ExcludeIfSakstemaContentRule(val excludeList: List<String>?) : ContentRule<List<String>?> {
-    override fun resolverOrNull(input: List<String>?): ContentResolver? =
-        excludeList?.let {
-            input?.let {
-                object : ContentResolver {
-                    override fun skalVises(): Boolean = excludeList.intersect(input.toSet()).isEmpty()
-                }
-            }
+class ExcludeIfSakstemaContentRule(val excludeList: List<String>) : ContentRule<List<String>> {
+    override fun resolver(input: List<String>): ContentResolver =
+        object : ContentResolver {
+            override fun skalVises(): Boolean = excludeList.intersect(input.toSet()).isEmpty()
         }
 
     companion object {
@@ -85,11 +81,9 @@ class ExcludeIfSakstemaContentRule(val excludeList: List<String>?) : ContentRule
 open class IncludeIfSakstemaContentRule(val includeList: List<String>) :
     ContentRule<List<String>> {
 
-    override fun resolverOrNull(input: List<String>?): ContentResolver? =
-        input?.let {
-            object : ContentResolver {
-                override fun skalVises(): Boolean = includeList.intersect(input.toSet()).isNotEmpty()
-            }
+    override fun resolver(input: List<String>): ContentResolver =
+        object : ContentResolver {
+            override fun skalVises(): Boolean = includeList.intersect(input.toSet()).isNotEmpty()
         }
 
     companion object {
@@ -109,17 +103,15 @@ class WeeksSinceLastDocumentContentRule(
     val sakstemakode: String,
     val periodInWeeks: Int,
 ) : ContentRule<List<Dokument>> {
-    override fun resolverOrNull(input: List<Dokument>?): ContentResolver? =
-        input?.let { safDokumenter ->
-            object : ContentResolver {
-                override fun skalVises(): Boolean =
-                    safDokumenter.none {
-                        it.kode == sakstemakode && it.sistEndret.isBefore(
-                            LocalDateTime.now().minusWeeks(periodInWeeks.toLong() + 1)
-                        )
-                    }
+    override fun resolver(input: List<Dokument>): ContentResolver =
+        object : ContentResolver {
+            override fun skalVises(): Boolean =
+                input.none {
+                    it.kode == sakstemakode && it.sistEndret.isBefore(
+                        LocalDateTime.now().minusWeeks(periodInWeeks.toLong() + 1)
+                    )
+                }
             }
-        }
 
 
     companion object {
@@ -137,14 +129,12 @@ class WeeksSinceLastDocumentContentRule(
 
 class IncludeOnlyIfLoAIsHighRule(val requireHighLevelOfAssurance: Boolean) :
     ContentRule<LevelOfAssurance> {
-    override fun resolverOrNull(input: LevelOfAssurance?): ContentResolver? =
-        input?.let {
-            object : ContentResolver {
-                override fun skalVises(): Boolean = if(requireHighLevelOfAssurance && input != LevelOfAssurance.HIGH) {
-                    false
-                } else {
-                    true
-                }
+    override fun resolver(input: LevelOfAssurance): ContentResolver =
+        object : ContentResolver {
+            override fun skalVises(): Boolean = if (requireHighLevelOfAssurance && input != LevelOfAssurance.HIGH) {
+                false
+            } else {
+                true
             }
         }
 
