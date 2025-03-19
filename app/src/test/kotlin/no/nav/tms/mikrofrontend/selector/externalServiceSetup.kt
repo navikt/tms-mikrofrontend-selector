@@ -84,17 +84,6 @@ class MeldekortRoute(private val harMeldekort: Boolean = false, httpStatusCode: 
         """.trimIndent()
 }
 
-
-class OppfolgingRoute(private val underOppfølging: Boolean = false, val ovverideContent: String? = null) :
-    RouteProvider(path = "api/niva3/underoppfolging", routeMethodFunction = Routing::get) {
-    override fun content(): String = ovverideContent ?: """
-        {
-          "underOppfolging": $underOppfølging
-        }
-    """.trimIndent()
-
-}
-
 class DigisosRoute(private val hasSosialhjelp: Boolean = false) :
     RouteProvider(path = "minesaker/innsendte", routeMethodFunction = Routing::get) {
     override fun content(): String = if (hasSosialhjelp) {

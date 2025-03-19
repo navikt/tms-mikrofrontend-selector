@@ -127,14 +127,6 @@ class Dokument(
 
 }
 
-class OppfolgingResponse(
-    underOppfolging: Boolean? = false,
-    errors: String? = null,
-) : ResponseWithErrors(errors) {
-    val underOppfolging: Boolean = underOppfolging ?: false
-    override val source = "Oppfølgingapi"
-}
-
 class MeldekortResponse(
     meldekortApiResponse: JsonPathInterpreter? = null,
     errors: String? = null,

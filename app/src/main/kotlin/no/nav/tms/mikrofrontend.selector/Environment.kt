@@ -26,8 +26,6 @@ data class Environment(
     val storageBucketName: String = getEnvVar("STORAGE_BUCKET_NAME"),
     val safUrl: String = getEnvVar("SAF_URL"),
     val safClientId: String = getEnvVar("SAF_CLIENT_ID"),
-    val oppfolgingUrl: String = getEnvVar("OPPFOLGING_API_URL"),
-    val oppfolgingClienId: String = getEnvVar("OPPFOLGING_CLIENT_ID"),
     val meldekortUrl: String = getEnvVar("MELDEKORT_BASE_URL"),
     val meldekortClientId: String = getEnvVar("MELDEKORT_CLIENT_ID"),
     val pdlClientId: String = getEnvVar("PDL_API_CLIENT_ID"),

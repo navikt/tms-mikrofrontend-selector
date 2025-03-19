@@ -30,7 +30,6 @@ class PersonalContentCollector(
 
     suspend fun asyncCollector(user: TokenXUser) = coroutineScope {
         val safResponse = async { externalContentFecther.fetchDocumentsFromSaf(user) }
-        val oppfolgingResponse = async { externalContentFecther.fetchOppfolging(user) }
         val meldekortResponse = async { externalContentFecther.fetchMeldekort(user) }
         val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
         val digisosResponse = async { externalContentFecther.fetchDigisosSakstema(user) }
@@ -38,7 +37,6 @@ class PersonalContentCollector(
         return@coroutineScope PersonalContentFactory(
             safResponse = safResponse.await(),
             meldekortResponse = meldekortResponse.await(),
-            oppfolgingResponse = oppfolgingResponse.await(),
             pdlResponse = pdlResponse.await(),
             digisosResponse = digisosResponse.await()
         )
@@ -49,7 +47,6 @@ class PersonalContentCollector(
 class PersonalContentFactory(
     val safResponse: SafResponse,
     val meldekortResponse: MeldekortResponse,
-    val oppfolgingResponse: OppfolgingResponse,
     val pdlResponse: PdlResponse,
     val digisosResponse: DigisosResponse
 ) {
@@ -64,7 +61,6 @@ class PersonalContentFactory(
             digisosResponse.dokumenter + safResponse.dokumenter
         ).filter { it.skalVises() }.map { it.id },
         offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
-        oppfolgingContent = oppfolgingResponse.underOppfolging,
         meldekort = meldekortResponse.harMeldekort,
         aktuelt = ContentDefinition.getAktueltContent(
             pdlResponse.calculateAge(),
@@ -76,7 +72,6 @@ class PersonalContentFactory(
         errors = listOf(
             safResponse,
             meldekortResponse,
-            oppfolgingResponse,
             pdlResponse,
             digisosResponse
         ).mapNotNull { it.errorMessage() }.joinToString()
@@ -87,7 +82,6 @@ class PersonalContentResponse(
     val microfrontends: List<MicrofrontendsDefinition>,
     val produktkort: List<String>,
     val offerStepup: Boolean,
-    val oppfolgingContent: Boolean,
     val meldekort: Boolean,
     val aktuelt: List<MicrofrontendsDefinition>
 ) {
