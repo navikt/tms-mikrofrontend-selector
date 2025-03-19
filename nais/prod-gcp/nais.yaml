@@ -41,8 +41,6 @@ spec:
       rules:
         - application: meldekort-api
           namespace: meldekort
-        - application: veilarboppfolging
-          namespace: poao
         - application: sosialhjelp-soknad-api
           namespace: teamdigisos
       external:
