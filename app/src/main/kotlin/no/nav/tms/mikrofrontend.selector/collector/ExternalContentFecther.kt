@@ -17,7 +17,6 @@ import kotlin.reflect.full.primaryConstructor
 class ExternalContentFecther(
     val safUrl: String,
     val httpClient: HttpClient,
-    val oppfølgingBaseUrl: String,
     val meldekortUrl: String,
     val pdlUrl: String,
     val digisosUrl: String,
@@ -69,14 +68,6 @@ class ExternalContentFecther(
                 }
             }
     }
-
-    suspend fun fetchOppfolging(user: TokenXUser): OppfolgingResponse = getResponseAsJsonPath(
-        tokenFetcher = tokenFetcher::oppfolgingToken,
-        user = user,
-        url = "$oppfølgingBaseUrl/api/niva3/underoppfolging",
-        tjeneste = "Oppfølging",
-        map = { OppfolgingResponse(underOppfolging = it.boolean("underOppfolging")) },
-    )
 
     suspend fun fetchMeldekort(user: TokenXUser): MeldekortResponse = getResponseAsJsonPath(
         tokenFetcher = tokenFetcher::meldekortToken,

@@ -86,10 +86,6 @@ spec:
       value: https://person.nav.no/dokumentarkiv/tema
     - name: SAF_CLIENT_ID
       value: prod-fss:teamdokumenthandtering:safselvbetjening
-    - name: OPPFOLGING_API_URL
-      value: http://veilarboppfolging.poao/veilarboppfolging
-    - name: OPPFOLGING_CLIENT_ID
-      value: prod-gcp:poao:veilarboppfolging
     - name: MELDEKORT_BASE_URL
       value: http://meldekort-api.meldekort/meldekort/meldekort-api
     - name: MELDEKORT_CLIENT_ID

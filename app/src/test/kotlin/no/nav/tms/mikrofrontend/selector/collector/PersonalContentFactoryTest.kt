@@ -24,10 +24,8 @@ class PersonalContentFactoryTest {
             levelOfAssurance = HIGH,
             manifestMap = emptyMap()
         ).assert {
-            oppfolgingContent shouldBe false
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
-            oppfolgingContent shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends shouldBe emptyList()
         }
@@ -43,7 +41,6 @@ class PersonalContentFactoryTest {
             levelOfAssurance = HIGH,
             manifestMap = emptyMap()
         ).assert {
-            oppfolgingContent shouldBe false
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG", "KOM")
             this.resolveStatus() shouldBe HttpStatusCode.OK
@@ -60,30 +57,9 @@ class PersonalContentFactoryTest {
             levelOfAssurance = HIGH,
             manifestMap = emptyMap()
         ).assert {
-            oppfolgingContent shouldBe false
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
-            oppfolgingContent shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.MultiStatus
-            this.microfrontends shouldBe emptyList()
-        }
-    }
-
-    @Test
-    fun `skal ha oppfolgingcontent`() {
-        testFactory(
-            oppfolgingResponse = OppfolgingResponse(true)
-
-        ).build(
-            microfrontends = Microfrontends(),
-            levelOfAssurance = HIGH,
-            manifestMap = emptyMap()
-        ).assert {
-            oppfolgingContent shouldBe true
-            offerStepup shouldBe false
-            produktkort shouldBe emptyList()
-            oppfolgingContent shouldBe true
-            this.resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends shouldBe emptyList()
         }
     }
@@ -98,10 +74,8 @@ class PersonalContentFactoryTest {
             levelOfAssurance = HIGH,
             manifestMap = emptyMap()
         ).assert {
-            oppfolgingContent shouldBe false
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
-            oppfolgingContent shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.MultiStatus
             this.microfrontends shouldBe emptyList()
         }
@@ -109,14 +83,13 @@ class PersonalContentFactoryTest {
     }
 
     @Test
-    fun `skal ha produkkort, ny-aia, oppfolging, meldekort og microfrontends`() {
+    fun `skal ha produkkort, ny-aia, meldekort og microfrontends`() {
         testFactory(
             safResponse = SafResponse(
                 dokumenter = listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now())),
                 errors = emptyList()
             ),
             meldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
-            oppfolgingResponse = OppfolgingResponse(underOppfolging = true),
         ).build(
             microfrontends = microfrontendMocck(
                 level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5,
@@ -126,10 +99,8 @@ class PersonalContentFactoryTest {
             levelOfAssurance = HIGH,
             manifestMap = mapOf("regefrontend" to "https://micro.moc")
         ).assert {
-            oppfolgingContent shouldBe true
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG")
-            oppfolgingContent shouldBe true
             resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends.size shouldBe 5
         }
@@ -138,7 +109,7 @@ class PersonalContentFactoryTest {
 
     @Test
     fun `skal ha microfrontends og produktkort innloggingsnivå 3`() {
-        //er både aia og oppfolging og meldekort nivå 4? Hva med produktkort?
+        // er både aia og meldekort nivå 4? Hva med produktkort?
         testFactory(
             safResponse = SafResponse(
                 listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now())),
@@ -152,10 +123,8 @@ class PersonalContentFactoryTest {
             levelOfAssurance = SUBSTANTIAL,
             manifestMap = emptyMap()
         ).assert {
-            oppfolgingContent shouldBe false
             offerStepup shouldBe true
             produktkort shouldBe listOf("DAG")
-            oppfolgingContent shouldBe false
             this.resolveStatus() shouldBe HttpStatusCode.OK
             this.microfrontends.size shouldBe 2
         }
@@ -169,14 +138,12 @@ private operator fun MicrofrontendsDefinition.times(i: Int): List<Microfrontends
 private fun testFactory(
     safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
     meldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{meldekort:0}")),
-    oppfolgingResponse: OppfolgingResponse = OppfolgingResponse(underOppfolging = false),
     pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"), 1988),
     digisosResponse: DigisosResponse = DigisosResponse(),
 ) =
     PersonalContentFactory(
         safResponse = safResponse,
         meldekortResponse = meldekortResponse,
-        oppfolgingResponse = oppfolgingResponse,
         pdlResponse = pdlResponse,
         digisosResponse = digisosResponse,
     )

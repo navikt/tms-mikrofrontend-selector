@@ -25,7 +25,6 @@ fun main() {
     val externalContentFecther = ExternalContentFecther(
         safUrl = environment.safUrl,
         httpClient = HttpClient { configureClient() },
-        oppfølgingBaseUrl = environment.oppfolgingUrl,
         meldekortUrl = environment.meldekortUrl,
         pdlUrl = environment.pdlApiUrl,
         digisosUrl = environment.digisosUrl,
@@ -34,7 +33,6 @@ fun main() {
         tokenFetcher = TokenFetcher(
             tokendingsService = TokendingsServiceBuilder.buildTokendingsService(),
             meldekortClientId = environment.meldekortClientId,
-            oppfølgingClientId = environment.oppfolgingClienId,
             safClientId = environment.safClientId,
             pdlClientId = environment.pdlClientId,
             digisosClientId = environment.digisosClientId

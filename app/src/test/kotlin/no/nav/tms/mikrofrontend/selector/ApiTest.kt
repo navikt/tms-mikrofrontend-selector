@@ -72,7 +72,6 @@ internal class ApiTest {
             initExternalServices(
                 SafRoute(sakstemaer = listOf("SYK"), ident = testIdent),
                 MeldekortRoute(harMeldekort = true),
-                OppfolgingRoute(false),
                 PdlRoute(fødselssår = 1960),
                 DigisosRoute()
             )
@@ -144,7 +143,6 @@ internal class ApiTest {
         initExternalServices(
             SafRoute(sakstemaer = listOf("DAG"), ident = testIdent),
             MeldekortRoute(harMeldekort = true),
-            OppfolgingRoute(false),
             PdlRoute(fødselsdato = "2004-05-05", 2004),
             DigisosRoute(),
         )
@@ -184,7 +182,6 @@ internal class ApiTest {
                 getAll<String>("microfrontends..url")
                 list<String>("produktkort").size shouldBe 1
                 list<String>("aktuelt").size shouldBe 0
-                boolean("oppfolgingContent") shouldBe false
                 boolean("meldekort") shouldBe true
                 boolean("offerStepup") shouldBe false
             }
@@ -205,7 +202,6 @@ internal class ApiTest {
         initExternalServices(
             SafRoute(expectedProduktkort, ident = testIdent),
             MeldekortRoute(),
-            OppfolgingRoute(false),
             PdlRoute(),
             DigisosRoute(),
         )
@@ -251,7 +247,6 @@ internal class ApiTest {
             initExternalServices(
                 SafRoute(ident = testIdent),
                 MeldekortRoute(),
-                OppfolgingRoute(),
                 PdlRoute(),
                 DigisosRoute(),
             )
@@ -299,7 +294,6 @@ internal class ApiTest {
             initExternalServices(
                 SafRoute(ident = testident2),
                 MeldekortRoute(),
-                OppfolgingRoute(false),
                 PdlRoute(),
                 DigisosRoute(),
             )
@@ -324,7 +318,6 @@ internal class ApiTest {
             initExternalServices(
                 SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999", ident = testident2),
                 MeldekortRoute(),
-                OppfolgingRoute(false),
                 DigisosRoute(),
             )
 
@@ -358,7 +351,6 @@ internal class ApiTest {
             initExternalServices(
                 SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999", ident = testident2),
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
-                OppfolgingRoute(false, ovverideContent = ""),
                 PdlRoute("2000-05-05", 2000),
                 DigisosRoute(),
             )
@@ -397,7 +389,6 @@ internal class ApiTest {
                     ident = testident2
                 ),
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
-                OppfolgingRoute(false, ovverideContent = ""),
                 PdlRoute(errorMsg = "Kall til PDL feilet"),
                 DigisosRoute(),
             )
@@ -438,12 +429,11 @@ internal class ApiTest {
             val testident2 = "12345678910"
 
             initSelectorApi(testident = testident2, tokenFetcher = mockk<TokenFetcher>().apply {
-                coEvery { oppfolgingToken(any()) } throws TokenFetcherException(
+                coEvery { meldekortToken(any()) } throws TokenFetcherException(
                     originalException = SocketTimeoutException(),
-                    forService = "oppfolging",
+                    forService = "meldekort",
                     appClientId = "testid"
                 )
-                coEvery { meldekortToken(any()) } returns "<meldekort>"
                 coEvery { safToken(any()) } returns "<saf>"
                 coEvery { pdlToken(any()) } returns "<pdl>"
                 coEvery { digisosToken(any()) } returns "<digisos>"
@@ -452,7 +442,6 @@ internal class ApiTest {
             initExternalServices(
                 SafRoute(),
                 MeldekortRoute(),
-                OppfolgingRoute(true),
                 PdlRoute(),
                 DigisosRoute(true)
             )
@@ -460,7 +449,6 @@ internal class ApiTest {
             client.get("/din-oversikt").assert {
                 status shouldBe HttpStatusCode.MultiStatus
                 objectMapper.readTree(bodyAsText()).assert {
-                    this["oppfolgingContent"].asBoolean() shouldBe false
                     this["produktkort"].toList().assert {
                         size shouldBe 1
                         first().asText() shouldBe "KOM"
@@ -476,7 +464,6 @@ internal class ApiTest {
         initExternalServices(
             SafRoute(),
             MeldekortRoute(),
-            OppfolgingRoute(false),
             PdlRoute(),
             DigisosRoute(true)
         )
@@ -500,7 +487,6 @@ internal class ApiTest {
         levelOfAssurance: LevelOfAssurance = HIGH,
         httpClient: HttpClient? = null,
         tokenFetcher: TokenFetcher = mockk<TokenFetcher>().apply {
-            coEvery { oppfolgingToken(any()) } returns "<oppfolging>"
             coEvery { meldekortToken(any()) } returns "<meldekort>"
             coEvery { safToken(any()) } returns "<saf>"
             coEvery { pdlToken(any()) } returns "<pdl>"
@@ -516,7 +502,6 @@ internal class ApiTest {
                     externalContentFecther = ExternalContentFecther(
                         safUrl = testHost,
                         httpClient = apiClient,
-                        oppfølgingBaseUrl = testHost,
                         meldekortUrl = testHost,
                         pdlUrl = "$testHost/pdl",
                         digisosUrl = testHost,
