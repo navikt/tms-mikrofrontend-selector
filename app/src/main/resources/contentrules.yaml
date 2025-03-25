@@ -1,6 +1,6 @@
 produktkort:
   - id: PEN
-    includeOnlyIfLoAIsHigh: true
+    includeOnlyIfLoAIsHigh: false
     includeIfSakstema:
       - PEN
   - id: DAG
