@@ -23,7 +23,7 @@ produktkort:
     includeIfSakstema:
       - KOM
   - id: UFO
-    includeOnlyIfLoAIsHigh: true
+    includeOnlyIfLoAIsHigh: false
     includeIfSakstema:
       - UFO
   - id: SYK
