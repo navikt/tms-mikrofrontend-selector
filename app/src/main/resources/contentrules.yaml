@@ -1,26 +1,33 @@
 produktkort:
   - id: PEN
+    includeOnlyIfLoAIsHigh: false
     includeIfSakstema:
       - PEN
   - id: DAG
+    includeOnlyIfLoAIsHigh: true
     includeIfSakstema:
       - DAG
     weeksSinceLastDocument:
       sakstemakode: DAG
       numberOfWeeks: 6
   - id: FOR
+    includeOnlyIfLoAIsHigh: true
     includeIfSakstema:
       - FOR
   - id: HJE
+    includeOnlyIfLoAIsHigh: true
     includeIfSakstema:
       - HJE
   - id: KOM
+    includeOnlyIfLoAIsHigh: true
     includeIfSakstema:
       - KOM
   - id: UFO
+    includeOnlyIfLoAIsHigh: false
     includeIfSakstema:
       - UFO
   - id: SYK
+    includeOnlyIfLoAIsHigh: true
     includeIfSakstema:
       - SYK
       - SYM

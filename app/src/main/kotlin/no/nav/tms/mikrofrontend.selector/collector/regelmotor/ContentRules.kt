@@ -4,6 +4,7 @@ package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 import com.fasterxml.jackson.databind.JsonNode
 import com.nfeld.jsonpathkt.extension.read
 import no.nav.tms.mikrofrontend.selector.collector.Dokument
+import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import java.time.LocalDateTime
 
 interface ContentResolver {
@@ -19,14 +20,16 @@ class ContentRulesDefinition(
     val includeIfSakstema: IncludeIfSakstemaContentRule?,
     val exludeIfSakstema: ExcludeIfSakstemaContentRule?,
     val usersAgeOver: UsersAgeOverContentRule?,
-    val weeksSinceLastDocument: WeeksSinceLastDocumentContentRule?
+    val weeksSinceLastDocument: WeeksSinceLastDocumentContentRule?,
+    val includeOnlyIfLoAIsHigh: IncludeOnlyIfLoAIsHighRule?
 ) {
 
-    fun createRules(safDokumenter: List<Dokument>, alder: Int?) = mutableListOf<ContentResolver>().apply {
+    fun createRules(safDokumenter: List<Dokument>, alder: Int?, userLevelOfAssurance: LevelOfAssurance) = mutableListOf<ContentResolver>().apply {
         includeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.kode })?.let { add(it) }
         exludeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.kode })?.let { add(it) }
         usersAgeOver?.resolverOrNull(alder)?.let { add(it) }
         weeksSinceLastDocument?.resolverOrNull(safDokumenter)?.let { add(it) }
+        includeOnlyIfLoAIsHigh?.resolverOrNull(userLevelOfAssurance)?.let { add(it) }
     }
 
     companion object {
@@ -37,7 +40,8 @@ class ContentRulesDefinition(
                     includeIfSakstema = IncludeIfSakstemaContentRule.parseRuleOrNull(it, requireSakstemakode, category),
                     weeksSinceLastDocument = WeeksSinceLastDocumentContentRule.parseRuleOrNull(it),
                     exludeIfSakstema = ExcludeIfSakstemaContentRule.parseRuleOrNull(it),
-                    usersAgeOver = UsersAgeOverContentRule.parseRuleOrNull(it)
+                    usersAgeOver = UsersAgeOverContentRule.parseRuleOrNull(it),
+                    includeOnlyIfLoAIsHigh = IncludeOnlyIfLoAIsHighRule.parseRuleOrNull(it)
                 )
             }
     }
@@ -127,6 +131,27 @@ class WeeksSinceLastDocumentContentRule(
                 sakstemakode = it.read<String>("$.sakstemakode")
                     ?: throw IllegalArgumentException("kode må være definert for ukerEtterSisteDokumentRegler"),
             )
+        }
+    }
+}
+
+class IncludeOnlyIfLoAIsHighRule(val requireHighLevelOfAssurance: Boolean) :
+    ContentRule<LevelOfAssurance> {
+    override fun resolverOrNull(input: LevelOfAssurance?): ContentResolver? =
+        input?.let {
+            object : ContentResolver {
+                override fun skalVises(): Boolean = if(requireHighLevelOfAssurance && input != LevelOfAssurance.HIGH) {
+                    false
+                } else {
+                    true
+                }
+            }
+        }
+
+    companion object {
+        const val ruleId = "includeOnlyIfLoAIsHigh"
+        fun parseRuleOrNull(jsonNode: JsonNode) = jsonNode.read<Boolean>("$.$ruleId")?.let {
+            IncludeOnlyIfLoAIsHighRule(it)
         }
     }
 }
