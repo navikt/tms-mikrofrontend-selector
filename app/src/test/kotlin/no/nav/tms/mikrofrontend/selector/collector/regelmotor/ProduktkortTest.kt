@@ -47,7 +47,7 @@ class ProduktkortTest {
                 )
             ), LevelOfAssurance.SUBSTANTIAL
         )
-            .also { it.size shouldBe 0 }
+            .also { it.size shouldBe 1 }
 
         ContentDefinition.getProduktkort(
             listOf(
