@@ -37,6 +37,7 @@ spec:
     inbound:
       rules:
         - application: tms-min-side-proxy
+        - application: tms-min-side
     outbound:
       rules:
         - application: meldekort-api
