@@ -6,13 +6,12 @@ Min side er en dynamisk første-side for alle innloggede brukere. Målet er at i
 
 ```mermaid
 graph TD
-    A[Producer Team] --> B[Preview]
-    B --> C{decide}
-    C --> D[Keep]
-    C --> E[Edit Definition]
-    E --> B
-    D --> F[Save Image and Code]
-    F --> B
+    A[Utviklings Team] -->|Utvikle Microfrontend| B[Microfrontend]
+    B --> C[Server]
+    A -->|Enable/Disable melding| D[Kafka]
+    D --> E[tms-mikrofrontend-selector]
+    F[Min side] -->|Henter aktive microfronds gitt IDENT| E
+    F <-->|Fetcher microfrontend| C]
 ```
 
 ## Sett opp microfrontend
