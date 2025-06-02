@@ -11,7 +11,7 @@ graph LR
     A -- Enable/Disable melding --> D[Kafka]
     D --> E[tms-mikrofrontend-selector]
     F[Min side] -- Henter aktive microfronds gitt IDENT --> E
-    F -- Fetcher microfrontend --> C]
+    F -- Fetcher microfrontend --> C
 ```
 
 ## Sett opp microfrontend
