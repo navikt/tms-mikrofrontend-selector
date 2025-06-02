@@ -10,7 +10,7 @@ graph LR
     B -- Deploy til server --> C[Server]
     A -- Enable/Disable melding --> D[Kafka]
     D --> E[tms-mikrofrontend-selector]
-    F[Min side] -- Henter aktive microfronds gitt IDENT --> E
+    F[Min side] <-- Henter aktive microfronds gitt IDENT --> E
     F <-- Fetcher microfrontend --> C
 ```
 
