@@ -6,7 +6,7 @@ Min side er en dynamisk første-side for alle innloggede brukere. Målet er at i
 
 ```mermaid
 graph LR
-    A[Utviklings Team] -- Utvikle Microfrontend --> B[Microfrontend]
+    A[Utviklingsteam] -- Utvikle Microfrontend --> B[Microfrontend]
     B -- Deploy til server --> C[Server]
     A -- Enable/Disable melding --> D[Kafka]
     D --> E[tms-mikrofrontend-selector]
