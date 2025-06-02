@@ -5,13 +5,13 @@
 Min side er en dynamisk første-side for alle innloggede brukere. Målet er at innholdet på Min side skal representere brukerens nåværende forhold til Nav. For å oppnå dette, kan team legge inn microfrontends på Min side for å nå ut til sine brukere. En microfrontend kan sees på en enkel applikasjon, som blir injektet inn på Min side. Microfrontends brukt på Min side kommer i form av små bokser med ulike funksjonalitet og innhold.
 
 ```mermaid
-flowchart LR
-    A[Utviklings Team] -->|Utvikle Microfrontend| B[Microfrontend]
-    B --> C[Server]
-    A -->|Enable/Disable melding| D[Kafka]
+graph LR
+    A[Utviklings Team] -- Utvikle Microfrontend --> B[Microfrontend]
+    B -- Deploy til server --> C[Server]
+    A -- Enable/Disable melding --> D[Kafka]
     D --> E[tms-mikrofrontend-selector]
-    F[Min side] -->|Henter aktive microfronds gitt IDENT| E
-    F -->|Fetcher microfrontend| C]
+    F[Min side] -- Henter aktive microfronds gitt IDENT --> E
+    F -- Fetcher microfrontend --> C]
 ```
 
 ## Sett opp microfrontend
