@@ -9,11 +9,10 @@ Min side er en dynamisk første-side for alle innloggede brukere. Målet er at i
 ```mermaid
 graph LR
     A[Utviklingsteam] -- Utvikle Microfrontend --> B[Microfrontend]
-    B -- Deploy til server --> C[Server]
     A -- Enable/Disable melding --> D[Kafka]
     D --> E[tms-mikrofrontend-selector]
     F[Min side] <-- Henter aktive microfronds gitt IDENT --> E
-    F <-- Fetcher microfrontend --> C
+    F <-- Fetcher microfrontend --> B
 ```
 
 Figuren ovenfor er en forenklet illustererer av hvordan microfrontend riggen henger sammen.
