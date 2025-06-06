@@ -6,7 +6,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import no.nav.tms.mikrofrontend.selector.collector.Dokument
 import no.nav.tms.mikrofrontend.selector.collector.MicrofrontendsDefinition
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentRulesDefinition.Companion.initContentRules
-import no.nav.tms.mikrofrontend.selector.collector.regelmotor.Section.Companion.getSection
+import no.nav.tms.mikrofrontend.selector.versions.MicrofrontendManifest
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 
 object ContentDefinition {
@@ -29,7 +29,7 @@ object ContentDefinition {
     fun getAktueltContent(
         alder: Int,
         safDokument: List<Dokument>,
-        manifestMap: Map<String, String>,
+        manifestMap: MicrofrontendManifest,
         levelOfAssurance: LevelOfAssurance
     ): List<MicrofrontendsDefinition> =
         aktuelt.map {

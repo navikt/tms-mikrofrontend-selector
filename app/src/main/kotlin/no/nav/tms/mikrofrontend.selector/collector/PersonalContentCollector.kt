@@ -9,6 +9,7 @@ import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
+import no.nav.tms.mikrofrontend.selector.versions.MicrofrontendManifest
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
@@ -56,7 +57,7 @@ class PersonalContentFactory(
     fun build(
         microfrontends: Microfrontends?,
         levelOfAssurance: LevelOfAssurance,
-        manifestMap: Map<String, String>,
+        manifestMap: MicrofrontendManifest,
     ) = PersonalContentResponse(
         microfrontends = microfrontends?.getDefinitions(levelOfAssurance, manifestMap) ?: emptyList(),
         produktkort = ContentDefinition.getProduktkort(
@@ -97,15 +98,26 @@ class PersonalContentResponse(
 open class MicrofrontendsDefinition(
     @JsonProperty("microfrontend_id")
     val id: String,
-    val url: String
+    val url: String,
+    val appname: String,
+    val namespace: String,
+    val ssr: Boolean
 ) {
     companion object {
-        fun create(id: String, manifestMap: Map<String, String>) = manifestMap[id]
-            .takeUnless {
-                it.isNullOrEmpty()
+        fun create(id: String, manifestMap: MicrofrontendManifest): MicrofrontendsDefinition? {
+            val manifestEntry = manifestMap.entry[id];
+
+            if (manifestEntry != null) {
+                return MicrofrontendsDefinition(
+                    id,
+                    manifestEntry.url,
+                    manifestEntry.appname,
+                    manifestEntry.namespace,
+                    manifestEntry.ssr
+                )
             }
-            ?.let { url ->
-                MicrofrontendsDefinition(id, url)
-            }
+
+            return null
+        }
     }
 }

@@ -4,12 +4,13 @@ import io.kotest.matchers.shouldBe
 import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
 import no.nav.tms.mikrofrontend.selector.safTestDokument
+import no.nav.tms.mikrofrontend.selector.versions.Entry
+import no.nav.tms.mikrofrontend.selector.versions.MicrofrontendManifest
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import org.junit.jupiter.api.Test
 
 class RegelstyrteMicrofrontendsTest {
-    private val manifestMapWithPensjon =
-        mapOf("pensjonskalkulator-microfrontend" to "https://cdn.pensjon/manifest.json")
+    private val manifestMapWithPensjon = MicrofrontendManifest(mapOf("pensjonskalkulator-microfrontend" to Entry("https://cdn.pensjon/manifest.json", "", "", true)))
 
     @Test
     fun `pensjon skal vises hvis personen er over 40 år og ikke har sakstema pensjon`() {

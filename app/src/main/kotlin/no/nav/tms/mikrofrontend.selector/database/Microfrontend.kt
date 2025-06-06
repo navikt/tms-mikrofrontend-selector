@@ -10,6 +10,7 @@ import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.levelOfAs
 import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.toDbNode
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.levelOfAssurance
 import no.nav.tms.mikrofrontend.selector.versions.LevelOfAssuranceResolver
+import no.nav.tms.mikrofrontend.selector.versions.MicrofrontendManifest
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import org.postgresql.util.PGobject
 
@@ -65,7 +66,7 @@ class Microfrontends(initialJson: String? = null) {
 
     fun getDefinitions(
         innloggetnivå: LevelOfAssurance,
-        manifestMap: Map<String, String>
+        manifestMap: MicrofrontendManifest
     ): List<MicrofrontendsDefinition> =
         newData
             .filter { LevelOfAssuranceResolver.fromJsonNode(it["sensitivitet"]) <= innloggetnivå }
@@ -88,6 +89,7 @@ val JsonMessage.ident: String
     get() {
         return get("ident").asText()
     }
+
 val JsonMessage.microfrontendId: String
     get() {
         return get("microfrontend_id").asText()

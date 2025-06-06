@@ -177,6 +177,7 @@ internal class ApiTest {
                 require(this != null)
                 getOrNull<List<JsonNode>>("microfrontends").assert {
                     require(this != null)
+                    println("%%%: $this") // TODO: remove
                     size shouldBe expectedMicrofrontends.size
                 }
                 getAll<String>("microfrontends..url")

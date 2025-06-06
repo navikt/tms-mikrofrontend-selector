@@ -2,11 +2,12 @@ package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tms.mikrofrontend.selector.collector.MicrofrontendsDefinition
+import no.nav.tms.mikrofrontend.selector.versions.MicrofrontendManifest
 
 
 class RegelstyrtMicrofrontend(
     id: String,
-    manifestMap: Map<String, String>,
+    manifestMap: MicrofrontendManifest,
     var contentResolvers: MutableList<ContentResolver> = mutableListOf()
 ) {
     private val log = KotlinLogging.logger { }
