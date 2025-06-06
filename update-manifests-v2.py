@@ -3,29 +3,30 @@ import sys
 file_name = 'manifests-v2.json'
 
 
-def build_microfrontend(args):
+def build_entry(args):
     return {
         'url': args[2],
         'appname': args[3],
         'namespace': args[4],
-        'ssr': args[5].lower() == 'true'
+        'fallback': args[5]
+        'ssr': args[6].lower() == 'true'
     }
 
 
-def add_microfrontend(microfrontends, args):
+def add_entry(manifest, args):
     id = args[1]
-    microfrontend = build_microfrontend(args)
-    microfrontends[id] = microfrontend
+    entry = build_entry(args)
+    manifest[id] = entry
 
-    return microfrontends
+    return manifest
 
 
 # read file
 with open(file_name, 'r') as json_file:
-    microfrontends = json.load(json_file)
-    microfrontends = add_microfrontend(microfrontends, sys.argv)
+    manifest = json.load(json_file)
+    manifest = add_entry(manifest, sys.argv)
 
-    out_json = json.dumps(microfrontends)
+    out_json = json.dumps(manifest)
 
 
 # write file
