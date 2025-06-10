@@ -25,6 +25,8 @@ jobs:
         run: 'gcloud info'
       - name: 'Henter manifestfil'
         run:  gcloud storage cp gs://microfrontend-manifest-dev/manifests.json manifests.json
+      - name: 'Henter manifestfil-v2'
+        run: gcloud storage cp gs://microfrontend-manifest-dev/manifests-v2.json manifests-v2.json
       - name : 'oppdater fil'
         run:  python3 update-manifests.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }}
       - name: 'Last opp til bucket'
@@ -53,6 +55,8 @@ jobs:
         run: 'gcloud info'
       - name: 'Henter manifestfil'
         run: gcloud storage cp gs://microfrontend-manifest-prod/manifests.json manifests.json
+      - name: 'Henter manifestfil-v2'
+        run: gcloud storage cp gs://microfrontend-manifest-prod/manifests-v2.json manifests-v2.json
       - name: 'oppdater fil'
         run: python3 update-manifests.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }}
       - name: 'Last opp til bucket'
