@@ -101,6 +101,7 @@ open class MicrofrontendsDefinition(
     val url: String,
     val appname: String,
     val namespace: String,
+    val fallback: String,
     val ssr: Boolean
 ) {
     companion object {
@@ -113,6 +114,7 @@ open class MicrofrontendsDefinition(
                     manifestEntry.url,
                     manifestEntry.appname,
                     manifestEntry.namespace,
+                    manifestEntry.fallback,
                     manifestEntry.ssr
                 )
             }

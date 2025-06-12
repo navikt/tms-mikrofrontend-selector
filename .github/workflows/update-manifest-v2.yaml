@@ -26,7 +26,7 @@ jobs:
       - name: 'Henter manifestfil'
         run:  gcloud storage cp gs://microfrontend-manifest-dev/manifests-v2.json manifests-v2.json
       - name : 'Oppdater fil'
-        run:  python3 update-manifests-v2.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }} ${{ github.event.client_payload.appname }} ${{ github.event.client_payload.namespace }} ${{ github.event.client_payload.ssr }}
+        run:  python3 update-manifests-v2.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }} ${{ github.event.client_payload.appname }} ${{ github.event.client_payload.namespace }} ${{ github.event.client_payload.fallback }} ${{ github.event.client_payload.ssr }}
       - name: 'Last opp til bucket'
         run: gcloud storage cp manifests-v2.json gs://microfrontend-manifest-dev
       - name: 'info'
@@ -54,7 +54,7 @@ jobs:
 #      - name: 'Henter manifestfil'
 #        run: gcloud storage cp gs://microfrontend-manifest-prod/manifests-v2.json manifests-v2.json
 #      - name: 'Oppdater fil'
-#        run:  python3 update-manifests-v2.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }} ${{ github.event.client_payload.appname }} ${{ github.event.client_payload.namespace }} ${{ github.event.client_payload.ssr }}
+#        run:  python3 update-manifests-v2.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }} ${{ github.event.client_payload.appname }} ${{ github.event.client_payload.namespace }} ${{ github.event.client_payload.fallback }} ${{ github.event.client_payload.ssr }}
 #      - name: 'Last opp til bucket'
 #        run: gcloud storage cp manifests-v2.json gs://microfrontend-manifest-prod
 #      - name: 'info'

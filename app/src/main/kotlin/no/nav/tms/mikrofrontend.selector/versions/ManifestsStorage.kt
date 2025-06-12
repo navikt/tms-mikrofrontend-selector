@@ -35,5 +35,6 @@ data class Entry (
     val url: String,
     val appname: String,
     val namespace: String,
+    val fallback: String,
     val ssr: Boolean
 )

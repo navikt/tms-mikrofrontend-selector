@@ -10,7 +10,9 @@ import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import org.junit.jupiter.api.Test
 
 class RegelstyrteMicrofrontendsTest {
-    private val manifestMapWithPensjon = MicrofrontendManifest(mapOf("pensjonskalkulator-microfrontend" to Entry("https://cdn.pensjon/manifest.json", "", "", true)))
+    private val manifestMapWithPensjon = MicrofrontendManifest(mapOf("pensjonskalkulator-microfrontend" to Entry(
+        "https://cdn.pensjon/manifest.json", "nm", "ns", "http://pensjon/fallback", true
+    )))
 
     @Test
     fun `pensjon skal vises hvis personen er over 40 år og ikke har sakstema pensjon`() {

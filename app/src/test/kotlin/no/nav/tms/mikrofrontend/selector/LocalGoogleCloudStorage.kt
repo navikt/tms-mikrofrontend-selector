@@ -59,7 +59,7 @@ class LocalGCPStorage {
     fun updateManifest(expectedMicrofrontends: MutableMap<String, String>) {
         val toStorage = expectedMicrofrontends.toMutableMap()
         toStorage.putAll(akuteltMicrofrontends)
-        val contents = "{ ${toStorage.map { """"${it.key}": { "url":"${it.value}", "appname": "nm", "namespace": "ns", "ssr": true }""" }
+        val contents = "{ ${toStorage.map { """"${it.key}": { "url":"${it.value}", "appname": "nm", "namespace": "ns", "fallback": "fb", "ssr": true }""" }
             .joinToString(separator = ",")} }"
         // val contents = "{" + toStorage.map { """"${it.key}": { "url":"${it.value}", "appname": "name", "namespace": "ns", "ssr": true }""" }.joinToString(separator = ",") + "}"
         println("***: $contents") // TODO: remove this
