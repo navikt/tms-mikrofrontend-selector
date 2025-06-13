@@ -8,7 +8,7 @@ def build_entry(args):
         'url': args[2],
         'appname': args[3],
         'namespace': args[4],
-        'fallback': args[5]
+        'fallback': args[5],
         'ssr': args[6].lower() == 'true'
     }
 
