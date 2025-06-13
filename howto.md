@@ -12,7 +12,7 @@ graph LR
     A -- Enable/Disable melding --> D[Kafka]
     D --> E[tms-mikrofrontend-selector]
     F[Min side] <-- Henter aktive microfronds gitt IDENT --> E
-    F <-- Fetcher microfrontend --> B
+    F <-- Henter microfrontend --> B
 ```
 
 Figuren ovenfor er en forenklet illustererer av hvordan microfrontend riggen henger sammen.
