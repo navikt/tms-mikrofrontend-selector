@@ -15,7 +15,7 @@ graph LR
     F <-- Henter microfrontend --> B
 ```
 
-Figuren ovenfor er en forenklet illustererer av hvordan microfrontend riggen henger sammen.
+Figuren ovenfor er en forenklet illusterasjon av hvordan microfrontend riggen henger sammen.
 
 ## Kom i gang
 
