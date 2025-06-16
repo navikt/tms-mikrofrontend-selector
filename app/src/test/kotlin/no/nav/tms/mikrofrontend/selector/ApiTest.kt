@@ -2,6 +2,7 @@ package no.nav.tms.mikrofrontend.selector
 
 import LocalPostgresDatabase
 import com.fasterxml.jackson.databind.JsonNode
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -17,7 +18,6 @@ import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.prometheus.metrics.model.registry.PrometheusRegistry
-import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
@@ -70,7 +70,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testIdent)
             initExternalServices(
-                SafRoute(sakstemaer = listOf("SYK"), ident = testIdent),
+                SafRoute(sakstemaer = listOf("SYK")),
                 MeldekortRoute(harMeldekort = true),
                 PdlRoute(fødselssår = 1960),
                 DigisosRoute()
@@ -93,37 +93,37 @@ internal class ApiTest {
                 )
             )
 
-            client.get("/din-oversikt").assert {
-                status shouldBe HttpStatusCode.OK
-                bodyAsNullOrJsonNode(true).assert {
-                    require(this != null)
-                    listOrNull<JsonNode>("microfrontends").assert {
-                        require(this != null)
+            client.get("/din-oversikt").let { response ->
+                response.status shouldBe HttpStatusCode.OK
+                response.bodyAsNullOrJsonNode(true).run {
+                    shouldNotBeNull()
+                    listOrNull<JsonNode>("microfrontends").run {
+                        shouldNotBeNull()
                         size shouldBe 2
-                        this.find {
-                            it["microfrontend_id"].asText() == kafkastyrtDinOversikt.first
-                        }.assert {
-                            require(this != null)
-                            this["url"].asText() shouldBe kafkastyrtDinOversikt.second
 
+                        find {
+                            it["microfrontend_id"].asText() == kafkastyrtDinOversikt.first
+                        }.let { microfrontend ->
+                            microfrontend.shouldNotBeNull()
+                            microfrontend["url"].asText() shouldBe kafkastyrtDinOversikt.second
                         }
-                        this.find {
-                            it["microfrontend_id"].asText() == kafkastyrtDinOversikt.first
-                        }.assert {
-                            require(this != null)
-                            this["url"].asText() shouldBe kafkastyrtDinOversikt.second
 
+                        find {
+                            it["microfrontend_id"].asText() == kafkastyrtDinOversikt2.first
+                        }.let { microfrontend ->
+                            microfrontend.shouldNotBeNull()
+                            microfrontend["url"].asText() shouldBe kafkastyrtDinOversikt2.second
                         }
                     }
 
-                    listOrNull<JsonNode>("aktuelt").assert {
-                        require(this != null)
+                    listOrNull<JsonNode>("aktuelt").run {
+                        shouldNotBeNull()
                         size shouldBe 1
-                        this.find {
+                        find {
                             it["microfrontend_id"].asText() == "pensjonskalkulator-microfrontend"
-                        }.assert {
-                            require(this != null)
-                            this["url"].asText() shouldBe "https://cdn.pensjon/manifest.json"
+                        }.let { microfrontend ->
+                            microfrontend.shouldNotBeNull()
+                            microfrontend["url"].asText() shouldBe "https://cdn.pensjon/manifest.json"
                         }
                     }
                 }
@@ -141,7 +141,7 @@ internal class ApiTest {
 
         initSelectorApi(testident = testIdent)
         initExternalServices(
-            SafRoute(sakstemaer = listOf("DAG"), ident = testIdent),
+            SafRoute(sakstemaer = listOf("DAG")),
             MeldekortRoute(harMeldekort = true),
             PdlRoute(fødselsdato = "2004-05-05", 2004),
             DigisosRoute(),
@@ -171,12 +171,12 @@ internal class ApiTest {
 
         gcpStorage.updateManifest(expectedMicrofrontends)
 
-        client.get("/din-oversikt").assert {
+        client.get("/din-oversikt").run {
             status shouldBe HttpStatusCode.OK
-            bodyAsNullOrJsonNode(true).assert {
-                require(this != null)
-                getOrNull<List<JsonNode>>("microfrontends").assert {
-                    require(this != null)
+            bodyAsNullOrJsonNode(true).run {
+                shouldNotBeNull()
+                getOrNull<List<JsonNode>>("microfrontends").run {
+                    shouldNotBeNull()
                     size shouldBe expectedMicrofrontends.size
                 }
                 getAll<String>("microfrontends..url")
@@ -200,7 +200,7 @@ internal class ApiTest {
 
         initSelectorApi(testident = testIdent)
         initExternalServices(
-            SafRoute(expectedProduktkort, ident = testIdent),
+            SafRoute(expectedProduktkort),
             MeldekortRoute(),
             PdlRoute(),
             DigisosRoute(),
@@ -218,16 +218,16 @@ internal class ApiTest {
 
         gcpStorage.updateManifest(expectedMicrofrontends)
 
-        client.get("/din-oversikt").assert {
+        client.get("/din-oversikt").run {
             status shouldBe HttpStatusCode.OK
-            bodyAsNullOrJsonNode().assert {
-                require(this != null)
+            bodyAsNullOrJsonNode().run {
+                shouldNotBeNull()
                 listOrNull<JsonNode>("microfrontends")?.size shouldBe 3
                 boolean("offerStepup") shouldBe false
-                list<String>("produktkort").assert {
+                list<String>("produktkort").run {
 
                     size shouldBe 2
-                    this.sorted() shouldBe expectedProduktkort.sorted()
+                    sorted() shouldBe expectedProduktkort.sorted()
                 }
             }
         }
@@ -245,7 +245,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testIdent, levelOfAssurance = SUBSTANTIAL)
             initExternalServices(
-                SafRoute(ident = testIdent),
+                SafRoute(),
                 MeldekortRoute(),
                 PdlRoute(),
                 DigisosRoute(),
@@ -268,12 +268,12 @@ internal class ApiTest {
                 }
             )
 
-            client.get("/din-oversikt").assert {
+            client.get("/din-oversikt").run {
                 status shouldBe HttpStatusCode.OK
-                objectMapper.readTree(bodyAsText()).assert {
-                    this["microfrontends"].toList().assert {
+                objectMapper.readTree(bodyAsText()).run {
+                    this["microfrontends"].toList().run {
                         size shouldBe 1
-                        first().assert {
+                        first().run {
                             this["microfrontend_id"].asText() shouldBe "nivå3mkf"
                             this["url"].asText() shouldBe "https://nivå3mkf.cdn.test"
                         }
@@ -292,15 +292,15 @@ internal class ApiTest {
 
             initSelectorApi(testident = testident2)
             initExternalServices(
-                SafRoute(ident = testident2),
+                SafRoute(),
                 MeldekortRoute(),
                 PdlRoute(),
                 DigisosRoute(),
             )
 
-            client.get("/din-oversikt").assert {
+            client.get("/din-oversikt").run {
                 status shouldBe HttpStatusCode.OK
-                objectMapper.readTree(bodyAsText()).assert {
+                objectMapper.readTree(bodyAsText()).run {
                     this["microfrontends"].size() shouldBe 0
                     this["produktkort"].size() shouldBe 0
                     this["offerStepup"].asBoolean() shouldBe false
@@ -316,7 +316,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testident2)
             initExternalServices(
-                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999", ident = testident2),
+                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
                 MeldekortRoute(),
                 DigisosRoute(),
             )
@@ -331,9 +331,9 @@ internal class ApiTest {
                 )
             )
 
-            client.get("/din-oversikt").assert {
+            client.get("/din-oversikt").run {
                 status shouldBe HttpStatusCode.MultiStatus
-                objectMapper.readTree(bodyAsText()).assert {
+                objectMapper.readTree(bodyAsText()).run {
                     this["microfrontends"].size() shouldBe 1
                     this["produktkort"].size() shouldBe 0
                     this["offerStepup"].asBoolean() shouldBe false
@@ -349,7 +349,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testident2)
             initExternalServices(
-                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999", ident = testident2),
+                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 PdlRoute("2000-05-05", 2000),
                 DigisosRoute(),
@@ -365,9 +365,9 @@ internal class ApiTest {
                 )
             )
 
-            client.get("/din-oversikt").assert {
+            client.get("/din-oversikt").run {
                 status shouldBe HttpStatusCode.MultiStatus
-                objectMapper.readTree(bodyAsText()).assert {
+                objectMapper.readTree(bodyAsText()).run {
                     this["microfrontends"].size() shouldBe 1
                     this["produktkort"].size() shouldBe 0
                     this["aktuelt"].size() shouldBe 0
@@ -385,8 +385,7 @@ internal class ApiTest {
             initSelectorApi(testident = testident2)
             initExternalServices(
                 SafRoute(
-                    errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999",
-                    ident = testident2
+                    errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"
                 ),
                 MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 PdlRoute(errorMsg = "Kall til PDL feilet"),
@@ -403,9 +402,9 @@ internal class ApiTest {
                 )
             )
 
-            client.get("/din-oversikt").assert {
+            client.get("/din-oversikt").run {
                 status shouldBe HttpStatusCode.MultiStatus
-                objectMapper.readTree(bodyAsText()).assert {
+                objectMapper.readTree(bodyAsText()).run {
                     this["aktuelt"].size() shouldBe 0
                 }
             }
@@ -418,7 +417,7 @@ internal class ApiTest {
 
             initSelectorApi(testident = testident2, httpClient = sockettimeoutClient)
 
-            client.get("/din-oversikt").assert {
+            client.get("/din-oversikt").run {
                 status shouldBe HttpStatusCode.MultiStatus
             }
         }
@@ -446,10 +445,10 @@ internal class ApiTest {
                 DigisosRoute(true)
             )
 
-            client.get("/din-oversikt").assert {
+            client.get("/din-oversikt").run {
                 status shouldBe HttpStatusCode.MultiStatus
-                objectMapper.readTree(bodyAsText()).assert {
-                    this["produktkort"].toList().assert {
+                objectMapper.readTree(bodyAsText()).run {
+                    this["produktkort"].toList().run {
                         size shouldBe 1
                         first().asText() shouldBe "KOM"
                     }
@@ -469,11 +468,11 @@ internal class ApiTest {
         )
 
 
-        client.get("/din-oversikt").assert {
+        client.get("/din-oversikt").run {
             status shouldBe HttpStatusCode.OK
-            objectMapper.readTree(bodyAsText()).assert {
+            objectMapper.readTree(bodyAsText()).run {
                 this["microfrontends"].size() shouldBe 0
-                this["produktkort"].toList().assert {
+                this["produktkort"].toList().run {
                     size shouldBe 1
                     first().asText() shouldBe "KOM"
                 }

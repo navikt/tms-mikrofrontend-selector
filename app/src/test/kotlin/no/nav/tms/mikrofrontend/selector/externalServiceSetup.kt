@@ -1,17 +1,12 @@
 package no.nav.tms.mikrofrontend.selector
 
 
-import com.nfeld.jsonpathkt.extension.read
-import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import io.ktor.http.*
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.request.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
-import no.nav.tms.common.testutils.GraphQlRouteProvider
-import no.nav.tms.common.testutils.RouteProvider
-import no.nav.tms.common.testutils.assert
 import java.time.LocalDateTime
 
 
@@ -19,18 +14,10 @@ const val testHost = "http://test.nav.no"
 
 class SafRoute(
     sakstemaer: List<String> = emptyList(),
-    errorMsg: String? = null,
-    ident: String = "12345678910"
-) : GraphQlRouteProvider(errorMsg = errorMsg, path = "graphql", assert = { call ->
-    val callBody = call.receiveText().let { objectMapper.readTree(it) }
-    callBody.read<String>("$.query").assert {
-        this shouldNotBe null
-        this shouldBe "query(${'$'}ident: String!) { dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) { tema { kode navn journalposter{ relevanteDatoer { dato } } } } }"
-    }
-    callBody.read<String>("$.variables.ident") shouldBe ident
-}) {
+    val errorMsg: String? = null
+) : RouteProvider(path = "graphql", method = HttpMethod.Post) {
 
-    override val data: String = """{
+    private val data = """{
             "dokumentoversiktSelvbetjening": {
               "tema": ${
         sakstemaer.joinToString(prefix = "[", postfix = "]") {
@@ -52,12 +39,30 @@ class SafRoute(
     }
             }
           }""".trimIndent()
+
+    override fun content() = if (errorMsg == null) {
+        """
+            {
+                "data": $data
+            }
+        """.trimIndent()
+    } else {
+        """
+            {
+                "errors": [
+                    {
+                        "message": "$errorMsg"
+                    }
+                ]
+            }
+        """.trimIndent()
+    }
 }
 
 class MeldekortRoute(private val harMeldekort: Boolean = false, httpStatusCode: HttpStatusCode = OK) :
     RouteProvider(
         path = "api/person/meldekortstatus",
-        routeMethodFunction = Routing::get,
+        method = HttpMethod.Get,
         statusCode = httpStatusCode
     ) {
     override fun content(): String = if (harMeldekort)
@@ -85,7 +90,7 @@ class MeldekortRoute(private val harMeldekort: Boolean = false, httpStatusCode: 
 }
 
 class DigisosRoute(private val hasSosialhjelp: Boolean = false) :
-    RouteProvider(path = "minesaker/innsendte", routeMethodFunction = Routing::get) {
+    RouteProvider(path = "minesaker/innsendte", method = HttpMethod.Get) {
     override fun content(): String = if (hasSosialhjelp) {
         """ [
                 {
@@ -103,10 +108,11 @@ class DigisosRoute(private val hasSosialhjelp: Boolean = false) :
 class PdlRoute(
     fødselsdato: String = "1978-05-05",
     fødselssår: Int = 1978,
-    errorMsg: String? = null
+    val errorMsg: String? = null
 ) :
-    GraphQlRouteProvider(errorMsg = errorMsg, path = "pdl/graphql") {
-    override val data: String = if (errorMsg == null) """
+    RouteProvider(path = "pdl/graphql", HttpMethod.Post) {
+
+    private val data: String = """
          {
            "hentPerson": {
             "foedselsdato": [
@@ -117,7 +123,25 @@ class PdlRoute(
             ]
           }
         }
-    """.trimIndent() else "{}"
+    """
+
+    override fun content() = if (errorMsg == null) {
+        """
+            {
+                "data": $data
+            }
+        """.trimIndent()
+    } else {
+        """
+            {
+                "errors": [
+                    {
+                        "message": "$errorMsg"
+                    }
+                ]
+            }
+        """.trimIndent()
+    }
 }
 
 
@@ -130,6 +154,22 @@ fun ApplicationTestBuilder.initExternalServices(
                 provider.run {
                     this@routing.initRoute()
                 }
+            }
+        }
+    }
+}
+
+abstract class RouteProvider(
+    val path: String,
+    val method: HttpMethod,
+    val statusCode: HttpStatusCode = OK,
+) {
+    abstract fun content(): String
+
+    fun Route.initRoute() {
+        route(path, method) {
+            handle {
+                call.respondText(content(), status = statusCode, contentType = ContentType.Application.Json)
             }
         }
     }

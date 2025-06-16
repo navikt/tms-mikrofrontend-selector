@@ -3,11 +3,11 @@ package no.nav.tms.mikrofrontend.selector
 import LocalPostgresDatabase
 import dbv1Format
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.prometheus.metrics.model.registry.PrometheusRegistry
 import kotliquery.queryOf
-import no.nav.tms.common.testutils.assert
 import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
@@ -48,14 +48,14 @@ internal class SubscriberTest {
         val disableMsg = testJsonString(DisableMessage, "tadda-mc", "2456789")
 
         broadcaster.broadcastJson(enableMsg)
-        database.getMicrofrontends(ident = "2456789").assert {
-            require(this != null)
+        database.getMicrofrontends(ident = "2456789").run {
+            shouldNotBeNull()
             size shouldBe 1
         }
 
         broadcaster.broadcastJson(disableMsg)
-        database.getMicrofrontends(ident = "2456789").assert {
-            require(this != null)
+        database.getMicrofrontends(ident = "2456789").run {
+            shouldNotBeNull()
             size shouldBe 0
         }
 
@@ -95,8 +95,8 @@ internal class SubscriberTest {
             )
         )
 
-        database.getMicrofrontends(ident = testIdent).assert {
-            require(this != null)
+        database.getMicrofrontends(ident = testIdent).run {
+            shouldNotBeNull()
             size shouldBe 4
             map { it["microfrontend_id"].asText() } shouldContainExactly listOf(
                 oldAndRusty,
@@ -114,25 +114,25 @@ internal class SubscriberTest {
                 ?.asText() shouldBe Sensitivitet.HIGH.kafkaValue
         }
 
-        database.getChangelog(testIdent).assert {
+        database.getChangelog(testIdent).run {
             size shouldBe 4
-            get(0).assert {
+            get(0).run {
                 originalData shouldContain oldAndRusty
                 newData.microfrontendids().size shouldBe 2
                 initiatedBy shouldBe "testteam"
             }
-            get(1).assert { originalData }.assert {
+            get(1).run {
                 originalData.microfrontendids().size shouldBe 2
                 newData.microfrontendids().size shouldBe 3
                 initiatedBy shouldBe "default-team"
             }
-            get(2).assert { originalData }.assert {
+            get(2).run {
                 originalData.microfrontendids().size shouldBe 3
                 newData.microfrontendids().size shouldBe 3
                 initiatedBy shouldBe "default-team"
             }
 
-            get(3).assert { originalData }.assert {
+            get(3).run {
                 originalData.microfrontendids().size shouldBe 3
                 newData.microfrontendids().size shouldBe 4
                 initiatedBy shouldBe "test-team"
@@ -172,24 +172,25 @@ internal class SubscriberTest {
         )
         broadcaster.broadcastJson(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
 
-        database.getMicrofrontends(ident = testFnr).assert {
-            require(this != null)
+        database.getMicrofrontends(ident = testFnr).run {
+            shouldNotBeNull()
             size shouldBe 1
             map { it["microfrontend_id"].asText() } shouldContainExactly listOf(testmicrofeId2)
         }
-        database.getChangelog(testFnr).assert {
+
+        database.getChangelog(testFnr).run {
             size shouldBe 3
-            get(0).assert {
+            get(0).run {
                 originalData shouldBe null
                 newData.microfrontendids() shouldContainExactly listOf(testmicrofeId1)
                 initiatedBy shouldBe "id1team"
             }
-            get(1).assert { originalData }.assert {
+            get(1).run {
                 originalData.microfrontendids().size shouldBe 1
                 newData.microfrontendids() shouldContainExactly listOf(testmicrofeId1, testmicrofeId2)
                 initiatedBy shouldBe "id2team"
             }
-            get(2).assert { originalData }.assert {
+            get(2).run {
                 originalData.microfrontendids().size shouldBe 2
                 newData.microfrontendids().size shouldBe 1
                 initiatedBy shouldBe "id1team2"
@@ -205,13 +206,13 @@ internal class SubscriberTest {
         broadcaster.broadcastJson(disableMessage(fnr = testFnr, microfrontendId = testmicrofeId1))
         broadcaster.broadcastJson(testJsonString(microfrontendId = testmicrofeId1, ident = testFnr))
 
-        database.getMicrofrontends(ident = testFnr).assert {
-            require(this != null)
+        database.getMicrofrontends(ident = testFnr).run {
+            shouldNotBeNull()
             size shouldBe 1
             map { it["microfrontend_id"].asText() } shouldContainExactly listOf(testmicrofeId1)
         }
 
-        database.getChangelog(testFnr).assert {
+        database.getChangelog(testFnr).run {
             size shouldBe 3
         }
     }
@@ -225,15 +226,15 @@ internal class SubscriberTest {
         )
 
         broadcaster.broadcastJson(enableMsg)
-        database.getMicrofrontends(ident = "12345678910").assert {
-            require(this != null)
+        database.getMicrofrontends(ident = "12345678910").run {
+            shouldNotBeNull()
             size shouldBe 1
-            first().assert {
+            first().run {
                 this["microfrontend_id"].asText() shouldBe "testingtesting"
             }
         }
 
-        database.getChangelog("12345678910").assert {
+        database.getChangelog("12345678910").run {
             size shouldBe 1
             first().initiatedBy shouldBe "legacy-team"
         }
@@ -241,7 +242,7 @@ internal class SubscriberTest {
 }
 
 private fun String?.microfrontendids(): List<String> {
-    require(this != null)
+    shouldNotBeNull()
     return objectMapper.readTree(this)["microfrontends"].toList().map { it["microfrontend_id"].asText() }
 }
 

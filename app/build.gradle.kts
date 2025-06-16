@@ -63,7 +63,6 @@ dependencies {
     testImplementation(TmsKtorTokenSupport.tokenXValidationMock)
     testImplementation(Mockk.mockk)
     testImplementation(Ktor.Test.clientMock)
-    testImplementation(TmsCommonLib.testutils)
 
     testImplementation(project(":lib"))
 

@@ -1,9 +1,9 @@
 package no.nav.tms.mikrofrontend.selector.collector.json
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import no.nav.tms.common.testutils.assert
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -52,32 +52,32 @@ class JsonPathInterpreterTest {
 
     @Test
     fun `Skal returnere null node om nøkkel ikke finnes`() {
-        JsonPathInterpreter.initPathInterpreter("""{"something":["onestring","twostring"]}""".trimIndent()).assert {
-            require(this != null)
+        JsonPathInterpreter.initPathInterpreter("""{"something":["onestring","twostring"]}""".trimIndent()).run {
+            shouldNotBeNull()
             booleanOrNull("doesnotexist") shouldBe null
         }
-        JsonPathInterpreter.initPathInterpreter("""{"something":["onestring","twostring"]}""".trimIndent()).assert {
-            require(this != null)
+        JsonPathInterpreter.initPathInterpreter("""{"something":["onestring","twostring"]}""".trimIndent()).run {
+            shouldNotBeNull()
             stringOrNull("doesnotexist") shouldBe null
         }
-        JsonPathInterpreter.initPathInterpreter("""{"something":["onestring","twostring"]}""".trimIndent()).assert {
-            require(this != null)
+        JsonPathInterpreter.initPathInterpreter("""{"something":["onestring","twostring"]}""".trimIndent()).run {
+            shouldNotBeNull()
             booleanOrNull("something.doesnotexist") shouldBe null
         }
-        JsonPathInterpreter.initPathInterpreter("""{"something": { "nested":"tadda"} }""".trimIndent()).assert {
-            require(this != null)
+        JsonPathInterpreter.initPathInterpreter("""{"something": { "nested":"tadda"} }""".trimIndent()).run {
+            shouldNotBeNull()
             booleanOrNull("something.doesnotexist") shouldBe null
         }
     }
 
     @Test
     fun `Skal finne eksisterende noder med komplett path`() {
-        jsonNode.assert {
-            require(this != null)
+        jsonNode.run {
+            shouldNotBeNull()
             string("levelOneString") shouldBe "nmbr1!"
             assertThrows<JsonPathSearchException> { string("level_one") }
-            listOrNull<String>("level_one.levelTwoList").assert {
-                require(this != null)
+            listOrNull<String>("level_one.levelTwoList").run {
+                shouldNotBeNull()
                 size shouldBe 1
                 first() shouldBe "liststuff"
             }
@@ -96,11 +96,11 @@ class JsonPathInterpreterTest {
 
     @Test
     fun `Skal finne eksisterende noder med nested key som eneste input`() {
-        jsonNode.assert {
-            require(this != null)
+        jsonNode.run {
+            shouldNotBeNull()
             string("levelOneString") shouldBe "nmbr1!"
-            listOrNull<Int>("level3List").assert {
-                require(this != null)
+            listOrNull<Int>("level3List").run {
+                shouldNotBeNull()
                 size shouldBe 10
                 first() shouldBe 1
                 last() shouldBe 10
@@ -112,11 +112,11 @@ class JsonPathInterpreterTest {
 
     @Test
     fun `bruker riktig funksjon for kun nøkkelpath`() {
-        jsonNode.assert {
-            require(this != null)
+        jsonNode.run {
+            shouldNotBeNull()
             string("levelOneString") shouldBe "nmbr1!"
-            listOrNull<Int>("level3List").assert {
-                require(this != null)
+            listOrNull<Int>("level3List").run {
+                shouldNotBeNull()
                 size shouldBe 10
                 first() shouldBe 1
                 last() shouldBe 10
@@ -135,13 +135,13 @@ class JsonPathInterpreterTest {
 
     @Test
     fun `finner alle resultater for path`(){
-        jsonNode.assert {
+        jsonNode.run {
             require(this!=null)
-            getAll<Int>("listWithElements..id").assert {
+            getAll<Int>("listWithElements..id").run {
                 size shouldBe 3
                 this shouldBe listOf(2,3,4)
             }
-            getAll<List<JsonNode>>("listWithElements").assert {
+            getAll<List<JsonNode>>("listWithElements").run {
                 size shouldBe 1
                 first().size shouldBe 3
             }

@@ -1,18 +1,16 @@
 package no.nav.tms.mikrofrontend.selector.database
 
 import LocalPostgresDatabase
-import assertChangelog
-import assertContent
 import dbv1Format
 import dbv2Format
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotliquery.queryOf
-import no.nav.tms.common.testutils.assert
 import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.tms.mikrofrontend.selector.testJsonMessage
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
@@ -66,19 +64,19 @@ internal class PersonRepositoryTest {
             )
         )
 
-        database.getMicrofrontends(personIdent).assertContent {
-            require(this != null)
+        database.getMicrofrontends(personIdent).run {
+            shouldNotBeNull()
             size shouldBe 4
-            find { it["microfrontend_id"].asText() == "mkf4" }.assert {
-                require(this != null)
+            find { it["microfrontend_id"].asText() == "mkf4" }.run {
+                shouldNotBeNull()
                 withClue("Feil i sikkerhetsnivå for mfk4") { get("sensitivitet")?.asText() shouldBe Sensitivitet.SUBSTANTIAL.kafkaValue }
             }
-            find { it["microfrontend_id"].asText() == "mkf1" }.assert {
-                require(this != null)
+            find { it["microfrontend_id"].asText() == "mkf1" }.run {
+                shouldNotBeNull()
                 withClue("Feil i sikkerhetsnivå for mkf1") { get("sensitivitet")?.asText() shouldBe Sensitivitet.HIGH.kafkaValue }
             }
         }
-        database.getChangelog(personIdent).assertChangelog {
+        database.getChangelog(personIdent).run {
             size shouldBe 4
             first().initiatedBy shouldBe "test-team-1"
             last().initiatedBy shouldBe "new-team"
@@ -91,14 +89,14 @@ internal class PersonRepositoryTest {
         val testId1 = "7766"
         database.insertLegacyFormat(ident = testId1, format = ::dbv1Format, "m1", "m2", "m3")
         repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf4", ident = testId1, levelOfAssurance = SUBSTANTIAL))
-        database.getMicrofrontends(testId1).assert {
-            require(this != null)
+        database.getMicrofrontends(testId1).run {
+            shouldNotBeNull()
             size shouldBe 4
         }
 
         repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mfk6", ident = testId1))
-        database.getMicrofrontends(testId1).assertContent {
-            require(this != null)
+        database.getMicrofrontends(testId1).run {
+            shouldNotBeNull()
             map { it["microfrontend_id"].asText() }.forEach { id ->
                 id shouldBeIn listOf("m1", "m2", "m3", "mkf4", "mfk6")
                 this.size shouldBe 5
@@ -147,13 +145,13 @@ internal class PersonRepositoryTest {
             )
         )
 
-        database.getMicrofrontends(testIdent).assertContent {
-            require(this != null)
+        database.getMicrofrontends(testIdent).run {
+            shouldNotBeNull()
             size shouldBe 1
             map { it["microfrontend_id"].asText() } shouldContainExactly listOf("mkf1")
         }
 
-        database.getChangelog(testIdent).assertChangelog {
+        database.getChangelog(testIdent).run {
             size shouldBe 5
             first().initiatedBy shouldBe "test-team-3"
             last().initiatedBy shouldBe "test-team-4"
@@ -176,8 +174,8 @@ internal class PersonRepositoryTest {
             )
         )
 
-        database.getMicrofrontends(testId1).assert {
-            require(this != null)
+        database.getMicrofrontends(testId1).run {
+            shouldNotBeNull()
             size shouldBe 2
             map { it["microfrontend_id"].asText() } shouldContainExactly listOf("m2", "m3")
         }
@@ -187,8 +185,8 @@ internal class PersonRepositoryTest {
             testJsonMessage(DisableMessage, "mkk", testId2, SUBSTANTIAL, "init-team")
         )
 
-        database.getMicrofrontends(testId1).assertContent {
-            require(this != null)
+        database.getMicrofrontends(testId1).run {
+            shouldNotBeNull()
             size shouldBe 2
             map { it["microfrontend_id"].asText() } shouldContainExactly listOf("m2", "m3")
         }
@@ -198,8 +196,8 @@ internal class PersonRepositoryTest {
             testJsonMessage(DisableMessage, "mkk", testId3, SUBSTANTIAL, "init-team")
         )
 
-        database.getMicrofrontends(testId1).assertContent {
-            require(this != null)
+        database.getMicrofrontends(testId1).run {
+            shouldNotBeNull()
             size shouldBe 2
             map { it["microfrontend_id"].asText() } shouldContainExactly listOf("m2", "m3")
         }
