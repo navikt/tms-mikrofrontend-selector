@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector.versions
 
 import io.kotest.matchers.shouldBe
-import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.objectMapper
 import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.applyMigrations
 import org.junit.jupiter.api.Test
@@ -60,16 +59,16 @@ internal class JsonVersionsTest {
 
     @Test
     fun `migrerer fra eldre formater`() {
-        formatWithSikkerhetsnivå4.applyMigrations().assert {
+        formatWithSikkerhetsnivå4.applyMigrations().run {
             this["microfrontend_id"].asText() shouldBe "mfk1"
             this["sensitivitet"].asText() shouldBe "high"
         }
-        formatWithSikkerhetsnivå3.applyMigrations().assert {
+        formatWithSikkerhetsnivå3.applyMigrations().run {
             this["microfrontend_id"].asText() shouldBe "mfk1"
             this["sensitivitet"].asText() shouldBe "substantial"
         }
 
-        listeFormat.applyMigrations().assert {
+        listeFormat.applyMigrations().run {
             this["microfrontend_id"].asText() shouldBe "mfk1"
             this["sensitivitet"].asText() shouldBe "high"
         }

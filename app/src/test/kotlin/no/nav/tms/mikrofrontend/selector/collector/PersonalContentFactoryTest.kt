@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
@@ -24,7 +23,7 @@ class PersonalContentFactoryTest {
             microfrontends = Microfrontends(),
             levelOfAssurance = HIGH,
             manifestMap = emptyMap()
-        ).assert {
+        ).run {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
             this.resolveStatus() shouldBe HttpStatusCode.OK
@@ -41,7 +40,7 @@ class PersonalContentFactoryTest {
             microfrontends = microfrontendMocck(level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5),
             levelOfAssurance = HIGH,
             manifestMap = emptyMap()
-        ).assert {
+        ).run {
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG", "KOM")
             this.resolveStatus() shouldBe HttpStatusCode.OK
@@ -57,7 +56,7 @@ class PersonalContentFactoryTest {
             microfrontends = Microfrontends(),
             levelOfAssurance = HIGH,
             manifestMap = emptyMap()
-        ).assert {
+        ).run {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
             this.resolveStatus() shouldBe HttpStatusCode.MultiStatus
@@ -74,7 +73,7 @@ class PersonalContentFactoryTest {
             microfrontends = Microfrontends(),
             levelOfAssurance = HIGH,
             manifestMap = emptyMap()
-        ).assert {
+        ).run {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
             this.resolveStatus() shouldBe HttpStatusCode.MultiStatus
@@ -99,7 +98,7 @@ class PersonalContentFactoryTest {
             ),
             levelOfAssurance = HIGH,
             manifestMap = mapOf("regefrontend" to "https://micro.moc")
-        ).assert {
+        ).run {
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG")
             resolveStatus() shouldBe HttpStatusCode.OK
@@ -123,7 +122,7 @@ class PersonalContentFactoryTest {
             ),
             levelOfAssurance = SUBSTANTIAL,
             manifestMap = emptyMap()
-        ).assert {
+        ).run {
             offerStepup shouldBe true
             produktkort shouldBe listOf()
             this.resolveStatus() shouldBe HttpStatusCode.OK

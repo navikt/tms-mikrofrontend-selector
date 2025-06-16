@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 
 import io.kotest.matchers.shouldBe
-import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.Dokument
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
@@ -32,7 +31,7 @@ class ProduktkortTest {
         )
             .also { it.size shouldBe 1 }
             .first()
-            .assert {
+            .run {
                 id shouldBe "PEN"
                 skalVises() shouldBe true
             }
@@ -61,7 +60,7 @@ class ProduktkortTest {
         )
             .also { it.size shouldBe 1 }
             .first()
-            .assert {
+            .run {
                 id shouldBe "PEN"
                 skalVises() shouldBe true
             }
@@ -78,7 +77,7 @@ class ProduktkortTest {
         )
             .also { it.size shouldBe 1 }
             .first()
-            .assert {
+            .run {
                 id shouldBe "DAG"
                 skalVises() shouldBe true
             }
@@ -95,7 +94,7 @@ class ProduktkortTest {
         )
             .also { it.size shouldBe 1 }
             .first()
-            .assert {
+            .run {
                 id shouldBe "DAG"
                 skalVises() shouldBe true
             }
@@ -134,7 +133,7 @@ class ProduktkortTest {
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.HIGH
-        ).first().assert {
+        ).first().run {
             id shouldBe forventetKode
         }
     }

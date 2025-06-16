@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import io.kotest.matchers.shouldBe
-import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
 import no.nav.tms.mikrofrontend.selector.safTestDokument
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
@@ -13,12 +12,12 @@ class RegelstyrteMicrofrontendsTest {
 
     @Test
     fun `pensjon skal vises hvis personen er over 40 år og ikke har sakstema pensjon`() {
-        ContentDefinition.getAktueltContent(41, listOf("DAG".safTestDokument()), manifestMapWithPensjon, LevelOfAssurance.SUBSTANTIAL).assert {
+        ContentDefinition.getAktueltContent(41, listOf("DAG".safTestDokument()), manifestMapWithPensjon, LevelOfAssurance.SUBSTANTIAL).run {
             size shouldBe 1
             first().id shouldBe "pensjonskalkulator-microfrontend"
             first().url shouldBe "https://cdn.pensjon/manifest.json"
         }
-        ContentDefinition.getAktueltContent(41, listOf("DAG".safTestDokument()), manifestMapWithPensjon, LevelOfAssurance.HIGH).assert {
+        ContentDefinition.getAktueltContent(41, listOf("DAG".safTestDokument()), manifestMapWithPensjon, LevelOfAssurance.HIGH).run {
             size shouldBe 1
             first().id shouldBe "pensjonskalkulator-microfrontend"
             first().url shouldBe "https://cdn.pensjon/manifest.json"
