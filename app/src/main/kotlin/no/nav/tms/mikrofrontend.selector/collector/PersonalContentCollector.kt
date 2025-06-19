@@ -106,16 +106,16 @@ open class MicrofrontendsDefinition(
 ) {
     companion object {
         fun create(id: String, discoveryManifest: DiscoveryManifest): MicrofrontendsDefinition? {
-            val manifestEntry = discoveryManifest.entry[id];
+            val discovery = discoveryManifest.discovery[id];
 
-            if (manifestEntry != null) {
+            if (discovery != null) {
                 return MicrofrontendsDefinition(
                     id,
-                    manifestEntry.url,
-                    manifestEntry.appname,
-                    manifestEntry.namespace,
-                    manifestEntry.fallback,
-                    manifestEntry.ssr
+                    discovery.url,
+                    discovery.appname,
+                    discovery.namespace,
+                    discovery.fallback,
+                    discovery.ssr
                 )
             }
 

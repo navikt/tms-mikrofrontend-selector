@@ -28,10 +28,10 @@ class ManifestsStorage(private val storage: Storage, private val bucketName: Str
 
 data class DiscoveryManifest (
     @JsonAnySetter
-    val entry: Map<String, Entry>,
+    val discovery: Map<String, Discovery>,
 )
 
-data class Entry (
+data class Discovery (
     val url: String,
     val appname: String,
     val namespace: String,

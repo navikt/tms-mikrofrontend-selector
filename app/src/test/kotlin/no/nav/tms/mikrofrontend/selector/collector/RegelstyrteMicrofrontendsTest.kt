@@ -3,13 +3,13 @@ package no.nav.tms.mikrofrontend.selector.collector
 import io.kotest.matchers.shouldBe
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
 import no.nav.tms.mikrofrontend.selector.safTestDokument
-import no.nav.tms.mikrofrontend.selector.versions.Entry
+import no.nav.tms.mikrofrontend.selector.versions.Discovery
 import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import org.junit.jupiter.api.Test
 
 class RegelstyrteMicrofrontendsTest {
-    private val discoveryManifestWithPensjon = DiscoveryManifest(mapOf("pensjonskalkulator-microfrontend" to Entry(
+    private val discoveryManifestWithPensjon = DiscoveryManifest(mapOf("pensjonskalkulator-microfrontend" to Discovery(
         "https://cdn.pensjon/manifest.json", "name", "pensjon", "http://pensjon/fallback", true
     )))
 

@@ -7,7 +7,7 @@ import io.mockk.mockk
 import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
-import no.nav.tms.mikrofrontend.selector.versions.Entry
+import no.nav.tms.mikrofrontend.selector.versions.Discovery
 import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.HIGH
@@ -98,7 +98,7 @@ class PersonalContentFactoryTest {
 
             ),
             levelOfAssurance = HIGH,
-            discoveryManifest = DiscoveryManifest(mapOf("regefrontend" to Entry("https://micro.moc", "name", "ns", "https://app.fallback", true)))
+            discoveryManifest = DiscoveryManifest(mapOf("regefrontend" to Discovery("https://micro.moc", "name", "ns", "https://app.fallback", true)))
         ).run {
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG")
