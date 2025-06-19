@@ -8,15 +8,15 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 class ManifestsStorage(private val storage: Storage, private val bucketName: String) {
     val log = KotlinLogging.logger {  }
 
-    fun getManifestBucketContent(): MicrofrontendManifest {
+    fun getDiscoveryManifest(): DiscoveryManifest {
         try {
             val content = storage.readAllBytes(bucketName, manifestFileName)
-            val manifest = objectMapper.readValue(content, MicrofrontendManifest::class.java)
+            val manifest = objectMapper.readValue(content, DiscoveryManifest::class.java)
 
             return manifest
         } catch (e:Exception) {
             log.error { "Feil i henting av manifestfil: ${e.message}" }
-            return MicrofrontendManifest(emptyMap())
+            return DiscoveryManifest(emptyMap())
         }
     }
 
@@ -26,7 +26,7 @@ class ManifestsStorage(private val storage: Storage, private val bucketName: Str
     }
 }
 
-data class MicrofrontendManifest (
+data class DiscoveryManifest (
     @JsonAnySetter
     val entry: Map<String, Entry>,
 )

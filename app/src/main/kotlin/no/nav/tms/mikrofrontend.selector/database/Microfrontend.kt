@@ -10,7 +10,7 @@ import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.levelOfAs
 import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.toDbNode
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.levelOfAssurance
 import no.nav.tms.mikrofrontend.selector.versions.LevelOfAssuranceResolver
-import no.nav.tms.mikrofrontend.selector.versions.MicrofrontendManifest
+import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import org.postgresql.util.PGobject
 
@@ -66,11 +66,11 @@ class Microfrontends(initialJson: String? = null) {
 
     fun getDefinitions(
         innloggetnivå: LevelOfAssurance,
-        manifestMap: MicrofrontendManifest
+        discoveryManifest: DiscoveryManifest
     ): List<MicrofrontendsDefinition> =
         newData
             .filter { LevelOfAssuranceResolver.fromJsonNode(it["sensitivitet"]) <= innloggetnivå }
-            .mapNotNull { MicrofrontendsDefinition.create(it["microfrontend_id"].asText(), manifestMap) }
+            .mapNotNull { MicrofrontendsDefinition.create(it["microfrontend_id"].asText(), discoveryManifest) }
 
     fun offerStepup(innloggetnivå: LevelOfAssurance): Boolean =
         newData.any { LevelOfAssuranceResolver.fromJsonNode(it["sensitivitet"]) > innloggetnivå }
