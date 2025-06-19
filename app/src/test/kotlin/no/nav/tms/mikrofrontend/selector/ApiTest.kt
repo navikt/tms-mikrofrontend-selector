@@ -177,7 +177,6 @@ internal class ApiTest {
                 shouldNotBeNull()
                 getOrNull<List<JsonNode>>("microfrontends").run {
                     shouldNotBeNull()
-                    println("%%%: $this") // TODO: remove
                     size shouldBe expectedMicrofrontends.size
                 }
                 getAll<String>("microfrontends..url")

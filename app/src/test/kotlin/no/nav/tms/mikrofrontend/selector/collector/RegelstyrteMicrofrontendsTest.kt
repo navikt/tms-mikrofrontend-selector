@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 class RegelstyrteMicrofrontendsTest {
     private val manifestMapWithPensjon = MicrofrontendManifest(mapOf("pensjonskalkulator-microfrontend" to Entry(
-        "https://cdn.pensjon/manifest.json", "nm", "ns", "http://pensjon/fallback", true
+        "https://cdn.pensjon/manifest.json", "name", "pensjon", "http://pensjon/fallback", true
     )))
 
     @Test
