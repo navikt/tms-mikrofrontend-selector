@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector
 
 import io.kotest.matchers.shouldBe
-import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.collector.Dokument
 import no.nav.tms.mikrofrontend.selector.collector.Dokument.Companion.getLatest
 import org.junit.jupiter.api.Test
@@ -17,7 +16,7 @@ class DokumentTest {
             testDokument("KOM", LocalDateTime.now().minusDays(5)),
             testDokument("DAG", LocalDateTime.now()),
             testDokument("SYK", LocalDateTime.now().minusDays(2))
-        ).getLatest().assert {
+        ).getLatest().run {
             first().kode shouldBe "DAG"
             last().kode shouldBe "SYK"
         }
@@ -36,7 +35,7 @@ class DokumentTest {
             testDokument("SYK", LocalDateTime.now().minusDays(2))
         )
 
-        (listOne + listTwo).getLatest().assert {
+        (listOne + listTwo).getLatest().run {
             first().kode shouldBe "DAG"
             last().kode shouldBe "DAG"
         }

@@ -46,10 +46,10 @@ internal class MicrofrontendMessageBuilderTest {
             initiatedBy = expectedInitiatedBy
             microfrontendId = expectedMicrofrontendId
         }.apply {
-            map().assert {
+            map().run {
                 this["@action"] shouldBe "disable"
             }
-            jsonNode().assert {
+            jsonNode().run {
                 this["@action"].asText() shouldBe "disable"
                 assertCommonJsonFields(jsonNode())
             }
@@ -66,11 +66,11 @@ internal class MicrofrontendMessageBuilderTest {
             microfrontenId = expectedMicrofrontendId,
             initiatedBy = expectedInitiatedBy
         ).apply {
-            map().assert {
+            map().run {
                 this["@action"] shouldBe "disable"
                 assertCommonMap(this)
             }
-            jsonNode().assert {
+            jsonNode().run {
                 this["@action"].asText() shouldBe "disable"
                 assertCommonJsonFields(jsonNode())
             }
@@ -93,11 +93,11 @@ internal class MicrofrontendMessageBuilderTest {
             initiatedBy = expectedInitiatedBy
             microfrontendId = expectedMicrofrontendId
         }.apply {
-            map().assert {
+            map().run {
                 this["@action"] shouldBe "enable"
                 this["sensitivitet"] shouldBe Sensitivitet.HIGH.kafkaValue
             }
-            jsonNode().assert {
+            jsonNode().run {
                 this["@action"].asText() shouldBe "enable"
                 this["sensitivitet"].asText() shouldBe Sensitivitet.HIGH.kafkaValue
                 assertCommonJsonFields(jsonNode())
@@ -110,11 +110,11 @@ internal class MicrofrontendMessageBuilderTest {
             initiatedBy = expectedInitiatedBy
             microfrontendId = expectedMicrofrontendId
         }.apply {
-            map().assert {
+            map().run {
                 this["@action"] shouldBe "enable"
                 this["sensitivitet"] shouldBe Sensitivitet.HIGH.kafkaValue
             }
-            jsonNode().assert {
+            jsonNode().run {
                 this["@action"].asText() shouldBe "enable"
                 this["sensitivitet"].asText() shouldBe Sensitivitet.HIGH.kafkaValue
                 assertCommonJsonFields(jsonNode())
@@ -128,11 +128,11 @@ internal class MicrofrontendMessageBuilderTest {
             microfrontendId = expectedMicrofrontendId
             sensitivitet = Sensitivitet.SUBSTANTIAL
         }.apply {
-            map().assert {
+            map().run {
                 this["@action"] shouldBe "enable"
                 this["sensitivitet"] shouldBe Sensitivitet.SUBSTANTIAL.kafkaValue
             }
-            jsonNode().assert {
+            jsonNode().run {
                 this["@action"].asText() shouldBe "enable"
                 this["sensitivitet"].asText() shouldBe Sensitivitet.SUBSTANTIAL.kafkaValue
                 assertCommonJsonFields(jsonNode())
@@ -189,7 +189,7 @@ internal class MicrofrontendMessageBuilderTest {
     }
 }
 
-internal inline fun <T> T.assert(block: T.() -> Unit): T =
+internal inline fun <T> T.run(block: T.() -> Unit): T =
     apply {
         block()
     }

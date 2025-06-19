@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import io.kotest.matchers.shouldBe
-import no.nav.tms.common.testutils.assert
 import org.junit.jupiter.api.Test
 
 class ResponseWithErrorsTest {
@@ -16,10 +15,10 @@ class ResponseWithErrorsTest {
             override val source: String = "default"
         }
 
-        ResponseWithErrors.errorInJsonResponse<DefaultErros>("").assert {
+        ResponseWithErrors.errorInJsonResponse<DefaultErros>("").run {
             this.errorMessage() shouldBe "Kall til default feiler: responsbody inneholder ikke json: "
         }
-        ResponseWithErrors.errorInJsonResponse<DefaultNullableErros>("").assert {
+        ResponseWithErrors.errorInJsonResponse<DefaultNullableErros>("").run {
             this.errorMessage() shouldBe "Kall til default feiler: responsbody inneholder ikke json: "
         }
     }
@@ -33,10 +32,10 @@ class ResponseWithErrorsTest {
             override val source: String = "default"
         }
 
-        ResponseWithErrors.errorInJsonResponse<ListErros>("somethin stupid").assert {
+        ResponseWithErrors.errorInJsonResponse<ListErros>("somethin stupid").run {
             this.errorMessage() shouldBe "Kall til default feiler: responsbody inneholder ikke json: somethin stupid"
         }
-        ResponseWithErrors.errorInJsonResponse<NullableListErros>("somethin stupid").assert {
+        ResponseWithErrors.errorInJsonResponse<NullableListErros>("somethin stupid").run {
             this.errorMessage() shouldBe "Kall til default feiler: responsbody inneholder ikke json: somethin stupid"
         }
     }

@@ -5,7 +5,6 @@ import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import no.nav.tms.common.testutils.assert
 import no.nav.tms.kafka.application.JsonMessage
 import no.nav.tms.kafka.application.isMissingOrNull
 import no.nav.tms.microfrontend.MicrofrontendMessageBuilder
@@ -57,7 +56,7 @@ class MessageLibraryVerificatiion {
 
         coVerify(exactly = 2) { personRepository.enableMicrofrontend(any()) }
 
-        jsonMessages.first { it.microfrontendId == "microf4" }.assert {
+        jsonMessages.first { it.microfrontendId == "microf4" }.run {
             get("ident").asText() shouldBe "12345678920"
             get("@initiated_by").asText() shouldBe "minside"
             get("sensitivitet").asText() shouldBe Sensitivitet.HIGH.kafkaValue

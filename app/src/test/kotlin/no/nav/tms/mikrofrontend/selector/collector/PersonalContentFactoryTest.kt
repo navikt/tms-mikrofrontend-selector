@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.tms.common.testutils.assert
 import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
@@ -26,7 +25,7 @@ class PersonalContentFactoryTest {
             microfrontends = Microfrontends(),
             levelOfAssurance = HIGH,
             manifestMap = MicrofrontendManifest(emptyMap())
-        ).assert {
+        ).run {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
             this.resolveStatus() shouldBe HttpStatusCode.OK
@@ -43,7 +42,7 @@ class PersonalContentFactoryTest {
             microfrontends = microfrontendMocck(level4Microfrontends = MicrofrontendsDefinition("id", "url", "appname", "namespace", "fallback", true) * 5),
             levelOfAssurance = HIGH,
             manifestMap = MicrofrontendManifest(emptyMap())
-        ).assert {
+        ).run {
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG", "KOM")
             this.resolveStatus() shouldBe HttpStatusCode.OK
@@ -59,7 +58,7 @@ class PersonalContentFactoryTest {
             microfrontends = Microfrontends(),
             levelOfAssurance = HIGH,
             manifestMap = MicrofrontendManifest(emptyMap())
-        ).assert {
+        ).run {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
             this.resolveStatus() shouldBe HttpStatusCode.MultiStatus
@@ -71,12 +70,11 @@ class PersonalContentFactoryTest {
     fun `skal ha produkkort og aia-standard og 207 pga meldekort`() {
         testFactory(
             meldekortResponse = MeldekortResponse(errors = "Feil som skjedde")
-
         ).build(
             microfrontends = Microfrontends(),
             levelOfAssurance = HIGH,
             manifestMap = MicrofrontendManifest(emptyMap())
-        ).assert {
+        ).run {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
             this.resolveStatus() shouldBe HttpStatusCode.MultiStatus
@@ -100,8 +98,8 @@ class PersonalContentFactoryTest {
 
             ),
             levelOfAssurance = HIGH,
-            manifestMap = MicrofrontendManifest(mapOf("regefrontend" to Entry("https://micro.moc", "name", "ns", "https://fallback.moc", true)))
-        ).assert {
+            manifestMap = MicrofrontendManifest(mapOf("regefrontend" to Entry("https://micro.moc", "name", "ns", "https://app.fallback", true)))
+        ).run {
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG")
             resolveStatus() shouldBe HttpStatusCode.OK
@@ -125,7 +123,7 @@ class PersonalContentFactoryTest {
             ),
             levelOfAssurance = SUBSTANTIAL,
             manifestMap = MicrofrontendManifest(emptyMap())
-        ).assert {
+        ).run {
             offerStepup shouldBe true
             produktkort shouldBe listOf()
             this.resolveStatus() shouldBe HttpStatusCode.OK

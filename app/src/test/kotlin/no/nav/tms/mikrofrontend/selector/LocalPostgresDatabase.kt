@@ -1,5 +1,4 @@
 import com.zaxxer.hikari.HikariDataSource
-import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
 import no.nav.tms.mikrofrontend.selector.database.Database
@@ -142,17 +141,3 @@ data class ChangelogEntry(
     val date: LocalDateTime,
     val initiatedBy: String?
 )
-
-inline fun <T> T.assertContent(block: T.() -> Unit): T =
-    apply {
-        withClue("content") {
-            block()
-        }
-    }
-
-inline fun <T> T.assertChangelog(block: T.() -> Unit): T =
-    apply {
-        withClue("changelog") {
-            block()
-        }
-    }
