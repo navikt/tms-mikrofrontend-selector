@@ -34,32 +34,32 @@ jobs:
           echo '${{ github.event.client_payload.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload.url }} og ssr ${{ github.event.client_payload.ssr }}'
           echo 'commitmessage: ${{ github.event.client_payload.commitmsg }}'
 
-#  update-prod-manifest:
-#    concurrency: prod-manifest
-#    runs-on: ubuntu-latest
-#    if: ${{ github.event.client_payload.cluster == 'prod-gcp' }}
-#    steps:
-#      - uses: actions/checkout@v3
-#      - uses: actions/setup-python@v4
-#        with:
-#          python-version: '3.10'
-#      - id: 'auth'
-#        uses: 'google-github-actions/auth@v1'
-#        with:
-#          credentials_json: '${{ secrets.GCS_SA_KEY_PROD }}'
-#      - name: 'Set up Cloud SDK'
-#        uses: 'google-github-actions/setup-gcloud@v1'
-#      - name: 'Use gcloud CLI'
-#        run: 'gcloud info'
-#      - name: 'Henter manifestfil'
-#        run: gcloud storage cp gs://microfrontend-manifest-prod/manifests-v2.json manifests-v2.json
-#      - name: 'Oppdater fil'
-#        run:  python3 update-manifests-v2.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }} ${{ github.event.client_payload.appname }} ${{ github.event.client_payload.namespace }} ${{ github.event.client_payload.ssr }}
-#      - name: 'Last opp til bucket'
-#        run: gcloud storage cp manifests-v2.json gs://microfrontend-manifest-prod
-#      - name: 'info'
-#        run: |
-#          echo '${{ github.event.client_payload.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload.url }} og ssr ${{ github.event.client_payload.ssr }}'
-#          echo 'commitmessage: ${{ github.event.client_payload.commitmsg }}'
+  update-prod-manifest:
+    concurrency: prod-manifest
+    runs-on: ubuntu-latest
+    if: ${{ github.event.client_payload.cluster == 'prod-gcp' }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCS_SA_KEY_PROD }}'
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
+      - name: 'Henter manifestfil'
+        run: gcloud storage cp gs://microfrontend-manifest-prod/manifests-v2.json manifests-v2.json
+      - name: 'Oppdater fil'
+        run:  python3 update-manifests-v2.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }} ${{ github.event.client_payload.appname }} ${{ github.event.client_payload.namespace }} ${{ github.event.client_payload.fallback }} ${{ github.event.client_payload.ssr }}
+      - name: 'Last opp til bucket'
+        run: gcloud storage cp manifests-v2.json gs://microfrontend-manifest-prod
+      - name: 'info'
+        run: |
+          echo '${{ github.event.client_payload.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload.url }} og ssr ${{ github.event.client_payload.ssr }}'
+          echo 'commitmessage: ${{ github.event.client_payload.commitmsg }}'
 
 

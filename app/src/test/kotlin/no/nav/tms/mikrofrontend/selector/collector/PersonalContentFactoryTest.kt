@@ -7,6 +7,8 @@ import io.mockk.mockk
 import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
+import no.nav.tms.mikrofrontend.selector.versions.Discovery
+import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.HIGH
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.SUBSTANTIAL
@@ -22,7 +24,7 @@ class PersonalContentFactoryTest {
         testFactory().build(
             microfrontends = Microfrontends(),
             levelOfAssurance = HIGH,
-            manifestMap = emptyMap()
+            discoveryManifest = DiscoveryManifest(emptyMap())
         ).run {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
@@ -37,9 +39,9 @@ class PersonalContentFactoryTest {
             safResponse = SafResponse(listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now()))),
             digisosResponse = DigisosResponse(listOf(Dokument(kode = "KOM", navn = "Sosialhjelp", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now()))),
         ).build(
-            microfrontends = microfrontendMocck(level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5),
+            microfrontends = microfrontendMocck(level4Microfrontends = MicrofrontendsDefinition("id", "url", "appname", "namespace", "fallback", true) * 5),
             levelOfAssurance = HIGH,
-            manifestMap = emptyMap()
+            discoveryManifest = DiscoveryManifest(emptyMap())
         ).run {
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG", "KOM")
@@ -55,7 +57,7 @@ class PersonalContentFactoryTest {
         ).build(
             microfrontends = Microfrontends(),
             levelOfAssurance = HIGH,
-            manifestMap = emptyMap()
+            discoveryManifest = DiscoveryManifest(emptyMap())
         ).run {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
@@ -68,11 +70,10 @@ class PersonalContentFactoryTest {
     fun `skal ha produkkort og aia-standard og 207 pga meldekort`() {
         testFactory(
             meldekortResponse = MeldekortResponse(errors = "Feil som skjedde")
-
         ).build(
             microfrontends = Microfrontends(),
             levelOfAssurance = HIGH,
-            manifestMap = emptyMap()
+            discoveryManifest = DiscoveryManifest(emptyMap())
         ).run {
             offerStepup shouldBe false
             produktkort shouldBe emptyList()
@@ -92,12 +93,12 @@ class PersonalContentFactoryTest {
             meldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
         ).build(
             microfrontends = microfrontendMocck(
-                level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5,
+                level4Microfrontends = MicrofrontendsDefinition("id", "url", "appname", "namespace", "fallback", true) * 5,
                 ids = listOf("aia-ny")
 
             ),
             levelOfAssurance = HIGH,
-            manifestMap = mapOf("regefrontend" to "https://micro.moc")
+            discoveryManifest = DiscoveryManifest(mapOf("regefrontend" to Discovery("https://micro.moc", "name", "ns", "https://app.fallback", true)))
         ).run {
             offerStepup shouldBe false
             produktkort shouldBe listOf("DAG")
@@ -117,11 +118,11 @@ class PersonalContentFactoryTest {
             )
         ).build(
             microfrontendMocck(
-                level4Microfrontends = MicrofrontendsDefinition("id", "url") * 5,
-                level3Microfrontends = MicrofrontendsDefinition("id", "url") * 2,
+                level4Microfrontends = MicrofrontendsDefinition("id", "url", "appname", "namespace", "fallback", true) * 5,
+                level3Microfrontends = MicrofrontendsDefinition("id", "url", "appname", "namespace", "fallback", true) * 2,
             ),
             levelOfAssurance = SUBSTANTIAL,
-            manifestMap = emptyMap()
+            discoveryManifest = DiscoveryManifest(emptyMap())
         ).run {
             offerStepup shouldBe true
             produktkort shouldBe listOf()
@@ -132,7 +133,9 @@ class PersonalContentFactoryTest {
 }
 
 private operator fun MicrofrontendsDefinition.times(i: Int): List<MicrofrontendsDefinition> =
-    (1..i).map { MicrofrontendsDefinition(id = "$id$it", url = "$url$it") }
+    (1..i).map {
+        MicrofrontendsDefinition(id = "$id$it", url = "$url$it", appname = "$appname$it", namespace = "$namespace$it", fallback = "$fallback$it", ssr = ssr)
+    }
 
 
 private fun testFactory(

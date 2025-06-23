@@ -9,6 +9,7 @@ import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
+import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
@@ -22,7 +23,7 @@ class PersonalContentCollector(
 
     suspend fun getContent(user: TokenXUser, innloggetnivå: LevelOfAssurance): PersonalContentResponse {
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
-        return asyncCollector(user).build(microfrontends, innloggetnivå, manifestStorage.getManifestBucketContent())
+        return asyncCollector(user).build(microfrontends, innloggetnivå, manifestStorage.getDiscoveryManifest())
             .also {
                 produktkortCounter.countProduktkort(it.produktkort)
             }
@@ -56,9 +57,9 @@ class PersonalContentFactory(
     fun build(
         microfrontends: Microfrontends?,
         levelOfAssurance: LevelOfAssurance,
-        manifestMap: Map<String, String>,
+        discoveryManifest: DiscoveryManifest,
     ) = PersonalContentResponse(
-        microfrontends = microfrontends?.getDefinitions(levelOfAssurance, manifestMap) ?: emptyList(),
+        microfrontends = microfrontends?.getDefinitions(levelOfAssurance, discoveryManifest) ?: emptyList(),
         produktkort = ContentDefinition.getProduktkort(
             digisosResponse.dokumenter + safResponse.dokumenter, levelOfAssurance
         ).filter { it.skalVises() }.map { it.id },
@@ -67,7 +68,7 @@ class PersonalContentFactory(
         aktuelt = ContentDefinition.getAktueltContent(
             pdlResponse.calculateAge(),
             safResponse.dokumenter,
-            manifestMap,
+            discoveryManifest,
             levelOfAssurance
         )
 
@@ -97,15 +98,28 @@ class PersonalContentResponse(
 open class MicrofrontendsDefinition(
     @JsonProperty("microfrontend_id")
     val id: String,
-    val url: String
+    val url: String,
+    val appname: String,
+    val namespace: String,
+    val fallback: String,
+    val ssr: Boolean
 ) {
     companion object {
-        fun create(id: String, manifestMap: Map<String, String>) = manifestMap[id]
-            .takeUnless {
-                it.isNullOrEmpty()
+        fun create(id: String, discoveryManifest: DiscoveryManifest): MicrofrontendsDefinition? {
+            val discovery = discoveryManifest.discovery[id];
+
+            if (discovery != null) {
+                return MicrofrontendsDefinition(
+                    id,
+                    discovery.url,
+                    discovery.appname,
+                    discovery.namespace,
+                    discovery.fallback,
+                    discovery.ssr
+                )
             }
-            ?.let { url ->
-                MicrofrontendsDefinition(id, url)
-            }
+
+            return null
+        }
     }
 }

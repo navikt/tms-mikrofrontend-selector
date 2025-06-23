@@ -54,17 +54,13 @@ class GoogleCloudStorageTestContainer : GenericContainer<GoogleCloudStorageTestC
 
 }
 
-
 class LocalGCPStorage {
 
     fun updateManifest(expectedMicrofrontends: MutableMap<String, String>) {
         val toStorage = expectedMicrofrontends.toMutableMap()
         toStorage.putAll(akuteltMicrofrontends)
-        val contents = toStorage.map { """"${it.key}":"${it.value}"""" }.joinToString(
-            prefix = "{",
-            postfix = "}",
-            separator = ","
-        )
+        val contents = "{ ${toStorage.map { """"${it.key}": { "url":"${it.value}", "appname": "name", "namespace": "space", "fallback": "http://name/fallback", "ssr": true }""" }
+            .joinToString(separator = ",")} }"
         val blobid = BlobId.of(testBucketName, manifestFileName)
         val blobInfo = BlobInfo.newBuilder(blobid).build()
         val content: ByteArray = contents.toByteArray(StandardCharsets.UTF_8)
