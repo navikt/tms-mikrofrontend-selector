@@ -31,6 +31,8 @@ jobs:
         run:  python3 update-manifests.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }}
       - name: 'Last opp til bucket'
         run: gcloud storage cp manifests.json gs://microfrontend-manifest-dev
+      - name: 'Last opp v2 til bucket'
+        run: gcloud storage cp manifests-v2.json gs://microfrontend-manifest-dev
       - name: 'info'
         run: |
           echo '${{ github.event.client_payload.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload.url }}'
@@ -61,6 +63,8 @@ jobs:
         run: python3 update-manifests.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }}
       - name: 'Last opp til bucket'
         run: gcloud storage cp manifests.json gs://microfrontend-manifest-prod
+      - name: 'Last opp v2 til bucket'
+        run: gcloud storage cp manifests-v2.json gs://microfrontend-manifest-prod
       - name: 'info'
         run: | 
           echo '${{ github.event.client_payload.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload.url }}'
