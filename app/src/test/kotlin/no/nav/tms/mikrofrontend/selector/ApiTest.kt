@@ -71,7 +71,8 @@ internal class ApiTest {
             initSelectorApi(testident = testIdent)
             initExternalServices(
                 SafRoute(sakstemaer = listOf("SYK")),
-                MeldekortRoute(harMeldekort = true),
+                MeldekortApiRoute(),
+                DpMeldekortRoute(harMeldekort = true),
                 PdlRoute(fødselssår = 1960),
                 DigisosRoute()
             )
@@ -142,7 +143,8 @@ internal class ApiTest {
         initSelectorApi(testident = testIdent)
         initExternalServices(
             SafRoute(sakstemaer = listOf("DAG")),
-            MeldekortRoute(harMeldekort = true),
+            MeldekortApiRoute(harMeldekort = true),
+            DpMeldekortRoute(),
             PdlRoute(fødselsdato = "2004-05-05", 2004),
             DigisosRoute(),
         )
@@ -201,7 +203,8 @@ internal class ApiTest {
         initSelectorApi(testident = testIdent)
         initExternalServices(
             SafRoute(expectedProduktkort),
-            MeldekortRoute(),
+            MeldekortApiRoute(),
+            DpMeldekortRoute(),
             PdlRoute(),
             DigisosRoute(),
         )
@@ -246,7 +249,8 @@ internal class ApiTest {
             initSelectorApi(testident = testIdent, levelOfAssurance = SUBSTANTIAL)
             initExternalServices(
                 SafRoute(),
-                MeldekortRoute(),
+                MeldekortApiRoute(),
+                DpMeldekortRoute(),
                 PdlRoute(),
                 DigisosRoute(),
             )
@@ -293,7 +297,8 @@ internal class ApiTest {
             initSelectorApi(testident = testident2)
             initExternalServices(
                 SafRoute(),
-                MeldekortRoute(),
+                MeldekortApiRoute(),
+                DpMeldekortRoute(),
                 PdlRoute(),
                 DigisosRoute(),
             )
@@ -317,7 +322,8 @@ internal class ApiTest {
             initSelectorApi(testident = testident2)
             initExternalServices(
                 SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
-                MeldekortRoute(),
+                MeldekortApiRoute(),
+                DpMeldekortRoute(),
                 DigisosRoute(),
             )
 
@@ -350,7 +356,7 @@ internal class ApiTest {
             initSelectorApi(testident = testident2)
             initExternalServices(
                 SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
-                MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
+                MeldekortApiRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 PdlRoute("2000-05-05", 2000),
                 DigisosRoute(),
             )
@@ -387,7 +393,7 @@ internal class ApiTest {
                 SafRoute(
                     errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"
                 ),
-                MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
+                MeldekortApiRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 PdlRoute(errorMsg = "Kall til PDL feilet"),
                 DigisosRoute(),
             )
@@ -428,11 +434,12 @@ internal class ApiTest {
             val testident2 = "12345678910"
 
             initSelectorApi(testident = testident2, tokenFetcher = mockk<TokenFetcher>().apply {
-                coEvery { meldekortToken(any()) } throws TokenFetcherException(
+                coEvery { meldekortApiToken(any()) } throws TokenFetcherException(
                     originalException = SocketTimeoutException(),
-                    forService = "meldekort",
+                    forService = "meldekortApi",
                     appClientId = "testid"
                 )
+                coEvery { dpMeldekortToken(any()) } returns "<dpMeldekort>"
                 coEvery { safToken(any()) } returns "<saf>"
                 coEvery { pdlToken(any()) } returns "<pdl>"
                 coEvery { digisosToken(any()) } returns "<digisos>"
@@ -440,7 +447,8 @@ internal class ApiTest {
 
             initExternalServices(
                 SafRoute(),
-                MeldekortRoute(),
+                MeldekortApiRoute(),
+                DpMeldekortRoute(),
                 PdlRoute(),
                 DigisosRoute(true)
             )
@@ -462,7 +470,8 @@ internal class ApiTest {
         initSelectorApi(testident = "12345678910")
         initExternalServices(
             SafRoute(),
-            MeldekortRoute(),
+            MeldekortApiRoute(),
+            DpMeldekortRoute(),
             PdlRoute(),
             DigisosRoute(true)
         )
@@ -486,7 +495,8 @@ internal class ApiTest {
         levelOfAssurance: LevelOfAssurance = HIGH,
         httpClient: HttpClient? = null,
         tokenFetcher: TokenFetcher = mockk<TokenFetcher>().apply {
-            coEvery { meldekortToken(any()) } returns "<meldekort>"
+            coEvery { meldekortApiToken(any()) } returns "<meldekortApi>"
+            coEvery { dpMeldekortToken(any()) } returns "<dpMeldekort>"
             coEvery { safToken(any()) } returns "<saf>"
             coEvery { pdlToken(any()) } returns "<pdl>"
             coEvery { digisosToken(any()) } returns "<digisos>"
@@ -501,7 +511,8 @@ internal class ApiTest {
                     externalContentFecther = ExternalContentFecther(
                         safUrl = testHost,
                         httpClient = apiClient,
-                        meldekortUrl = testHost,
+                        meldekortApiUrl = testHost,
+                        dpMeldekortUrl = testHost,
                         pdlUrl = "$testHost/pdl",
                         digisosUrl = testHost,
                         pdlBehandlingsnummer = "B000",
@@ -527,7 +538,7 @@ internal class ApiTest {
 private fun LevelOfAssurance.toMockk(): no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance?  = when {
     this == HIGH -> MockLevelOfAssurance.HIGH
     this == SUBSTANTIAL -> MockLevelOfAssurance.SUBSTANTIAL
-    else -> throw IllegalArgumentException("Ukjent vedii for level of assurance; ${this.name}")
+    else -> throw IllegalArgumentException("Ukjent verdi for level of assurance; ${this.name}")
 }
 
 val mockEngine = MockEngine { _ ->
