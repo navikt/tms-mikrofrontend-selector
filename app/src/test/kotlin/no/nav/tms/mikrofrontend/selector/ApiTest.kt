@@ -357,6 +357,7 @@ internal class ApiTest {
             initExternalServices(
                 SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
                 MeldekortApiRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
+                DpMeldekortRoute(),
                 PdlRoute("2000-05-05", 2000),
                 DigisosRoute(),
             )
@@ -380,6 +381,28 @@ internal class ApiTest {
                     this["offerStepup"].asBoolean() shouldBe false
                 }
 
+            }
+        }
+
+    @Test
+    fun `Svarer med 200 hvis meldekort svarer med 404`() =
+        testApplication {
+            val testident2 = "12345678912"
+
+            initSelectorApi(testident = testident2)
+            initExternalServices(
+                SafRoute(),
+                MeldekortApiRoute(),
+                DpMeldekortRoute(httpStatusCode = HttpStatusCode.NotFound),
+                PdlRoute(),
+                DigisosRoute(),
+            )
+
+            client.get("/din-oversikt").run {
+                status shouldBe HttpStatusCode.OK
+                objectMapper.readTree(bodyAsText()).run {
+                    this["meldekort"].asBoolean() shouldBe false
+                }
             }
         }
 

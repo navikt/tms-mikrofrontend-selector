@@ -84,6 +84,14 @@ class ExternalContentFecther(
         url = "$dpMeldekortUrl/meldekortstatus",
         tjeneste = "dpMeldekort",
         map = { jsonPath -> MeldekortResponse(meldekortResponse = jsonPath) },
+        errorHandlerOverride = { response ->
+            // dp-meldekortregister sender 404 når de ikke har noen meldekort på bruker
+            if(response.status == HttpStatusCode.NotFound) {
+                MeldekortResponse()
+            } else {
+                null
+            }
+        }
     )
 
     suspend fun fetchDigisosSakstema(user: TokenXUser): DigisosResponse = getResponseAsJsonPath(
@@ -131,6 +139,7 @@ class ExternalContentFecther(
         url: String,
         tjeneste: String,
         requestOptions: HttpRequestBuilder.() -> Unit = {},
+        errorHandlerOverride: (HttpResponse) -> T? = { null },
         crossinline map: (JsonPathInterpreter) -> T,
     ): T = withErrorHandling(tjeneste, url) {
         val token = tokenFetcher(user)
@@ -141,11 +150,14 @@ class ExternalContentFecther(
             header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
             requestOptions()
         }.let { response ->
-            if (response.status != HttpStatusCode.OK)
-                ResponseWithErrors.createFromHttpError(response)
-            else
+
+            if (response.status == HttpStatusCode.OK) {
                 response.bodyAsNullOrJsonNode()?.let(map)
                     ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText())
+            } else when(val override = errorHandlerOverride(response)) {
+                null -> ResponseWithErrors.createFromHttpError(response)
+                else -> override
+            }
         }
     }
     private inline fun <reified T : ResponseWithErrors> withErrorHandling(
