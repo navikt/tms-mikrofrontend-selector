@@ -17,7 +17,8 @@ import kotlin.reflect.full.primaryConstructor
 class ExternalContentFecther(
     val safUrl: String,
     val httpClient: HttpClient,
-    val meldekortUrl: String,
+    val meldekortApiUrl: String,
+    val dpMeldekortUrl: String,
     val pdlUrl: String,
     val digisosUrl: String,
     val pdlBehandlingsnummer: String,
@@ -69,12 +70,20 @@ class ExternalContentFecther(
             }
     }
 
-    suspend fun fetchMeldekort(user: TokenXUser): MeldekortResponse = getResponseAsJsonPath(
-        tokenFetcher = tokenFetcher::meldekortToken,
+    suspend fun fetchFellesMeldekort(user: TokenXUser): MeldekortResponse = getResponseAsJsonPath(
+        tokenFetcher = tokenFetcher::meldekortApiToken,
         user = user,
-        url = "$meldekortUrl/api/person/meldekortstatus",
-        tjeneste = "meldekort",
-        map = { jsonPath -> MeldekortResponse(meldekortApiResponse = jsonPath) },
+        url = "$meldekortApiUrl/api/person/meldekortstatus",
+        tjeneste = "meldekortApi",
+        map = { jsonPath -> MeldekortResponse(meldekortResponse = jsonPath) },
+    )
+
+    suspend fun fetchDpMeldekort(user: TokenXUser): MeldekortResponse = getResponseAsJsonPath(
+        tokenFetcher = tokenFetcher::dpMeldekortToken,
+        user = user,
+        url = "$dpMeldekortUrl/meldekortstatus",
+        tjeneste = "dpMeldekort",
+        map = { jsonPath -> MeldekortResponse(meldekortResponse = jsonPath) },
     )
 
     suspend fun fetchDigisosSakstema(user: TokenXUser): DigisosResponse = getResponseAsJsonPath(
