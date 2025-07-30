@@ -93,6 +93,10 @@ spec:
       value: http://meldekort-api-q2.meldekort/meldekort/meldekort-api
     - name: MELDEKORT_API_CLIENT_ID
       value: dev-gcp:meldekort:meldekort-api-q2
+    - name: MELDEKORT_API_URL
+      value: http://dp-meldekortregister.teamdagpenger
+    - name: MELDEKORT_API_CLIENT_ID
+      value: dev-gcp:teamdagpenger:dp-meldekortregister
     - name: PDL_API_URL
       value: "https://pdl-api.dev-fss-pub.nais.io"
     - name: PDL_API_CLIENT_ID
