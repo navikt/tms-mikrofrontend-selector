@@ -6,7 +6,7 @@ Min side er en dynamisk første-side for alle innloggede brukere. Målet er at i
 
 ## Slik fungerer det
 
-![arkitekturtegning](/docs/arkitektur.png)
+![arkitekturtegning](https://github.com/navikt/tms-mikrofrontend-selector/blob/main/docs/arkitektur.png)
 
 Figuren ovenfor er en forenklet illusterasjon av hvordan microfrontend riggen henger sammen.
 
