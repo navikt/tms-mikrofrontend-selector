@@ -6,14 +6,7 @@ Min side er en dynamisk første-side for alle innloggede brukere. Målet er at i
 
 ## Slik fungerer det
 
-```mermaid
-graph LR
-    A[Utviklingsteam] -- Utvikle Microfrontend --> B[Microfrontend]
-    A -- Enable/Disable melding --> D[Kafka]
-    D --> E[tms-mikrofrontend-selector]
-    F[Min side] <-- Henter aktive microfronds gitt IDENT --> E
-    F <-- Henter microfrontend --> B
-```
+![arkitekturtegning](/docs/arkitektur.png)
 
 Figuren ovenfor er en forenklet illusterasjon av hvordan microfrontend riggen henger sammen.
 
