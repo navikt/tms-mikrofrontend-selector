@@ -4,12 +4,6 @@
 
 Min side er en dynamisk første-side for alle innloggede brukere. Målet er at innholdet på Min side skal representere brukerens nåværende forhold til Nav. For å oppnå dette, kan team legge inn microfrontends på Min side for å nå ut til sine brukere. En microfrontend kan sees på som en enkel applikasjon, som blir injektet inn på Min side. Microfrontends brukt på Min side kommer i form av små bokser med ulike funksjonalitet og innhold.
 
-## Slik fungerer det
-
-![arkitekturtegning](https://github.com/navikt/tms-mikrofrontend-selector/blob/main/docs/arkitektur.png)
-
-Figuren ovenfor er en forenklet illusterasjon av hvordan microfrontend riggen henger sammen.
-
 ## Kom i gang
 
 Start med [templaten for server-side-rendret microfrontends](https://github.com/navikt/tms-microfrontend-template-ssr). Opprett et nytt repository basert på denne templaten, og følg instruksjonene i `README.md` for lokal kjøring, bygg og deploy.
