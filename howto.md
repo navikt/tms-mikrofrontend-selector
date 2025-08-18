@@ -80,7 +80,8 @@ For å sikre en helhetlig brukeropplevelse på tvers av ulike type innhold på M
 |    Språk     | Alt innhold skal finnes på bokmål, nynorsk og engelsk. Språkhåndtering er allerede rigget i templaten – se `src/language/text.ts`.                                                                 |
 |    Design    | Vi stiller visse [designkrav](https://aksel.nav.no/god-praksis/artikler/retningslinjer-for-design-av-mikrofrontends) til utformingen av microfrontends, for å sikre en helhetlig brukeropplevelse. |
 | Dependencies | Dersom du benytter deg av client-side React komponenter bør du være på samme Major versjon som [tms- min-side](https://github.com/navikt/tms-min-side).                                                                                                                                                                                                |
-|  Analytics   | Vi bruker dekoratøren sin analyticsfunksjon - se `src/pages/[locale]/index.astro`.                                                                                                                                                                                              |
+|  Analytics   | Vi bruker dekoratøren sin analyticsfunksjon - se `src/pages/[locale]/index.astro`.                                                                                                                                                                                         |
+|  Fallback    | Dersom microfrontenden har eksterne kall bør du tilby en fallback - se `src/pages/[locale]/fallback.astro` |
 
 ## Plassering på Min side
 
