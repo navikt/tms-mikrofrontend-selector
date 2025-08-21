@@ -15,11 +15,23 @@ class ContentRuleTest {
         WeeksSinceLastDocumentContentRule(
             sakstemakode = "DAG",
             periodInWeeks = 3,
+        ).resolverOrNull(listOf("DAG".safTestDokument(LocalDateTime.now()), "DAG".safTestDokument(LocalDateTime.now().minusWeeks(4))))?.skalVises() shouldBe true
+        WeeksSinceLastDocumentContentRule(
+            sakstemakode = "DAG",
+            periodInWeeks = 3,
         ).resolverOrNull(listOf("DAG".safTestDokument(LocalDateTime.now().minusWeeks(4))))?.skalVises() shouldBe false
         WeeksSinceLastDocumentContentRule(
             sakstemakode = "DAG",
             periodInWeeks = 3,
         ).resolverOrNull(listOf("DAG".safTestDokument(LocalDateTime.now().minusWeeks(3))))?.skalVises() shouldBe true
+    }
+
+    @Test
+    fun `skal ikke vises når det ikke finnes dokumenter`() {
+        WeeksSinceLastDocumentContentRule(
+            sakstemakode = "DAG",
+            periodInWeeks = 3,
+        ).resolverOrNull(emptyList())?.skalVises() shouldBe false
     }
 
     @Test
