@@ -3,7 +3,6 @@ package no.nav.tms.mikrofrontend.selector
 
 import io.ktor.http.*
 import io.ktor.http.HttpStatusCode.Companion.OK
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
@@ -59,7 +58,7 @@ class SafRoute(
     }
 }
 
-class MeldekortRoute(private val harMeldekort: Boolean = false, httpStatusCode: HttpStatusCode = OK) :
+class MeldekortApiRoute(private val harMeldekort: Boolean = false, httpStatusCode: HttpStatusCode = OK) :
     RouteProvider(
         path = "api/person/meldekortstatus",
         method = HttpMethod.Get,
@@ -70,6 +69,36 @@ class MeldekortRoute(private val harMeldekort: Boolean = false, httpStatusCode: 
           "antallGjenstaaendeFeriedager": 0,
           "etterregistrerteMeldekort": 2,
           "meldekort": 2,
+          "nesteInnsendingAvMeldekort": "2019-09-30",
+          "nesteMeldekort": {
+            "fra": "2019-09-09",
+            "kanSendesFra": "2019-09-21",
+            "til": "2024-09-22",
+            "uke": "37-38"
+          }
+        }""".trimIndent()
+    else """
+            {
+              "meldekort": 0,
+              "etterregistrerteMeldekort": 0,
+              "antallGjenstaaendeFeriedager": 0,
+              "nesteMeldekort": null,
+              "nesteInnsendingAvMeldekort": null
+            }
+        """.trimIndent()
+}
+
+class DpMeldekortRoute(private val harMeldekort: Boolean = false, httpStatusCode: HttpStatusCode = OK) :
+    RouteProvider(
+        path = "meldekortstatus",
+        method = HttpMethod.Get,
+        statusCode = httpStatusCode
+    ) {
+    override fun content(): String = if (harMeldekort)
+        """{
+          "antallGjenstaaendeFeriedager": 0,
+          "etterregistrerteMeldekort": 3,
+          "meldekort": 3,
           "nesteInnsendingAvMeldekort": "2019-09-30",
           "nesteMeldekort": {
             "fra": "2019-09-09",
