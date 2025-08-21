@@ -113,9 +113,9 @@ class WeeksSinceLastDocumentContentRule(
         input?.let { safDokumenter ->
             object : ContentResolver {
                 override fun skalVises(): Boolean =
-                    safDokumenter.none {
-                        it.kode == sakstemakode && it.sistEndret.isBefore(
-                            LocalDateTime.now().minusWeeks(periodInWeeks.toLong() + 1)
+                    safDokumenter.any {
+                        it.kode == sakstemakode && it.sistEndret.isAfter(
+                            LocalDateTime.now().minusWeeks(periodInWeeks.toLong()).minusDays(1)
                         )
                     }
             }
