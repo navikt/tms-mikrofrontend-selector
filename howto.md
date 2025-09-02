@@ -10,7 +10,7 @@ Ta utgangspunkt i [template for ssr mikrofrontend](https://github.com/navikt/tms
 1. **Bytt ut applikasjonsnavn i konfigurasjonsfiler**
    CMD + Shift + F og søk etter tms-microfrontend-template-ssr og erstatt dette med ditt applikasjonsnavn.
    
-1. **Tilpass nais.yaml**
+2. **Tilpass nais.yaml**
    Tilpass følgende felter i både nais/dev-gcp/nais.yaml og nais/prod-gcp/nais.yaml
 
 ```json
@@ -21,7 +21,7 @@ Ta utgangspunkt i [template for ssr mikrofrontend](https://github.com/navikt/tms
          team: <ditt teams namespace>
 ```
 
-1. **Tilpass innholdet i .github/workflows/deploy.yaml**
+3. **Tilpass innholdet i .github/workflows/deploy.yaml**
 
    Tilpass følgende steg i deploy.yaml. Applikasjonsnavn skal være likt navnet på repository. 
 
@@ -66,10 +66,10 @@ Ta utgangspunkt i [template for ssr mikrofrontend](https://github.com/navikt/tms
       secrets: inherit
 ```
 
-1. **Etterspør tilganger**
+4. **Etterspør tilganger**
    Be om tilgang til å oppdatere manifest og deploye applikasjonen til nais på slack kanalen #minside-microfrontends
 
-1. **Deploy til produksjon**
+5. **Deploy til produksjon**
    Når applikasjonen er klar for prodsetting, kan du kommentere inn update-manifest-prod og deploy-prod stegene i .github/workflows/deploy.yaml. Sørg for at de er fylt inn likt som i steg 3.
    
 ---
