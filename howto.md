@@ -1,13 +1,77 @@
-# Microfrontends på Min side
-
-## Personalisering med microfrontends.
-
-Min side er en dynamisk første-side for alle innloggede brukere. Målet er at innholdet på Min side skal representere brukerens nåværende forhold til Nav. For å oppnå dette, kan team legge inn microfrontends på Min side for å nå ut til sine brukere. En microfrontend kan sees på som en enkel applikasjon, som blir injektet inn på Min side. Microfrontends brukt på Min side kommer i form av små bokser med ulike funksjonalitet og innhold.
+# Mikrofrontends på Min side
 
 ## Kom i gang
 
-Start med [templaten for server-side-rendret microfrontends](https://github.com/navikt/tms-microfrontend-template-ssr). Opprett et nytt repository basert på denne templaten, og følg instruksjonene i `README.md` for lokal kjøring, bygg og deploy.
+Ta utgangspunkt i [template for ssr mikrofrontend](https://github.com/navikt/tms-microfrontend-template-ssr) og opprett et nytt repository basert på denne templaten.
 
+### Konfigurer applikasjonen
+
+
+1. **Bytt ut applikasjonsnavn i konfigurasjonsfiler**
+   CMD + Shift + F og søk etter tms-microfrontend-template-ssr og erstatt dette med ditt applikasjonsnavn.
+   
+1. **Tilpass nais.yaml**
+   Tilpass følgende felter i både nais/dev-gcp/nais.yaml og nais/prod-gcp/nais.yaml
+
+```json
+   metadata:
+      name: <ditt applikasjonsnavn>
+      namespace: <ditt teams namespace>
+      labels:
+         team: <ditt teams namespace>
+```
+
+1. **Tilpass innholdet i .github/workflows/deploy.yaml**
+
+   Tilpass følgende steg i deploy.yaml. Applikasjonsnavn skal være likt navnet på repository. 
+
+   **Deploy to CDN**
+
+```json
+      - name: "Upload to cdn"
+      uses: nais/deploy/actions/cdn-upload/v2@master
+      with:
+       team: <ditt teams namespace>
+       source: ./dist/client/_astro
+       destination: <ditt applikasjonsnavn>
+```
+
+   **Build and push**
+
+```json
+   - name: "Build and push"
+   uses: nais/docker-build-push@v0
+   id: docker-build-push
+   with:
+    team: <ditt applikasjonsnavn>
+```
+
+   **Update manifest**
+
+   Tilpass både update-manifest-dev og update-manifest-prod.
+
+```json
+   update-manifest-dev:
+      uses: navikt/tms-deploy/.github/workflows/oppdater-mikrofrontend-manifest-v3.yaml@main
+      needs: build
+      with:
+         id: <ditt applikasjonsnavn>
+         url: <http://<ditt-applikasjonsnavn> // eksempelvis "http://tms-microfrontend-template-ssr"
+         appname: <ditt applikasjonsnavn>
+         namespace: <ditt teams namespace>
+         cluster: dev-gcp
+         commitmsg: ${{ github.event.head_commit.message}}
+         fallback: Path til fallbackvisning hvis eksterne kall feiler // eksempelvis "http://tms-microfrontend-test.dev.nav.no/fallback"
+         ssr: true
+      secrets: inherit
+```
+
+1. **Etterspør tilganger**
+   Be om tilgang til å oppdatere manifest og deploye applikasjonen til nais på slack kanalen #minside-microfrontends
+
+1. **Deploy til produksjon**
+   Når applikasjonen er klar for prodsetting, kan du kommentere inn update-manifest-prod og deploy-prod stegene i .github/workflows/deploy.yaml. Sørg for at de er fylt inn likt som i steg 3.
+   
 ---
 
 ### Aktivere og deaktivere microfrontends
