@@ -37,19 +37,23 @@ Ta utgangspunkt i [template for ssr mikrofrontend](https://github.com/navikt/tms
    
    Bruk språkoppsett satt opp i template og legg språkvariablene inn i /language/text.ts
 
+
 ### Fallback
 
    Dersom microfrontenden har eksterne kall bør du tilby en fallback - se `src/pages/[locale]/fallback.astro`
 
+
 ### Produktanalyse
 
    Vi bruker dekoratøren sin analyticsfunksjon - se `src/pages/[locale]/index.astro`
+
 
 ### CSS
 
    For lokal css kan du bruke css moduler som vanlig. 
 
    For bruk av designsystemet må medfølgende css isoleres til mikrofrontenden. Importer derfor kun de delene av ds-css som er i bruk. Aksel har laget [et verktøy for dette](https://aksel.nav.no/grunnleggende/kode/kommandolinje#56838966b1fc) som genererer listen med imports du trenger. Legg listen med imports i /styles/aksel.css.
+
 
 ### Client side interaktivitet
 
