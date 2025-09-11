@@ -1,8 +1,8 @@
-# Mikrofrontends på Min side
+# Microfrontends på Min side
 
 ## Kom i gang
 
-Ta utgangspunkt i [template for ssr mikrofrontend](https://github.com/navikt/tms-microfrontend-template-ssr) og opprett et nytt repository basert på denne templaten.
+Ta utgangspunkt i [template for ssr microfrontend](https://github.com/navikt/tms-microfrontend-template-ssr) og opprett et nytt repository basert på denne templaten.
 
 ### Konfigurer applikasjonen
 
@@ -40,7 +40,7 @@ Ta utgangspunkt i [template for ssr mikrofrontend](https://github.com/navikt/tms
 
 ### Fallback
 
-   Dersom microfrontenden har eksterne kall bør du tilby en fallback - se `src/pages/[locale]/fallback.astro`
+   Microfrontenden bør du tilby en fallback - se `src/pages/[locale]/fallback.astro`
 
 
 ### Produktanalyse
@@ -52,19 +52,21 @@ Ta utgangspunkt i [template for ssr mikrofrontend](https://github.com/navikt/tms
 
    For lokal css kan du bruke css moduler som vanlig. 
 
-   For bruk av designsystemet må medfølgende css isoleres til mikrofrontenden. Importer derfor kun de delene av ds-css som er i bruk. Aksel har laget [et verktøy for dette](https://aksel.nav.no/grunnleggende/kode/kommandolinje#56838966b1fc) som genererer listen med imports du trenger. Legg listen med imports i /styles/aksel.css.
+   For bruk av designsystemet må medfølgende css isoleres til microfrontenden. Importer derfor kun de delene av ds-css som er i bruk. Aksel har laget [et verktøy for dette](https://aksel.nav.no/grunnleggende/kode/kommandolinje#56838966b1fc) som genererer listen med imports du trenger. Legg listen med imports i /styles/aksel.css.
+
+   CSS isolering er gjort via prefix av designsystemets klassenavn. For at dette skal fungere, må du beholde section taggen som wrapper hver page, hvor applikasjonsnavnet er brukt som klassenavn.
 
 
-### Client side interaktivitet
+### Client-side interaktivitet
 
-   Ved behov for client side interaktivitet kan [Astros Client Islands](https://docs.astro.build/en/concepts/islands/#client-islands) tas i bruk. Et eksempel ligger i /components/ClientIsland.tsx og oppfører seg som en vanlig React komponent. 
+   Ved behov for client-side interaktivitet kan [Astros Client Islands](https://docs.astro.build/en/concepts/islands/#client-islands) tas i bruk. Et eksempel ligger i /components/ClientIsland.tsx og oppfører seg som en vanlig React komponent. 
 
-   Merk at interaktivitet er tilgjengeliggjort via React. Dette medfører overhead da React major versjonen må samsvare i mikrofrontend og på Min side.
+   Merk at interaktivitet er tilgjengeliggjort via React. Dette medfører overhead da React major versjonen må samsvare i microfrontend og på Min side.
 
 
 ### Design
 
-   Vi stiller visse [designkrav](https://aksel.nav.no/god-praksis/artikler/retningslinjer-for-design-av-mikrofrontends) til utformingen av mikrofrontends, for å sikre en helhetlig brukeropplevelse.
+   Vi stiller visse [designkrav](https://aksel.nav.no/god-praksis/artikler/retningslinjer-for-design-av-mikrofrontends) til utformingen av microfrontends, for å sikre en helhetlig brukeropplevelse.
    
 ---
 
@@ -84,7 +86,7 @@ Ta utgangspunkt i [template for ssr mikrofrontend](https://github.com/navikt/tms
     "@action": "enable",
     "ident": <ident for bruker: fnr/dnr>,
     "microfrontend_id": <microfrontendId>,
-    "sensitivitet": <nivå som kreves for å se innholdet i mikrofrontenden, gyldige verdier: substantial og high>,
+    "sensitivitet": <nivå som kreves for å se innholdet i microfrontenden, gyldige verdier: substantial og high>,
     "@initiated_by": <ditt-team>
 }
 ```
