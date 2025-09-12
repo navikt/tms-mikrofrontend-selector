@@ -69,7 +69,7 @@ class PersonalContentFactoryTest {
     @Test
     fun `skal ha produkkort og aia-standard og 207 pga meldekort`() {
         testFactory(
-            meldekortResponse = MeldekortResponse(errors = "Feil som skjedde")
+            meldekortApiResponse = MeldekortResponse(errors = "Feil som skjedde")
         ).build(
             microfrontends = Microfrontends(),
             levelOfAssurance = HIGH,
@@ -90,7 +90,7 @@ class PersonalContentFactoryTest {
                 dokumenter = listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now())),
                 errors = emptyList()
             ),
-            meldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
+            meldekortApiResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
         ).build(
             microfrontends = microfrontendMocck(
                 level4Microfrontends = MicrofrontendsDefinition("id", "url", "appname", "namespace", "fallback", true) * 5,
@@ -140,14 +140,16 @@ private operator fun MicrofrontendsDefinition.times(i: Int): List<Microfrontends
 
 private fun testFactory(
     safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
-    meldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{meldekort:0}")),
+    meldekortApiResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{meldekort:0}")),
+    dpMeldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{etterregistrerteMeldekort:0}")),
     pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"), 1988),
     digisosResponse: DigisosResponse = DigisosResponse(),
     levelOfAssurance: LevelOfAssurance = HIGH
 ) =
     PersonalContentFactory(
         safResponse = safResponse,
-        meldekortResponse = meldekortResponse,
+        meldekortApiResponse = meldekortApiResponse,
+        dpMeldekortResponse = dpMeldekortResponse,
         pdlResponse = pdlResponse,
         digisosResponse = digisosResponse,
         levelOfAssurance = levelOfAssurance
