@@ -44,6 +44,8 @@ spec:
           namespace: meldekort
         - application: sosialhjelp-soknad-api
           namespace: teamdigisos
+        - application: dp-meldekortregister
+          namespace: teamdagpenger
       external:
         - host: "safselvbetjening.prod-fss-pub.nais.io"
   gcp:
@@ -85,10 +87,14 @@ spec:
       value: https://person.nav.no/dokumentarkiv/tema
     - name: SAF_CLIENT_ID
       value: prod-fss:teamdokumenthandtering:safselvbetjening
-    - name: MELDEKORT_BASE_URL
+    - name: MELDEKORT_API_URL
       value: http://meldekort-api.meldekort/meldekort/meldekort-api
-    - name: MELDEKORT_CLIENT_ID
+    - name: MELDEKORT_API_CLIENT_ID
       value: prod-gcp:meldekort:meldekort-api
+    - name: DP_MELDEKORT_URL
+      value: http://dp-meldekortregister.teamdagpenger
+    - name: DP_MELDEKORT_CLIENT_ID
+      value: prod-gcp:teamdagpenger:dp-meldekortregister
     - name: PDL_API_URL
       value: "https://pdl-api.prod-fss-pub.nais.io"
     - name: PDL_API_CLIENT_ID

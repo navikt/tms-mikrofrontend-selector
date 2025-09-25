@@ -31,13 +31,15 @@ class PersonalContentCollector(
 
     suspend fun asyncCollector(user: TokenXUser) = coroutineScope {
         val safResponse = async { externalContentFecther.fetchDocumentsFromSaf(user) }
-        val meldekortResponse = async { externalContentFecther.fetchMeldekort(user) }
+        val meldekortApiResponse = async { externalContentFecther.fetchFellesMeldekort(user) }
+        val dpMeldekortResponse = async { externalContentFecther.fetchDpMeldekort(user) }
         val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
         val digisosResponse = async { externalContentFecther.fetchDigisosSakstema(user) }
 
         return@coroutineScope PersonalContentFactory(
             safResponse = safResponse.await(),
-            meldekortResponse = meldekortResponse.await(),
+            meldekortApiResponse = meldekortApiResponse.await(),
+            dpMeldekortResponse = dpMeldekortResponse.await(),
             pdlResponse = pdlResponse.await(),
             digisosResponse = digisosResponse.await(),
             levelOfAssurance = user.levelOfAssurance
@@ -48,7 +50,8 @@ class PersonalContentCollector(
 
 class PersonalContentFactory(
     val safResponse: SafResponse,
-    val meldekortResponse: MeldekortResponse,
+    val meldekortApiResponse: MeldekortResponse,
+    val dpMeldekortResponse: MeldekortResponse,
     val pdlResponse: PdlResponse,
     val digisosResponse: DigisosResponse,
     val levelOfAssurance: LevelOfAssurance
@@ -64,7 +67,7 @@ class PersonalContentFactory(
             digisosResponse.dokumenter + safResponse.dokumenter, levelOfAssurance
         ).filter { it.skalVises() }.map { it.id },
         offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
-        meldekort = meldekortResponse.harMeldekort,
+        meldekort = meldekortApiResponse.harMeldekort || dpMeldekortResponse.harMeldekort,
         aktuelt = ContentDefinition.getAktueltContent(
             pdlResponse.calculateAge(),
             safResponse.dokumenter,
@@ -75,7 +78,8 @@ class PersonalContentFactory(
     ).apply {
         errors = listOf(
             safResponse,
-            meldekortResponse,
+            meldekortApiResponse,
+            dpMeldekortResponse,
             pdlResponse,
             digisosResponse
         ).mapNotNull { it.errorMessage() }.joinToString()

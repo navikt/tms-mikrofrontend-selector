@@ -128,20 +128,20 @@ class Dokument(
 }
 
 class MeldekortResponse(
-    meldekortApiResponse: JsonPathInterpreter? = null,
+    meldekortResponse: JsonPathInterpreter? = null,
     errors: String? = null,
 ) : ResponseWithErrors(errors) {
     override val source = "meldekort"
     val harMeldekort: Boolean =
         when {
-            meldekortApiResponse == null -> false
-            !meldekortApiResponse.hasContent() -> false
+            meldekortResponse == null -> false
+            !meldekortResponse.hasContent() -> false
             else -> {
-                meldekortApiResponse.int("etterregistrerteMeldekort") > 0
-                        || meldekortApiResponse.intOrNull("meldekort")?.let { it > 0 } ?: false
-                        || meldekortApiResponse.intOrNull("antallGjenstaaendeFeriedager")?.let { it > 0 } ?: false
-                        || meldekortApiResponse.isNotNull("nesteMeldekort")
-                        || meldekortApiResponse.isNotNull("nesteInnsendingAvMeldekort")
+                meldekortResponse.int("etterregistrerteMeldekort") > 0
+                        || meldekortResponse.intOrNull("meldekort")?.let { it > 0 } ?: false
+                        || meldekortResponse.intOrNull("antallGjenstaaendeFeriedager")?.let { it > 0 } ?: false
+                        || meldekortResponse.isNotNull("nesteMeldekort")
+                        || meldekortResponse.isNotNull("nesteInnsendingAvMeldekort")
             }
         }
 }
