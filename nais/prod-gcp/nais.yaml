@@ -44,6 +44,8 @@ spec:
           namespace: meldekort
         - application: sosialhjelp-soknad-api
           namespace: teamdigisos
+        - application: dp-meldekortregister
+          namespace: teamdagpenger
       external:
         - host: "safselvbetjening.prod-fss-pub.nais.io"
   gcp:
