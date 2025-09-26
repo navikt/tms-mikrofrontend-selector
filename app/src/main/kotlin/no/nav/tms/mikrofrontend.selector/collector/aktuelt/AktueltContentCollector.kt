@@ -72,5 +72,5 @@ class AktueltResponse(
     var errors: String? = null
 
     fun resolveStatus(): HttpStatusCode =
-        if (errors.isNullOrEmpty()) HttpStatusCode.OK else HttpStatusCode.MultiStatus
+        if (errors.isNullOrEmpty()) HttpStatusCode.OK else HttpStatusCode.ServiceUnavailable
 }

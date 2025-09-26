@@ -125,7 +125,7 @@ internal class AktueltApiTest {
         }
 
     @Test
-    fun `skal svare med multistatus når saf feiler`() =
+    fun `skal svare med 503 når saf feiler`() =
         testApplication {
             val testident2 = "12345678912"
 
@@ -137,7 +137,7 @@ internal class AktueltApiTest {
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
             client.get("/aktuelt").run {
-                status shouldBe HttpStatusCode.MultiStatus
+                status shouldBe HttpStatusCode.ServiceUnavailable
                 objectMapper.readTree(bodyAsText()).run {
                     this["microfrontends"].size() shouldBe 0
                     this["offerStepup"].asBoolean() shouldBe false
@@ -147,7 +147,7 @@ internal class AktueltApiTest {
         }
 
     @Test
-    fun `skal svare med 207 når eksterne tjenester feiler`() =
+    fun `skal svare med 503 når eksterne tjenester feiler`() =
         testApplication {
             val testident2 = "12345678912"
 
@@ -160,7 +160,7 @@ internal class AktueltApiTest {
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
             client.get("/aktuelt").run {
-                status shouldBe HttpStatusCode.MultiStatus
+                status shouldBe HttpStatusCode.ServiceUnavailable
                 objectMapper.readTree(bodyAsText()).run {
                     this["microfrontends"].size() shouldBe 0
                 }
@@ -190,7 +190,7 @@ internal class AktueltApiTest {
             )
 
             client.get("/aktuelt").run {
-                status shouldBe HttpStatusCode.MultiStatus
+                status shouldBe HttpStatusCode.ServiceUnavailable
                 objectMapper.readTree(bodyAsText()).run {
                     this["microfrontends"].size() shouldBe 0
                 }
@@ -198,19 +198,19 @@ internal class AktueltApiTest {
         }
 
     @Test
-    fun `skal returnere 207 ved SocketTimeoutException`() =
+    fun `skal returnere 503 ved SocketTimeoutException`() =
         testApplication {
             val testident2 = "12345678912"
 
             initSelectorApi(testident = testident2, httpClient = sockettimeoutClient)
 
             client.get("/aktuelt").run {
-                status shouldBe HttpStatusCode.MultiStatus
+                status shouldBe HttpStatusCode.ServiceUnavailable
             }
         }
 
     @Test
-    fun `skal retunerer 207 validering av token til andre baksystemer feiler`() =
+    fun `skal retunerer 503 validering av token til andre baksystemer feiler`() =
         testApplication {
             val testident2 = "12345678910"
 
@@ -229,7 +229,7 @@ internal class AktueltApiTest {
             )
 
             client.get("/aktuelt").run {
-                status shouldBe HttpStatusCode.MultiStatus
+                status shouldBe HttpStatusCode.ServiceUnavailable
                 objectMapper.readTree(bodyAsText()).run {
                     this["microfrontends"].toList().run {
                         size shouldBe 0
