@@ -256,7 +256,8 @@ internal class AktueltApiTest {
                     externalContentFecther = ExternalContentFecther(
                         safUrl = testHost,
                         httpClient = apiClient,
-                        meldekortUrl = testHost,
+                        meldekortApiUrl = testHost,
+                        dpMeldekortUrl = testHost,
                         pdlUrl = "$testHost/pdl",
                         digisosUrl = testHost,
                         pdlBehandlingsnummer = "B000",
@@ -271,7 +272,8 @@ internal class AktueltApiTest {
                     externalContentFecther = ExternalContentFecther(
                         safUrl = testHost,
                         httpClient = apiClient,
-                        meldekortUrl = testHost,
+                        meldekortApiUrl = testHost,
+                        dpMeldekortUrl = testHost,
                         pdlUrl = "$testHost/pdl",
                         digisosUrl = testHost,
                         pdlBehandlingsnummer = "B000",
