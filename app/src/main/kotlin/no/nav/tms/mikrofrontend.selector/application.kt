@@ -5,6 +5,7 @@ import no.nav.tms.kafka.application.KafkaApplication
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
+import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
 import no.nav.tms.mikrofrontend.selector.database.Flyway
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.database.PostgresDatabase
@@ -68,6 +69,11 @@ private fun startApplication(
                     manifestStorage = manifestStorage,
                     externalContentFecther = externalContentFecther,
                     produktkortCounter = ProduktkortCounter()
+                ),
+                AktueltCollector(
+                    repository = personRepository,
+                    manifestStorage = manifestStorage,
+                    externalContentFecther = externalContentFecther
                 )
             )
         }

@@ -22,6 +22,7 @@ import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
+import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
@@ -544,6 +545,20 @@ internal class ApiTest {
                     ),
                     produktkortCounter = produktkortCounter
                 ),
+                aktueltCollector = AktueltCollector(
+                    repository = personRepository,
+                    manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
+                    externalContentFecther = ExternalContentFecther(
+                        safUrl = testHost,
+                        httpClient = apiClient,
+                        meldekortUrl = testHost,
+                        pdlUrl = "$testHost/pdl",
+                        digisosUrl = testHost,
+                        pdlBehandlingsnummer = "B000",
+                        tokenFetcher = tokenFetcher,
+                        dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
+                    ),
+                )
             ) {
                 authentication {
                     tokenXMock {

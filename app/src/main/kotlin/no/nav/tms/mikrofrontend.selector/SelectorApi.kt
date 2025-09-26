@@ -5,7 +5,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
-import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
@@ -19,6 +18,7 @@ import no.nav.tms.common.observability.ApiMdc
 import no.nav.tms.mikrofrontend.selector.collector.ApiException
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
+import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
 import no.nav.tms.token.support.tokenx.validation.tokenX
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
@@ -26,6 +26,7 @@ import java.text.DateFormat
 
 internal fun Application.selectorApi(
     personalContentCollector: PersonalContentCollector,
+    aktueltCollector: AktueltCollector,
     installAuthenticatorsFunction: Application.() -> Unit = installAuth(),
 ) {
     val secureLog = KotlinLogging.logger("secureLog")
@@ -67,7 +68,6 @@ internal fun Application.selectorApi(
                     call.respond(HttpStatusCode.InternalServerError)
                 }
             }
-
         }
     }
 
@@ -82,6 +82,19 @@ internal fun Application.selectorApi(
                 get {
                     val user = TokenXUserFactory.createTokenXUser(call)
                     val content = personalContentCollector.getContent(user, user.levelOfAssurance)
+                    content.errors?.takeIf { it.isNotEmpty() }?.let {
+                        log.warn { it }
+                    }
+                    call.respond(
+                        status = content.resolveStatus(),
+                        content
+                    )
+                }
+            }
+            route("aktuelt") {
+                get {
+                    val user = TokenXUserFactory.createTokenXUser(call)
+                    val content = aktueltCollector.getAktuelt(user, user.levelOfAssurance)
                     content.errors?.takeIf { it.isNotEmpty() }?.let {
                         log.warn { it }
                     }
