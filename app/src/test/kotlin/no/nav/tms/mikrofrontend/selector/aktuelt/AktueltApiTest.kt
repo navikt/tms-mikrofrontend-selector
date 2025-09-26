@@ -72,9 +72,7 @@ internal class AktueltApiTest {
             initSelectorApi(testident = testIdent)
             initExternalServices(
                 SafRoute(sakstemaer = listOf("SYK")),
-                MeldekortRoute(harMeldekort = true),
                 PdlRoute(fødselssår = 1960),
-                DigisosRoute()
             )
 
             gcpStorage.updateManifest()
@@ -107,9 +105,7 @@ internal class AktueltApiTest {
             initSelectorApi(testident = testident2)
             initExternalServices(
                 SafRoute(),
-                MeldekortRoute(),
                 PdlRoute(),
-                DigisosRoute(),
             )
 
             gcpStorage.clearManifest()
@@ -136,8 +132,6 @@ internal class AktueltApiTest {
             initSelectorApi(testident = testident2)
             initExternalServices(
                 SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
-                MeldekortRoute(),
-                DigisosRoute(),
             )
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
@@ -249,10 +243,8 @@ internal class AktueltApiTest {
         levelOfAssurance: LevelOfAssurance = HIGH,
         httpClient: HttpClient? = null,
         tokenFetcher: TokenFetcher = mockk<TokenFetcher>().apply {
-            coEvery { meldekortToken(any()) } returns "<meldekort>"
             coEvery { safToken(any()) } returns "<saf>"
             coEvery { pdlToken(any()) } returns "<pdl>"
-            coEvery { digisosToken(any()) } returns "<digisos>"
         }
     ) {
         val apiClient = httpClient ?: createClient { configureClient() }
