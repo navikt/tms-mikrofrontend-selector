@@ -284,7 +284,6 @@ internal class AktueltApiTest {
                     ),
                     produktkortCounter = produktkortCounter
                 ),
-                // TODO: fix the values for this?
                 aktueltCollector = AktueltCollector(
                     repository = personRepository,
                     manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
