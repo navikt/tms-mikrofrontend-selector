@@ -98,7 +98,7 @@ internal class AktueltApiTest {
 
 
     @Test
-    fun `skal svare med tom liste for personer som ikke har noen mikrofrontends`() =
+    fun `skal svare med tom liste for personer som ikke har noen microfrontends`() =
         testApplication {
             val testident2 = "12345678912"
 
