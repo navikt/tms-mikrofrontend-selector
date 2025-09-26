@@ -84,7 +84,7 @@ internal class AktueltApiTest {
                 response.bodyAsNullOrJsonNode(true).run {
                     shouldNotBeNull()
 
-                    listOrNull<JsonNode>("aktuelt").run {
+                    listOrNull<JsonNode>("microfrontends").run {
                         shouldNotBeNull()
                         size shouldBe 1
                         find {
@@ -112,14 +112,14 @@ internal class AktueltApiTest {
                 DigisosRoute(),
             )
 
-            gcpStorage.clearManifest() // TODO: fjerne denne?
+            gcpStorage.clearManifest()
 
             client.get("/aktuelt").let { response ->
                 response.status shouldBe HttpStatusCode.OK
                 response.bodyAsNullOrJsonNode(true).run {
                     shouldNotBeNull()
 
-                    listOrNull<JsonNode>("aktuelt").run {
+                    listOrNull<JsonNode>("microfrontends").run {
                         println(this.toString())
                         shouldNotBeNull()
                         size shouldBe 0
@@ -145,7 +145,7 @@ internal class AktueltApiTest {
             client.get("/aktuelt").run {
                 status shouldBe HttpStatusCode.MultiStatus
                 objectMapper.readTree(bodyAsText()).run {
-                    this["aktuelt"].size() shouldBe 0
+                    this["microfrontends"].size() shouldBe 0
                     this["offerStepup"].asBoolean() shouldBe false
                 }
 

@@ -49,7 +49,7 @@ class AktueltFactory(
         discoveryManifest: DiscoveryManifest,
     ) = AktueltResponse(
         offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
-        aktuelt = ContentDefinition.getAktueltContent(
+        microfrontends = ContentDefinition.getAktueltContent(
             pdlResponse.calculateAge(),
             safResponse.dokumenter,
             discoveryManifest,
@@ -66,11 +66,11 @@ class AktueltFactory(
 
 class AktueltResponse(
     val offerStepup: Boolean,
-    val aktuelt: List<MicrofrontendsDefinition>
+    val microfrontends: List<MicrofrontendsDefinition>
 ) {
     @JsonIgnore
     var errors: String? = null
 
     fun resolveStatus(): HttpStatusCode =
-        if (errors.isNullOrEmpty()) HttpStatusCode.OK else HttpStatusCode.MultiStatus // TODO: remove multi status?
+        if (errors.isNullOrEmpty()) HttpStatusCode.OK else HttpStatusCode.MultiStatus
 }
