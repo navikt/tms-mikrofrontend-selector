@@ -153,42 +153,36 @@ internal class AktueltApiTest {
         }
 
     @Test
-    fun `Svarer med 207 når eksterne tjenester feiler`() =
+    fun `skal svare med 207 når eksterne tjenester feiler`() =
         testApplication {
             val testident2 = "12345678912"
 
             initSelectorApi(testident = testident2)
             initExternalServices(
                 SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
-                MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
                 PdlRoute("2000-05-05", 2000),
-                DigisosRoute(),
             )
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
 
-            client.get("/din-oversikt").run {
+            client.get("/aktuelt").run {
                 status shouldBe HttpStatusCode.MultiStatus
                 objectMapper.readTree(bodyAsText()).run {
-                    this["aktuelt"].size() shouldBe 0
+                    this["microfrontends"].size() shouldBe 0
                 }
 
             }
         }
 
     @Test
-    fun `Retunerer ikke pensjons microfrontend når kallet til PDL feiler`() =
+    fun `skal ikke returnere pensjons microfrontend når kallet til PDL feiler`() =
         testApplication {
             val testident2 = "12345678912"
 
             initSelectorApi(testident = testident2)
             initExternalServices(
-                SafRoute(
-                    errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"
-                ),
-                MeldekortRoute(httpStatusCode = HttpStatusCode.ServiceUnavailable),
+                SafRoute(errorMsg = "Fant ikke journalpost i fagarkivet. journalpostId=999999999"),
                 PdlRoute(errorMsg = "Kall til PDL feilet"),
-                DigisosRoute(),
             )
 
             gcpStorage.updateManifest(mutableMapOf("nivå3mkf" to "http://wottevs"))
@@ -201,16 +195,16 @@ internal class AktueltApiTest {
                 )
             )
 
-            client.get("/din-oversikt").run {
+            client.get("/aktuelt").run {
                 status shouldBe HttpStatusCode.MultiStatus
                 objectMapper.readTree(bodyAsText()).run {
-                    this["aktuelt"].size() shouldBe 0
+                    this["microfrontends"].size() shouldBe 0
                 }
             }
         }
 
     @Test
-    fun `Skal returnere 207 ved SocketTimeoutException`() =
+    fun `skal returnere 207 ved SocketTimeoutException`() =
         testApplication {
             val testident2 = "12345678912"
 
@@ -222,34 +216,29 @@ internal class AktueltApiTest {
         }
 
     @Test
-    fun `Skal retunerer 207 validering av token til andre baksystemer feiler`() =
+    fun `skal retunerer 207 validering av token til andre baksystemer feiler`() =
         testApplication {
             val testident2 = "12345678910"
 
             initSelectorApi(testident = testident2, tokenFetcher = mockk<TokenFetcher>().apply {
-                coEvery { meldekortToken(any()) } throws TokenFetcherException(
+                coEvery { pdlToken(any()) } throws TokenFetcherException(
                     originalException = SocketTimeoutException(),
-                    forService = "meldekort",
+                    forService = "pdl",
                     appClientId = "testid"
                 )
                 coEvery { safToken(any()) } returns "<saf>"
-                coEvery { pdlToken(any()) } returns "<pdl>"
-                coEvery { digisosToken(any()) } returns "<digisos>"
             })
 
             initExternalServices(
                 SafRoute(),
-                MeldekortRoute(),
                 PdlRoute(),
-                DigisosRoute(true)
             )
 
-            client.get("/din-oversikt").run {
+            client.get("/aktuelt").run {
                 status shouldBe HttpStatusCode.MultiStatus
                 objectMapper.readTree(bodyAsText()).run {
-                    this["produktkort"].toList().run {
-                        size shouldBe 1
-                        first().asText() shouldBe "KOM"
+                    this["microfrontends"].toList().run {
+                        size shouldBe 0
                     }
                 }
             }
