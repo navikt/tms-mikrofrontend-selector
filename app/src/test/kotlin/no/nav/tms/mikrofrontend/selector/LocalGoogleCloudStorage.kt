@@ -67,6 +67,25 @@ class LocalGCPStorage {
         storage.createFrom(blobInfo, ByteArrayInputStream(content), Storage.BlobWriteOption.detectContentType())
     }
 
+    fun updateManifest() {
+        val toStorage = mutableMapOf<String, String>()
+        toStorage.putAll(akuteltMicrofrontends)
+        val contents = "{ ${toStorage.map { """"${it.key}": { "url":"${it.value}", "appname": "name", "namespace": "space", "fallback": "http://name/fallback", "ssr": true }""" }
+            .joinToString(separator = ",")} }"
+        val blobid = BlobId.of(testBucketName, manifestFileName)
+        val blobInfo = BlobInfo.newBuilder(blobid).build()
+        val content: ByteArray = contents.toByteArray(StandardCharsets.UTF_8)
+        storage.createFrom(blobInfo, ByteArrayInputStream(content), Storage.BlobWriteOption.detectContentType())
+    }
+
+    fun clearManifest() {
+        val contents = "{}"
+        val blobid = BlobId.of(testBucketName, manifestFileName)
+        val blobInfo = BlobInfo.newBuilder(blobid).build()
+        val content: ByteArray = contents.toByteArray(StandardCharsets.UTF_8)
+        storage.createFrom(blobInfo, ByteArrayInputStream(content), Storage.BlobWriteOption.detectContentType())
+    }
+
     private val container = GoogleCloudStorageTestContainer().also { it.start() }
 
     val storage: Storage = StorageOptions
