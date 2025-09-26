@@ -65,7 +65,7 @@ internal class AktueltApiTest {
     }
 
     @Test
-    fun `skal svare med liste over regelstyrte microfrontend pensjon`() =
+    fun `svarer med liste over regelstyrte microfrontend pensjon`() =
         testApplication {
             val testIdent = "12345678910"
 
@@ -98,7 +98,7 @@ internal class AktueltApiTest {
 
 
     @Test
-    fun `skal svare med tom liste for personer som ikke har noen microfrontends`() =
+    fun `svarer med tom liste for personer som ikke har noen microfrontends`() =
         testApplication {
             val testident2 = "12345678912"
 
@@ -125,7 +125,7 @@ internal class AktueltApiTest {
         }
 
     @Test
-    fun `skal svare med 503 når saf feiler`() =
+    fun `feiler med ServiceUnavailable når saf feiler`() =
         testApplication {
             val testident2 = "12345678912"
 
@@ -147,7 +147,7 @@ internal class AktueltApiTest {
         }
 
     @Test
-    fun `skal svare med 503 når eksterne tjenester feiler`() =
+    fun `feiler med ServiceUnavailable når eksterne tjenester feiler`() =
         testApplication {
             val testident2 = "12345678912"
 
@@ -169,7 +169,7 @@ internal class AktueltApiTest {
         }
 
     @Test
-    fun `skal ikke returnere pensjons microfrontend når kallet til PDL feiler`() =
+    fun `returnerer ikke pensjons microfrontend når kallet til PDL feiler`() =
         testApplication {
             val testident2 = "12345678912"
 
@@ -198,7 +198,7 @@ internal class AktueltApiTest {
         }
 
     @Test
-    fun `skal returnere 503 ved SocketTimeoutException`() =
+    fun `feiler med ServiceUnavailable ved SocketTimeoutException`() =
         testApplication {
             val testident2 = "12345678912"
 
@@ -210,7 +210,7 @@ internal class AktueltApiTest {
         }
 
     @Test
-    fun `skal retunerer 503 validering av token til andre baksystemer feiler`() =
+    fun `feiler med ServiceUnavailable når validering av token til andre baksystemer feiler`() =
         testApplication {
             val testident2 = "12345678910"
 
