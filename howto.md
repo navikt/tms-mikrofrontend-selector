@@ -69,6 +69,11 @@ Ta utgangspunkt i [template for ssr microfrontend](https://github.com/navikt/tms
 ### Design
 
    Vi stiller visse [designkrav](https://aksel.nav.no/god-praksis/artikler/retningslinjer-for-design-av-mikrofrontends) til utformingen av microfrontends, for å sikre en helhetlig brukeropplevelse.
+
+
+### Astro
+
+   Repoet er skrevet om fra React til Astro. Se [Astro sin offisielle dokumentasjon](https://docs.astro.build/en/getting-started/) eller ta kontakt med oss i #minside-microfrontends for hjelp med overgangen.
    
 ---
 
