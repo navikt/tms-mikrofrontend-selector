@@ -61,7 +61,7 @@ Ta utgangspunkt i [template for ssr microfrontend](https://github.com/navikt/tms
 
    Ved behov for client-side interaktivitet kan [Astros Client Islands](https://docs.astro.build/en/concepts/islands/#client-islands) tas i bruk. Et eksempel ligger i /components/ClientIsland.tsx og oppfører seg som en vanlig React komponent. 
 
-   Merk at interaktivitet er tilgjengeliggjort via React. Dette medfører overhead da React major versjonen må samsvare i microfrontend og på Min side.
+   Merk at interaktivitet er tilgjengeliggjort via React. Dette medfører at React major versjonen må samsvare i microfrontend og på Min side.
 
    Template repoet er satt opp med client-side interaktivitet som default. Hvis microfrontenden ikke har behov for dette kan du fjerne hele integrations-steget i astro.config.mjs, samt react, react-dom og rollup-plugin-import-map fra package.json.
 
