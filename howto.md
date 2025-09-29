@@ -75,7 +75,7 @@ Ta utgangspunkt i [template for ssr microfrontend](https://github.com/navikt/tms
 ### Aktivere og deaktivere microfrontends
 
 1. **Koble til kafka topicet**
-   Abonner på [min-side-microfrontend-topicet](https://github.com/navikt/min-side-microfrontend-topic-iac). **NOTE:** `microfrontendId` skal være identisk med navnet på Github-repoet du opprettet basert på templatet tidligere i guiden.
+   Abonner på [min-side-microfrontend-topicet](https://github.com/navikt/min-side-microfrontend-topic-iac). **NOTE:** `microfrontendId` skal være identisk med navnet på Github-repoet du opprettet basert på templatet tidligere i guiden. Hvis du skriver om en gammel microfrontend til ssr så skal du beholde samme `microfrontendId`.
 
 1. **Send meldinger**
    Du kan nå sende oss Enable/Disable meldinger via Kafka for å skru aktivere/deaktivere microfrontenden for spesifikke brukere.
