@@ -46,6 +46,9 @@ class PersonalContentCollector(
         )
 
     }
+
+    suspend fun getRawPdlContent(user: TokenXUser) =
+        externalContentFecther.fetchPersonopplysningerRaw(user)
 }
 
 class PersonalContentFactory(

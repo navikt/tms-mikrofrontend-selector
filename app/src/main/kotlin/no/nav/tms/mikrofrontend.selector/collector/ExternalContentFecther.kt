@@ -86,7 +86,7 @@ class ExternalContentFecther(
         map = { jsonPath -> MeldekortResponse(meldekortResponse = jsonPath) },
         errorHandlerOverride = { response ->
             // dp-meldekortregister sender 404 når de ikke har noen meldekort på bruker
-            if(response.status == HttpStatusCode.NotFound) {
+            if (response.status == HttpStatusCode.NotFound) {
                 MeldekortResponse()
             } else {
                 null
@@ -133,6 +133,14 @@ class ExternalContentFecther(
             }
     }
 
+    suspend fun fetchPersonopplysningerRaw(user: TokenXUser): String = httpClient.post {
+        url("$pdlUrl/graphql")
+        header("Authorization", "Bearer ${tokenFetcher.pdlToken(user)}")
+        header("Content-Type", "application/json")
+        header("Behandlingsnummer", pdlBehandlingsnummer)
+        setBody(HentAlder(user.ident))
+    }.bodyAsText()
+
     private suspend inline fun <reified T : ResponseWithErrors> getResponseAsJsonPath(
         tokenFetcher: suspend (TokenXUser) -> String,
         user: TokenXUser,
@@ -154,12 +162,13 @@ class ExternalContentFecther(
             if (response.status == HttpStatusCode.OK) {
                 response.bodyAsNullOrJsonNode()?.let(map)
                     ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText())
-            } else when(val override = errorHandlerOverride(response)) {
+            } else when (val override = errorHandlerOverride(response)) {
                 null -> ResponseWithErrors.createFromHttpError(response)
                 else -> override
             }
         }
     }
+
     private inline fun <reified T : ResponseWithErrors> withErrorHandling(
         tjeneste: String,
         url: String,

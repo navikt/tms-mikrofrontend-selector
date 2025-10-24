@@ -21,6 +21,7 @@ import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherExce
 import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
 import no.nav.tms.token.support.tokenx.validation.tokenX
+import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUserFactory
 import java.text.DateFormat
 
@@ -104,9 +105,16 @@ internal fun Application.selectorApi(
                     )
                 }
             }
+            route("debug"){
+                get {
+                    val user = TokenXUserFactory.createTokenXUser(call)
+                    call.respond(personalContentCollector.getRawPdlContent(user))
+                }
+            }
         }
     }
 }
+
 
 private fun installAuth(): Application.() -> Unit = {
     authentication {
