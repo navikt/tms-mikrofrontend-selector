@@ -38,8 +38,9 @@ class PersonalContentCollector(
         val dpMeldekortResponse = async { externalContentFecther.fetchDpMeldekort(user) }
         val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
         val digisosResponse = async { externalContentFecther.fetchDigisosSakstema(user) }
+        val debugDigisosValue = digisosResponse.await()
 
-        log.info { "[Debug] digisos content: $digisosResponse" }
+        log.info { "[Debug] digisos content: $debugDigisosValue" }
 
         return@coroutineScope PersonalContentFactory(
             safResponse = safResponse.await(),
