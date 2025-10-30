@@ -40,8 +40,8 @@ class PersonalContentCollector(
         val digisosResponse = async { externalContentFecther.fetchDigisosSakstema(user) }
         val debugDigisosValue = digisosResponse.await()
 
-        log.info { "[Debug] digisos dokumenter: ${debugDigisosValue.dokumenter}" }
-        log.info { "[Debug] digisos error: ${debugDigisosValue.errorMessage()}" }
+        log.warn { "[Debug] digisos dokumenter: ${debugDigisosValue.dokumenter}" }
+        log.warn { "[Debug] digisos error: ${debugDigisosValue.errorMessage()}" }
 
 
         return@coroutineScope PersonalContentFactory(
