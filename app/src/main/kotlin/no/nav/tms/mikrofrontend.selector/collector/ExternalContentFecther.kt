@@ -139,7 +139,6 @@ class ExternalContentFecther(
         url: String,
         tjeneste: String,
         requestOptions: HttpRequestBuilder.() -> Unit = {},
-        errorHandlerOverride: (HttpResponse) -> T? = { null },
         crossinline map: (JsonPathInterpreter) -> T,
     ): T = withErrorHandling(tjeneste, url) {
         val token = tokenFetcher(user)
