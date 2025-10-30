@@ -2,6 +2,7 @@ package no.nav.tms.mikrofrontend.selector.collector
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -21,6 +22,8 @@ class PersonalContentCollector(
     val produktkortCounter: ProduktkortCounter
 ) {
 
+    private val log = KotlinLogging.logger {}
+
     suspend fun getContent(user: TokenXUser, innloggetnivå: LevelOfAssurance): PersonalContentResponse {
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
         return asyncCollector(user).build(microfrontends, innloggetnivå, manifestStorage.getDiscoveryManifest())
@@ -35,6 +38,8 @@ class PersonalContentCollector(
         val dpMeldekortResponse = async { externalContentFecther.fetchDpMeldekort(user) }
         val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
         val digisosResponse = async { externalContentFecther.fetchDigisosSakstema(user) }
+
+        log.info { "[Debug] digisos content: $digisosResponse" }
 
         return@coroutineScope PersonalContentFactory(
             safResponse = safResponse.await(),
