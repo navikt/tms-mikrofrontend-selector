@@ -43,7 +43,6 @@ class PersonalContentCollector(
         log.warn { "[Debug] digisos dokumenter: ${debugDigisosValue.dokumenter}" }
         log.warn { "[Debug] digisos error: ${debugDigisosValue.errorMessage()}" }
 
-
         return@coroutineScope PersonalContentFactory(
             safResponse = safResponse.await(),
             meldekortApiResponse = meldekortApiResponse.await(),
