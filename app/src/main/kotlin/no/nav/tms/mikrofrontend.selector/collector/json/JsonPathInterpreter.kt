@@ -157,7 +157,6 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
         private val log = KotlinLogging.logger { }
         fun initPathInterpreter(jsonString: String, debugLog: Boolean = false): JsonPathInterpreter? =
             try {
-                log.info { "Jsonstring: $jsonString" }
                 JsonPath.parse(jsonString).also {
                     if (it == null)
                         log.debug { "Could not parse inputstring to json: ${jsonString.redactedMessage(debugLog)}" }
@@ -208,8 +207,6 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
     }
 
     fun digisosDokument(dokumentarkivUrlResolver: DokumentarkivUrlResolver) = jsonNode.read<JsonNode>("$")?.map {
-        log.info { "DEBUG: $it" }
-
         val kodePath = "$.kode"
         val datoPath = "$.sistEndret"
         val navnPath = "\$.navn"
