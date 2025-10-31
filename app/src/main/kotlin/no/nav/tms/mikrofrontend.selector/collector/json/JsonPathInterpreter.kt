@@ -207,6 +207,8 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
     }
 
     fun digisosDokument(dokumentarkivUrlResolver: DokumentarkivUrlResolver) = jsonNode.read<JsonNode>("$")?.map {
+        log.info { "DEBUG: $it" }
+
         val kodePath = "$.kode"
         val datoPath = "$.sistEndret"
         val navnPath = "\$.navn"
