@@ -94,7 +94,7 @@ class ExternalContentFecther(
         }
     )
 
-    suspend fun fetchDigisosSakstema(user: TokenXUser): DigisosResponse = getResponseAsJsonPathOld(
+    suspend fun fetchDigisosSakstema(user: TokenXUser): DigisosResponse = getResponseAsJsonPath(
         tokenFetcher = tokenFetcher::digisosToken,
         user = user,
         url = "$digisosUrl/minesaker/innsendte",
@@ -131,30 +131,6 @@ class ExternalContentFecther(
                     )
                 }
             }
-    }
-
-    private suspend inline fun <reified T : ResponseWithErrors> getResponseAsJsonPathOld(
-        tokenFetcher: suspend (TokenXUser) -> String,
-        user: TokenXUser,
-        url: String,
-        tjeneste: String,
-        requestOptions: HttpRequestBuilder.() -> Unit = {},
-        crossinline map: (JsonPathInterpreter) -> T,
-    ): T = withErrorHandling(tjeneste, url) {
-        val token = tokenFetcher(user)
-        httpClient.get {
-            url(url)
-            header("Authorization", "Bearer $token")
-            header("Content-Type", "application/json")
-            header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
-            requestOptions()
-        }.let { response ->
-            if (response.status != HttpStatusCode.OK)
-                ResponseWithErrors.createFromHttpError(response)
-            else
-                response.bodyAsNullOrJsonNode()?.let(map)
-                    ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText())
-        }
     }
 
     private suspend inline fun <reified T : ResponseWithErrors> getResponseAsJsonPath(
