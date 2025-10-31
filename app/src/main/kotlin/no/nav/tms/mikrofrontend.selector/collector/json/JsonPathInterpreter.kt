@@ -157,6 +157,7 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
         private val log = KotlinLogging.logger { }
         fun initPathInterpreter(jsonString: String, debugLog: Boolean = false): JsonPathInterpreter? =
             try {
+                log.info { "Jsonstring: $jsonString" }
                 JsonPath.parse(jsonString).also {
                     if (it == null)
                         log.debug { "Could not parse inputstring to json: ${jsonString.redactedMessage(debugLog)}" }
