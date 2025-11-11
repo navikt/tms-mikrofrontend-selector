@@ -64,6 +64,13 @@ spec:
           day: 1
           hour: 4
         cascadingDelete: false
+        flags:
+          - name: "cloudsql.enable_pgaudit"
+            value: "on"
+          - name: "pgaudit.log"
+            value: "write,ddl,role"
+          - name: "pgaudit.log_parameter"
+            value: "on"
     buckets:
       - name: microfrontend-manifest-prod
   resources:
