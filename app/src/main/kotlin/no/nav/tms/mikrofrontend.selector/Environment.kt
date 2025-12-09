@@ -70,7 +70,7 @@ fun HttpClientConfig<*>.configureClient() {
         }
     }
     install(HttpTimeout) {
-        requestTimeoutMillis = 3000
+        requestTimeoutMillis = 4000
     }
 
 }
