@@ -27,7 +27,7 @@ class ManifestsStorage(private val storage: Storage, private val bucketName: Str
 }
 
 data class DiscoveryManifest (
-    @JsonAnySetter
+    @param:JsonAnySetter
     val discovery: Map<String, Discovery>,
 )
 
