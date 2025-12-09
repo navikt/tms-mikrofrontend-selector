@@ -25,8 +25,6 @@ spec:
     - "https://tms-mikrofrontend-selector.nav.no"
   kafka:
     pool: nav-prod
-  secureLogs:
-    enabled: true
   observability:
     autoInstrumentation:
       enabled: true
@@ -46,6 +44,8 @@ spec:
           namespace: teamdigisos
         - application: dp-meldekortregister
           namespace: teamdagpenger
+        - application: logging
+          namespace: nais-system
       external:
         - host: "safselvbetjening.prod-fss-pub.nais.io"
   gcp:

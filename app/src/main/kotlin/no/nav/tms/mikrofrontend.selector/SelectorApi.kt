@@ -13,6 +13,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
+import no.nav.tms.common.logging.TeamLogs
 import no.nav.tms.common.metrics.installTmsApiMetrics
 import no.nav.tms.common.observability.ApiMdc
 import no.nav.tms.mikrofrontend.selector.collector.ApiException
@@ -29,8 +30,8 @@ internal fun Application.selectorApi(
     aktueltCollector: AktueltCollector,
     installAuthenticatorsFunction: Application.() -> Unit = installAuth(),
 ) {
-    val secureLog = KotlinLogging.logger("secureLog")
     val log = KotlinLogging.logger {}
+    val teamLog = TeamLogs.logger { }
 
     installAuthenticatorsFunction()
 
@@ -45,7 +46,7 @@ internal fun Application.selectorApi(
             when (cause) {
                 is DatabaseException -> {
                     log.error { "Feil i henting av microfrontends" }
-                    secureLog.warn(cause.originalException) { """Feil i henting av microfrontends for ${cause.ident}}""".trimMargin() }
+                    teamLog.warn(cause.originalException) { """Feil i henting av microfrontends for ${cause.ident}}""".trimMargin() }
                     call.respond(HttpStatusCode.InternalServerError)
 
                 }
@@ -64,7 +65,7 @@ internal fun Application.selectorApi(
 
                 else -> {
                     log.error { "Ukjent feil ved henting av microfrontends: ${cause.message} ${cause.javaClass.name}" }
-                    secureLog.error(cause) { "Ukjent feil ved henting av microfrontends" }
+                    teamLog.error(cause) { "Ukjent feil ved henting av microfrontends" }
                     call.respond(HttpStatusCode.InternalServerError)
                 }
             }
