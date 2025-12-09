@@ -1,21 +1,13 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE configuration>
+<configuration debug="true">
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
 
-<configuration>
-    <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
-    <import class="ch.qos.logback.core.ConsoleAppender"/>
-    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender" level="DEBUG">
-        <encoder>
-            <pattern>%logger{5}[%-5level]%msg%n</pattern>
-        </encoder>
+    <include resource="test/team-logs-for-test.xml" />
+
+    <appender name="stdout_json" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
-    <appender name="secureLog" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%logger{5}[%-5level]%msg%n</pattern>
-        </encoder>
-    </appender>
-    <root level="DEBUG">
-        <appender-ref ref="stdout"/>
-        <!--appender-ref ref="secureLog"/-->
+
+    <root level="INFO">
+        <appender-ref ref="stdout_json"/>
     </root>
 </configuration>

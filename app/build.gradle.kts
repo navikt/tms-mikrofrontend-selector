@@ -44,6 +44,7 @@ dependencies {
     implementation(KotlinLogging.logging)
     implementation(TmsCommonLib.metrics)
     implementation(TmsCommonLib.observability)
+    implementation(TmsCommonLib.teamLogger)
     implementation(GoogleCloud.storage)
     implementation(Kotlinx.coroutines)
     implementation(Kotlin.reflect)

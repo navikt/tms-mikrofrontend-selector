@@ -1,6 +1,7 @@
 package no.nav.tms.mikrofrontend.selector
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import no.nav.tms.common.logging.TeamLogs
 import no.nav.tms.common.observability.traceMicrofrontend
 import no.nav.tms.kafka.application.JsonMessage
 import no.nav.tms.kafka.application.Subscriber
@@ -16,7 +17,7 @@ class EnableSubscriber(
 ) : Subscriber() {
 
     private val log = KotlinLogging.logger {}
-    private val secureLog = KotlinLogging.logger("secureLog")
+    private val teamLog = TeamLogs.logger { }
 
     override fun subscribe(): Subscription = Subscription
         .forEvent(EnableMessage.action)
@@ -30,7 +31,7 @@ class EnableSubscriber(
                 personRepository.enableMicrofrontend(jsonMessage)
             } catch (e: Exception) {
                 log.error { "Feil i behandling av enablemelding" }
-                secureLog.error(e) {
+                teamLog.error(e) {
                     """
                     Feil i behandling av enablemelding for person med ident ${jsonMessage.ident}
                     """.trimIndent()
