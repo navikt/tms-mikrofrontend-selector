@@ -17,13 +17,21 @@ import kotlin.reflect.full.withNullability
 
 val log = KotlinLogging.logger {}
 
+/**
+ * Base class for responses that may contain errors from external services.
+ * Subclasses must have a primary constructor with an "errors" parameter.
+ */
 abstract class ResponseWithErrors(private val errors: String?) {
 
     abstract val source: String
 
-    fun errorMessage() = if (!errors.isNullOrEmpty()) errors.let { "Kall til $source feiler: $errors" } else null
+    fun errorMessage(): String? = 
+        if (!errors.isNullOrEmpty()) "Kall til $source feiler: $errors" else null
 
     companion object {
+        /**
+         * Creates an error response from an HTTP error status.
+         */
         suspend inline fun <reified T : ResponseWithErrors> createFromHttpError(httpResponse: HttpResponse): T =
             createWithError(
                 constructor = T::class.primaryConstructor,
@@ -31,6 +39,9 @@ abstract class ResponseWithErrors(private val errors: String?) {
                 className = T::class.simpleName ?: "unknown"
             )
 
+        /**
+         * Creates an error response when the response body is not valid JSON.
+         */
         inline fun <reified T : ResponseWithErrors> errorInJsonResponse(textInBody: String): T =
             createWithError(
                 constructor = T::class.primaryConstructor,
@@ -38,60 +49,60 @@ abstract class ResponseWithErrors(private val errors: String?) {
                 className = T::class.simpleName ?: "unknown"
             )
 
-
+        /**
+         * Creates an error response using reflection.
+         * The target class must have a primary constructor with an "errors" parameter.
+         */
         fun <T : ResponseWithErrors> createWithError(
             constructor: KFunction<T>?,
             errorMessage: String,
             className: String
-        ): T =
-            constructor?.let {
-                val params = constructor.parameters
-                require(params.any { it.name == "errors" })
+        ): T {
+            requireNotNull(constructor) { "$className does not have a primary constructor" }
+            
+            val params = constructor.parameters
+            require(params.any { it.name == "errors" }) { "$className must have an 'errors' parameter" }
 
-                val args = params.map { parameter ->
-                    when {
-                        parameter.name != "errors" -> parameter.type.default()
-                        parameter.name == "errors" && parameter.type.isOfType(String::class.starProjectedType) -> errorMessage
-                        parameter.name == "errors" && parameter.type.isListType(String::class.starProjectedType) -> listOf(
-                            errorMessage
-                        )
-
-                        else -> throw IllegalArgumentException("unexpected Ktype for parameter errors: ${parameter.type}")
-                    }
-                }.toTypedArray()
-                constructor.call(*args)
-            } ?: throw IllegalArgumentException("$className does not have a primary constructor")
-
-        private fun KType.isListType(starProjectedType: KType): Boolean {
-            if (!this.isSubtypeOf(List::class.starProjectedType)
-                && !this.isSubtypeOf(
-                    List::class.starProjectedType.withNullability(true)
-                )
-            )
-                return false
-            val elementType =
-                this.arguments.first().type ?: throw IllegalArgumentException("List type argument not found")
-            return elementType == starProjectedType || elementType == starProjectedType.withNullability(true)
+            val args = params.map { parameter ->
+                when {
+                    parameter.name != "errors" -> parameter.type.defaultValue()
+                    parameter.type.isStringType() -> errorMessage
+                    parameter.type.isStringListType() -> listOf(errorMessage)
+                    else -> throw IllegalArgumentException("Unexpected type for 'errors' parameter: ${parameter.type}")
+                }
+            }.toTypedArray()
+            
+            return constructor.call(*args)
         }
 
-        private fun KType.isOfType(starProjectedType: KType) =
-            this == starProjectedType || this == starProjectedType.withNullability(true)
+        private fun KType.isStringType(): Boolean =
+            this == String::class.starProjectedType || 
+            this == String::class.starProjectedType.withNullability(true)
 
+        private fun KType.isStringListType(): Boolean {
+            if (!this.isSubtypeOf(List::class.starProjectedType) &&
+                !this.isSubtypeOf(List::class.starProjectedType.withNullability(true))
+            ) return false
+            
+            val elementType = this.arguments.firstOrNull()?.type 
+                ?: throw IllegalArgumentException("List type argument not found")
+            return elementType == String::class.starProjectedType || 
+                   elementType == String::class.starProjectedType.withNullability(true)
+        }
 
-        private fun KType.default(): Any? = when {
+        private fun KType.defaultValue(): Any? = when {
             this.isMarkedNullable -> null
             this == String::class.starProjectedType -> ""
             this == Int::class.starProjectedType -> 0
             this.isSubtypeOf(List::class.starProjectedType) -> {
-                val elementType =
-                    this.arguments.first().type ?: throw IllegalArgumentException("List type argument not found")
+                val elementType = this.arguments.firstOrNull()?.type
+                    ?: throw IllegalArgumentException("List type argument not found")
                 if (elementType == String::class.starProjectedType) {
                     emptyList<String>()
                 } else {
                     throw IllegalArgumentException("No default value defined for list of type $elementType")
                 }
             }
-
             else -> throw IllegalArgumentException("No default value defined for parameter of type $this")
         }
 
@@ -114,17 +125,14 @@ class Dokument(
     val navn: String,
 ) {
     val url = dokumentarkivUrlResolver.urlFor(kode)
+    
     companion object {
+        /** Maximum number of documents to return from getLatest() */
+        private const val MAX_LATEST_DOCUMENTS = 2
+        
         fun List<Dokument>.getLatest(): List<Dokument> =
-            sortedByDescending { it.sistEndret }.let {
-                when(it.size) {
-                    0 -> emptyList()
-                    1 -> listOf(it.first())
-                    else -> it.slice(0..1)
-                }
-            }
+            sortedByDescending { it.sistEndret }.take(MAX_LATEST_DOCUMENTS)
     }
-
 }
 
 class MeldekortResponse(
@@ -132,18 +140,16 @@ class MeldekortResponse(
     errors: String? = null,
 ) : ResponseWithErrors(errors) {
     override val source = "meldekort"
-    val harMeldekort: Boolean =
-        when {
-            meldekortResponse == null -> false
-            !meldekortResponse.hasContent() -> false
-            else -> {
-                meldekortResponse.int("etterregistrerteMeldekort") > 0
-                        || meldekortResponse.intOrNull("meldekort")?.let { it > 0 } ?: false
-                        || meldekortResponse.intOrNull("antallGjenstaaendeFeriedager")?.let { it > 0 } ?: false
-                        || meldekortResponse.isNotNull("nesteMeldekort")
-                        || meldekortResponse.isNotNull("nesteInnsendingAvMeldekort")
-            }
-        }
+    
+    val harMeldekort: Boolean = meldekortResponse?.let { response ->
+        response.hasContent() && (
+            response.intOrNull("etterregistrerteMeldekort")?.let { it > 0 } ?: false
+            || response.intOrNull("meldekort")?.let { it > 0 } ?: false
+            || response.intOrNull("antallGjenstaaendeFeriedager")?.let { it > 0 } ?: false
+            || response.isNotNull("nesteMeldekort")
+            || response.isNotNull("nesteInnsendingAvMeldekort")
+        )
+    } ?: false
 }
 
 class PdlResponse(
