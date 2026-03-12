@@ -54,23 +54,20 @@ class AktueltFactory(
             safResponse.dokumenter,
             discoveryManifest,
             levelOfAssurance
-        )
-
-    ).apply {
+        ),
         errors = listOf(
             safResponse,
             pdlResponse,
-        ).mapNotNull { it.errorMessage() }.joinToString()
-    }
+        ).mapNotNull { it.errorMessage() }.joinToString().ifEmpty { null }
+    )
 }
 
 class AktueltResponse(
     val offerStepup: Boolean,
-    val microfrontends: List<MicrofrontendsDefinition>
-) {
+    val microfrontends: List<MicrofrontendsDefinition>,
     @JsonIgnore
-    var errors: String? = null
-
+    val errors: String? = null
+) {
     fun resolveStatus(): HttpStatusCode =
         if (errors.isNullOrEmpty()) HttpStatusCode.OK else HttpStatusCode.ServiceUnavailable
 }

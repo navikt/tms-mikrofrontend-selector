@@ -65,7 +65,7 @@ class PersonalContentFactory(
         microfrontends = microfrontends?.getDefinitions(levelOfAssurance, discoveryManifest) ?: emptyList(),
         produktkort = ContentDefinition.getProduktkort(
             digisosResponse.dokumenter + safResponse.dokumenter, levelOfAssurance
-        ).filter { it.skalVises() }.map { it.id },
+        ).map { it.id },
         offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
         meldekort = meldekortApiResponse.harMeldekort || dpMeldekortResponse.harMeldekort,
         aktuelt = ContentDefinition.getAktueltContent(
@@ -73,17 +73,15 @@ class PersonalContentFactory(
             safResponse.dokumenter,
             discoveryManifest,
             levelOfAssurance
-        )
-
-    ).apply {
+        ),
         errors = listOf(
             safResponse,
             meldekortApiResponse,
             dpMeldekortResponse,
             pdlResponse,
             digisosResponse
-        ).mapNotNull { it.errorMessage() }.joinToString()
-    }
+        ).mapNotNull { it.errorMessage() }.joinToString().ifEmpty { null }
+    )
 }
 
 class PersonalContentResponse(
@@ -91,10 +89,10 @@ class PersonalContentResponse(
     val produktkort: List<String>,
     val offerStepup: Boolean,
     val meldekort: Boolean,
-    val aktuelt: List<MicrofrontendsDefinition>
-) {
+    val aktuelt: List<MicrofrontendsDefinition>,
     @JsonIgnore
-    var errors: String? = null
+    val errors: String? = null
+) {
     fun resolveStatus(): HttpStatusCode =
         if (errors.isNullOrEmpty()) HttpStatusCode.OK else HttpStatusCode.MultiStatus
 }

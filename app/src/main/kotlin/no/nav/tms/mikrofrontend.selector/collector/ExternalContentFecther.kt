@@ -7,6 +7,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
+import no.nav.tms.mikrofrontend.selector.collector.json.DokumentParser
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
@@ -63,7 +64,7 @@ class ExternalContentFecther(
                 } else {
                     val jsonResponse = response.bodyAsNullOrJsonNode()
                     SafResponse(
-                        dokumenter = jsonResponse?.safDokument(dokumentarkivUrlResolver),
+                        dokumenter = jsonResponse?.let { DokumentParser.parseSafDokument(it, dokumentarkivUrlResolver) },
                         errors = jsonResponse?.getAll<String>("errors..message")
                     )
                 }
@@ -105,7 +106,7 @@ class ExternalContentFecther(
         },
         map = { jsonPath ->
             DigisosResponse(
-                dokumenter = jsonPath.digisosDokument(dokumentarkivUrlResolver)
+                dokumenter = DokumentParser.parseDigisosDokument(jsonPath, dokumentarkivUrlResolver)
             )
         },
     )

@@ -5,28 +5,28 @@ import no.nav.tms.mikrofrontend.selector.collector.MicrofrontendsDefinition
 import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
 
 
-class RegelstyrtMicrofrontend(
-    id: String,
-    discoveryManifest: DiscoveryManifest,
-    var contentResolvers: MutableList<ContentResolver> = mutableListOf()
+class RegelstyrtMicrofrontend private constructor(
+    val definition: MicrofrontendsDefinition?,
+    private val rulesDefinition: ContentRulesDefinition
 ) {
-    private val log = KotlinLogging.logger { }
-    val definition = MicrofrontendsDefinition.create(id, discoveryManifest).also {
-        if (it == null)
-            log.info { "Fant ikke manifest for regelstyre microfrontend med id $id i $discoveryManifest" }
-    }
+    fun skalVises(context: RuleContext) = rulesDefinition.skalVises(context)
 
-    fun skalVises() = contentResolvers.all { it.skalVises() }
+    companion object {
+        private val log = KotlinLogging.logger { }
+
+        fun create(rulesDefinition: ContentRulesDefinition, discoveryManifest: DiscoveryManifest): RegelstyrtMicrofrontend {
+            val definition = MicrofrontendsDefinition.create(rulesDefinition.id, discoveryManifest).also {
+                if (it == null)
+                    log.info { "Fant ikke manifest for regelstyre microfrontend med id ${rulesDefinition.id} i $discoveryManifest" }
+            }
+            return RegelstyrtMicrofrontend(definition, rulesDefinition)
+        }
+    }
 }
 
 class Produktkort(
     val id: String,
-    var rules: MutableList<ContentResolver> = mutableListOf()
+    private val rulesDefinition: ContentRulesDefinition
 ) {
-    fun skalVises() =
-        rules.all { it.skalVises() }
+    fun skalVises(context: RuleContext) = rulesDefinition.skalVises(context)
 }
-
-
-
-
