@@ -31,16 +31,30 @@ object ContentDefinition {
         safDokument: List<Dokument>,
         discoveryManifest: DiscoveryManifest,
         levelOfAssurance: LevelOfAssurance
-    ): List<MicrofrontendsDefinition> =
-        aktuelt.map {
-            RegelstyrtMicrofrontend(id = it.id, discoveryManifest = discoveryManifest).apply {
-                contentResolvers = it.createRules(safDokument, alder, levelOfAssurance)
-            }
-        }.filter { it.skalVises() }.mapNotNull { it.definition }
+    ): List<MicrofrontendsDefinition> {
+        val context = RuleContext(
+            sakstemaKoder = safDokument.map { it.kode },
+            dokumenter = safDokument,
+            alder = alder,
+            levelOfAssurance = levelOfAssurance
+        )
 
-    fun getProduktkort(safDokument: List<Dokument>, levelOfAssurance: LevelOfAssurance) = produktkort.map { definition ->
-        Produktkort(id = definition.id).apply {
-            rules = definition.createRules(safDokumenter = safDokument, alder = null, userLevelOfAssurance = levelOfAssurance)
-        }
-    }.filter { it.skalVises() }
+        return aktuelt
+            .map { RegelstyrtMicrofrontend.create(it, discoveryManifest) }
+            .filter { it.skalVises(context) }
+            .mapNotNull { it.definition }
+    }
+
+    fun getProduktkort(safDokument: List<Dokument>, levelOfAssurance: LevelOfAssurance): List<Produktkort> {
+        val context = RuleContext(
+            sakstemaKoder = safDokument.map { it.kode },
+            dokumenter = safDokument,
+            alder = null,
+            levelOfAssurance = levelOfAssurance
+        )
+
+        return produktkort
+            .map { Produktkort(id = it.id, rulesDefinition = it) }
+            .filter { it.skalVises(context) }
+    }
 }

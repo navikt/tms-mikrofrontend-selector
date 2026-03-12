@@ -18,7 +18,6 @@ class ProduktkortTest {
 
     @Test
     fun `avgjør om ett produktkort skal vises eller ikke`() {
-
         ContentDefinition.getProduktkort(
             listOf(
                 Dokument(
@@ -28,13 +27,9 @@ class ProduktkortTest {
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.HIGH
-        )
-            .also { it.size shouldBe 1 }
+        ).also { it.size shouldBe 1 }
             .first()
-            .run {
-                id shouldBe "PEN"
-                skalVises() shouldBe true
-            }
+            .id shouldBe "PEN"
 
         ContentDefinition.getProduktkort(
             listOf(
@@ -45,26 +40,9 @@ class ProduktkortTest {
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.SUBSTANTIAL
-        )
-            .also { it.size shouldBe 1 }
+        ).also { it.size shouldBe 1 }
 
-        ContentDefinition.getProduktkort(
-            listOf(
-                Dokument(
-                    kode = "PEN",
-                    navn = "Pensjon",
-                    dokumentarkivUrlResolver = dokumentarkivUrlResolver,
-                    sistEndret = LocalDateTime.now()
-                )
-            ), LevelOfAssurance.HIGH
-        )
-            .also { it.size shouldBe 1 }
-            .first()
-            .run {
-                id shouldBe "PEN"
-                skalVises() shouldBe true
-            }
-
+        // DAG with HIGH LoA - should be returned
         ContentDefinition.getProduktkort(
             listOf(
                 Dokument(
@@ -74,31 +52,11 @@ class ProduktkortTest {
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.HIGH
-        )
-            .also { it.size shouldBe 1 }
+        ).also { it.size shouldBe 1 }
             .first()
-            .run {
-                id shouldBe "DAG"
-                skalVises() shouldBe true
-            }
+            .id shouldBe "DAG"
 
-        ContentDefinition.getProduktkort(
-            listOf(
-                Dokument(
-                    kode = "DAG",
-                    navn = "Dagpenger",
-                    dokumentarkivUrlResolver = dokumentarkivUrlResolver,
-                    sistEndret = LocalDateTime.now()
-                )
-            ), LevelOfAssurance.HIGH
-        )
-            .also { it.size shouldBe 1 }
-            .first()
-            .run {
-                id shouldBe "DAG"
-                skalVises() shouldBe true
-            }
-
+        // DAG with SUBSTANTIAL LoA - should NOT be returned (DAG has includeOnlyIfLoAIsHigh: true)
         ContentDefinition.getProduktkort(
             listOf(
                 Dokument(
@@ -108,8 +66,7 @@ class ProduktkortTest {
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.SUBSTANTIAL
-        )
-            .also { it.size shouldBe 0 }
+        ).also { it.size shouldBe 0 }
     }
 
     @ParameterizedTest
