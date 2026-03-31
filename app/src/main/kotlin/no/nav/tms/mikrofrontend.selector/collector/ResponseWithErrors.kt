@@ -136,13 +136,7 @@ class MeldekortResponse(
         when {
             meldekortResponse == null -> false
             !meldekortResponse.hasContent() -> false
-            else -> {
-                meldekortResponse.int("etterregistrerteMeldekort") > 0
-                        || meldekortResponse.intOrNull("meldekort")?.let { it > 0 } ?: false
-                        || meldekortResponse.intOrNull("antallGjenstaaendeFeriedager")?.let { it > 0 } ?: false
-                        || meldekortResponse.isNotNull("nesteMeldekort")
-                        || meldekortResponse.isNotNull("nesteInnsendingAvMeldekort")
-            }
+            else -> meldekortResponse.getOrNull<List<Any>>("meldekortTilUtfylling")?.isNotEmpty() ?: false
         }
 }
 

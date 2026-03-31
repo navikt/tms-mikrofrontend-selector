@@ -66,25 +66,24 @@ class MeldekortApiRoute(private val harMeldekort: Boolean = false, httpStatusCod
     ) {
     override fun content(): String = if (harMeldekort)
         """{
-          "antallGjenstaaendeFeriedager": 0,
-          "etterregistrerteMeldekort": 2,
-          "meldekort": 2,
-          "nesteInnsendingAvMeldekort": "2019-09-30",
-          "nesteMeldekort": {
-            "fra": "2019-09-09",
-            "kanSendesFra": "2019-09-21",
-            "til": "2024-09-22",
-            "uke": "37-38"
-          }
+          "harInnsendteMeldekort": true,
+          "meldekortTilUtfylling": [
+            {
+              "fraOgMed": "2019-09-09",
+              "tilOgMed": "2024-09-22",
+              "uke": "38-39",
+              "kanSendesFra": "2019-09-21",
+              "kanFyllesUtFra": null,
+              "fristForInnsending": "2024-09-22",
+              "etterregistrering": false
+             }
+           ],
+           "redirectUrl": "https://www.nav.no"
         }""".trimIndent()
     else """
-            {
-              "meldekort": 0,
-              "etterregistrerteMeldekort": 0,
-              "antallGjenstaaendeFeriedager": 0,
-              "nesteMeldekort": null,
-              "nesteInnsendingAvMeldekort": null
-            }
+          "harInnsendteMeldekort": false,
+          "meldekortTilUtfylling": [],
+          "redirectUrl": "https://www.nav.no"
         """.trimIndent()
 }
 
@@ -96,26 +95,25 @@ class DpMeldekortRoute(private val harMeldekort: Boolean = false, httpStatusCode
     ) {
     override fun content(): String = if (harMeldekort)
         """{
-          "antallGjenstaaendeFeriedager": 0,
-          "etterregistrerteMeldekort": 3,
-          "meldekort": 3,
-          "nesteInnsendingAvMeldekort": "2019-09-30",
-          "nesteMeldekort": {
-            "fra": "2019-09-09",
-            "kanSendesFra": "2019-09-21",
-            "til": "2024-09-22",
-            "uke": "37-38"
-          }
-        }""".trimIndent()
-    else """
+          "harInnsendteMeldekort": true,
+          "meldekortTilUtfylling": [
             {
-              "meldekort": 0,
-              "etterregistrerteMeldekort": 0,
-              "antallGjenstaaendeFeriedager": 0,
-              "nesteMeldekort": null,
-              "nesteInnsendingAvMeldekort": null
-            }
-        """.trimIndent()
+              "fraOgMed": "2019-09-09",
+              "tilOgMed": "2024-09-22",
+              "uke": "38-39",
+              "kanSendesFra": "2019-09-21",
+              "kanFyllesUtFra": null,
+              "fristForInnsending": "2024-09-22",
+              "etterregistrering": false
+             }
+           ],
+           "redirectUrl": "https://www.nav.no"
+        }""".trimIndent()
+    else """{
+          "harInnsendteMeldekort": false,
+          "meldekortTilUtfylling": [],
+          "redirectUrl": "https://www.nav.no"
+        }""".trimIndent()
 }
 
 class DigisosRoute(private val hasSosialhjelp: Boolean = false) :
