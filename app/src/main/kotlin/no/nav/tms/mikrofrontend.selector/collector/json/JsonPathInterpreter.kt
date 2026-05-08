@@ -24,7 +24,7 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
     private fun getAllKeys(jsonNode: JsonNode, keys: MutableSet<String>) {
         when {
             jsonNode.isObject -> {
-                jsonNode.fields().forEach { (key, value) ->
+                jsonNode.properties().forEach { (key, value) ->
                     keys.add(key)
                     getAllKeys(value, keys)
                 }

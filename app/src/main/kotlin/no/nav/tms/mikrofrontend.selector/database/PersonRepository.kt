@@ -92,5 +92,5 @@ class PersonRepository(private val database: Database, private val counter: Micr
         }
 }
 
-class DatabaseException(val ident: String, val originalException: Exception) : Exception()
+class DatabaseException(val ident: String, cause: Exception) : Exception(cause)
 

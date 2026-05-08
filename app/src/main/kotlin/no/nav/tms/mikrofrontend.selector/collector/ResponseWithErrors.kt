@@ -27,14 +27,14 @@ abstract class ResponseWithErrors(private val errors: String?) {
         suspend inline fun <reified T : ResponseWithErrors> createFromHttpError(httpResponse: HttpResponse): T =
             createWithError(
                 constructor = T::class.primaryConstructor,
-                errorMessage = " Status fra ${httpResponse.request.url} er ${httpResponse.status} ${httpResponse.bodyAsText()}",
+                errorMessage = "Status fra ${httpResponse.request.url} er ${httpResponse.status}",
                 className = T::class.simpleName ?: "unknown"
             )
 
-        inline fun <reified T : ResponseWithErrors> errorInJsonResponse(textInBody: String): T =
+        inline fun <reified T : ResponseWithErrors> errorInJsonResponse(): T =
             createWithError(
                 constructor = T::class.primaryConstructor,
-                errorMessage = "responsbody inneholder ikke json: ${textInBody.redactedMessage()}",
+                errorMessage = "responsbody inneholdt ikke json",
                 className = T::class.simpleName ?: "unknown"
             )
 

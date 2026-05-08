@@ -100,7 +100,7 @@ class PersonalContentResponse(
 }
 
 open class MicrofrontendsDefinition(
-    @JsonProperty("microfrontend_id")
+    @param:JsonProperty("microfrontend_id")
     val id: String,
     val url: String,
     val appname: String,

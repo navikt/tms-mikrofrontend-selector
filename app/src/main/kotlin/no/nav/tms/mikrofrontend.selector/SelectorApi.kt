@@ -46,7 +46,7 @@ internal fun Application.selectorApi(
             when (cause) {
                 is DatabaseException -> {
                     log.error { "Feil i henting av microfrontends" }
-                    teamLog.warn(cause.originalException) { """Feil i henting av microfrontends for ${cause.ident}}""".trimMargin() }
+                    teamLog.warn(cause) { """Feil i henting av microfrontends for ${cause.ident}}""" }
                     call.respond(HttpStatusCode.InternalServerError)
 
                 }

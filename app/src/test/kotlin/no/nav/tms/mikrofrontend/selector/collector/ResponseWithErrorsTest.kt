@@ -15,11 +15,11 @@ class ResponseWithErrorsTest {
             override val source: String = "default"
         }
 
-        ResponseWithErrors.errorInJsonResponse<DefaultErros>("").run {
-            this.errorMessage() shouldBe "Kall til default feiler: responsbody inneholder ikke json: "
+        ResponseWithErrors.errorInJsonResponse<DefaultErros>().run {
+            this.errorMessage() shouldBe "Kall til default feiler: responsbody inneholdt ikke json"
         }
-        ResponseWithErrors.errorInJsonResponse<DefaultNullableErros>("").run {
-            this.errorMessage() shouldBe "Kall til default feiler: responsbody inneholder ikke json: "
+        ResponseWithErrors.errorInJsonResponse<DefaultNullableErros>().run {
+            this.errorMessage() shouldBe "Kall til default feiler: responsbody inneholdt ikke json"
         }
     }
 
@@ -32,11 +32,11 @@ class ResponseWithErrorsTest {
             override val source: String = "default"
         }
 
-        ResponseWithErrors.errorInJsonResponse<ListErros>("somethin stupid").run {
-            this.errorMessage() shouldBe "Kall til default feiler: responsbody inneholder ikke json: somethin stupid"
+        ResponseWithErrors.errorInJsonResponse<ListErros>().run {
+            this.errorMessage() shouldBe "Kall til default feiler: responsbody inneholdt ikke json"
         }
-        ResponseWithErrors.errorInJsonResponse<NullableListErros>("somethin stupid").run {
-            this.errorMessage() shouldBe "Kall til default feiler: responsbody inneholder ikke json: somethin stupid"
+        ResponseWithErrors.errorInJsonResponse<NullableListErros>().run {
+            this.errorMessage() shouldBe "Kall til default feiler: responsbody inneholdt ikke json"
         }
     }
 

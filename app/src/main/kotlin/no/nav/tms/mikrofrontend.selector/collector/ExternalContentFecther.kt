@@ -153,7 +153,7 @@ class ExternalContentFecther(
 
             if (response.status == HttpStatusCode.OK) {
                 response.bodyAsNullOrJsonNode()?.let(map)
-                    ?: ResponseWithErrors.errorInJsonResponse(response.bodyAsText())
+                    ?: ResponseWithErrors.errorInJsonResponse()
             } else when(val override = errorHandlerOverride(response)) {
                 null -> ResponseWithErrors.createFromHttpError(response)
                 else -> override
@@ -191,12 +191,7 @@ class ExternalContentFecther(
 }
 
 class ApiException(tjeneste: String, url: String, e: Exception) :
-    Exception(
-        """
-            |Kall til ekstern tjeneste $tjeneste feiler. Url: $url ${errorDetails(e)}. 
-           
-        """.trimMargin()
-    )
+    Exception("Kall til ekstern tjeneste $tjeneste feiler. Url: $url ${errorDetails(e)}.")
 
 
 private class HentAlder(ident: String) {
