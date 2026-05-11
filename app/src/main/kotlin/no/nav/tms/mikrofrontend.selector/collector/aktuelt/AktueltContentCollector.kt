@@ -28,7 +28,7 @@ class AktueltCollector(
         val safResponse = async { externalContentFecther.fetchDocumentsFromSaf(user) }
         val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
 
-        return@coroutineScope AktueltFactory(
+        AktueltFactory(
             safResponse = safResponse.await(),
             pdlResponse = pdlResponse.await(),
             levelOfAssurance = user.levelOfAssurance

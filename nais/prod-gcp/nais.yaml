@@ -19,7 +19,7 @@ spec:
     enabled: true
   replicas:
     min: 2
-    max: 4
+    max: 8
     cpuThresholdPercentage: 100
   ingresses:
     - "https://tms-mikrofrontend-selector.nav.no"
@@ -75,7 +75,7 @@ spec:
       - name: microfrontend-manifest-prod
   resources:
     limits:
-      memory: 1024Mi
+      memory: 2048Mi
     requests:
       cpu: "50m"
       memory: 128Mi
