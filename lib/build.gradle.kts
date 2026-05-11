@@ -62,7 +62,7 @@ publishing {
             version = libraryVersion
             from(components["java"])
 
-            val sourcesJar by tasks.creating(Jar::class) {
+            val sourcesJar by tasks.registering(Jar::class) {
                 archiveClassifier.set("sources")
                 from(sourceSets.main.get().allSource)
             }

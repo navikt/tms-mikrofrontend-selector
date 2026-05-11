@@ -9,9 +9,7 @@ import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.versions.Discovery
 import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.HIGH
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.SUBSTANTIAL
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -23,7 +21,7 @@ class PersonalContentFactoryTest {
     fun `Skal være tom`() {
         testFactory().build(
             microfrontends = Microfrontends(),
-            levelOfAssurance = HIGH,
+            levelOfAssurance = LevelOfAssurance.High,
             discoveryManifest = DiscoveryManifest(emptyMap())
         ).run {
             offerStepup shouldBe false
@@ -40,7 +38,7 @@ class PersonalContentFactoryTest {
             digisosResponse = DigisosResponse(listOf(Dokument(kode = "KOM", navn = "Sosialhjelp", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now()))),
         ).build(
             microfrontends = microfrontendMocck(level4Microfrontends = MicrofrontendsDefinition("id", "url", "appname", "namespace", "fallback", true) * 5),
-            levelOfAssurance = HIGH,
+            levelOfAssurance = LevelOfAssurance.High,
             discoveryManifest = DiscoveryManifest(emptyMap())
         ).run {
             offerStepup shouldBe false
@@ -56,7 +54,7 @@ class PersonalContentFactoryTest {
             safResponse = SafResponse(emptyList(), listOf("Saf feilet fordi det gikk feil")),
         ).build(
             microfrontends = Microfrontends(),
-            levelOfAssurance = HIGH,
+            levelOfAssurance = LevelOfAssurance.High,
             discoveryManifest = DiscoveryManifest(emptyMap())
         ).run {
             offerStepup shouldBe false
@@ -72,7 +70,7 @@ class PersonalContentFactoryTest {
             meldekortApiResponse = MeldekortResponse(errors = "Feil som skjedde")
         ).build(
             microfrontends = Microfrontends(),
-            levelOfAssurance = HIGH,
+            levelOfAssurance = LevelOfAssurance.High,
             discoveryManifest = DiscoveryManifest(emptyMap())
         ).run {
             offerStepup shouldBe false
@@ -97,7 +95,7 @@ class PersonalContentFactoryTest {
                 ids = listOf("aia-ny")
 
             ),
-            levelOfAssurance = HIGH,
+            levelOfAssurance = LevelOfAssurance.High,
             discoveryManifest = DiscoveryManifest(mapOf("regefrontend" to Discovery("https://micro.moc", "name", "ns", "https://app.fallback", true)))
         ).run {
             offerStepup shouldBe false
@@ -121,7 +119,7 @@ class PersonalContentFactoryTest {
                 level4Microfrontends = MicrofrontendsDefinition("id", "url", "appname", "namespace", "fallback", true) * 5,
                 level3Microfrontends = MicrofrontendsDefinition("id", "url", "appname", "namespace", "fallback", true) * 2,
             ),
-            levelOfAssurance = SUBSTANTIAL,
+            levelOfAssurance = LevelOfAssurance.Substantial,
             discoveryManifest = DiscoveryManifest(emptyMap())
         ).run {
             offerStepup shouldBe true
@@ -144,7 +142,7 @@ private fun testFactory(
     dpMeldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{etterregistrerteMeldekort:0}")),
     pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"), 1988),
     digisosResponse: DigisosResponse = DigisosResponse(),
-    levelOfAssurance: LevelOfAssurance = HIGH
+    levelOfAssurance: LevelOfAssurance = LevelOfAssurance.High
 ) =
     PersonalContentFactory(
         safResponse = safResponse,
@@ -160,9 +158,9 @@ private fun microfrontendMocck(
     level4Microfrontends: List<MicrofrontendsDefinition>? = null,
     ids: List<String> = listOf("mock")
 ) = mockk<Microfrontends> {
-    every { offerStepup(HIGH) } returns false
-    every { offerStepup(SUBSTANTIAL) } returns (level3Microfrontends != level4Microfrontends)
-    every { getDefinitions(SUBSTANTIAL, any()) } returns level3Microfrontends
-    every { getDefinitions(HIGH, any()) } returns (level4Microfrontends ?: level3Microfrontends)
+    every { offerStepup(LevelOfAssurance.High) } returns false
+    every { offerStepup(LevelOfAssurance.Substantial) } returns (level3Microfrontends != level4Microfrontends)
+    every { getDefinitions(LevelOfAssurance.Substantial, any()) } returns level3Microfrontends
+    every { getDefinitions(LevelOfAssurance.High, any()) } returns (level4Microfrontends ?: level3Microfrontends)
     every { ids(any()) } returns ids
 }

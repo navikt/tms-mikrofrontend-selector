@@ -29,11 +29,11 @@ import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.HIGH
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.SUBSTANTIAL
-import no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance as MockLevelOfAssurance
-import no.nav.tms.token.support.tokenx.validation.mock.tokenXMock
+import no.nav.tms.token.support.user.token.verification.Issuer
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance.High
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance.Substantial
+import no.nav.tms.token.support.user.token.verificaton.mock.userTokenMock
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -165,7 +165,7 @@ internal class ApiTest {
             testJsonString(
                 microfrontendId = "nivå3mkf",
                 ident = testIdent,
-                levelOfAssurance = SUBSTANTIAL
+                levelOfAssurance = Substantial
             )
         )
 
@@ -247,7 +247,7 @@ internal class ApiTest {
                 "mk3" to "https://cdn.test/mk1.json",
             )
 
-            initSelectorApi(testident = testIdent, levelOfAssurance = SUBSTANTIAL)
+            initSelectorApi(testident = testIdent, testLoa = Substantial)
             initExternalServices(
                 SafRoute(),
                 MeldekortApiRoute(),
@@ -263,7 +263,7 @@ internal class ApiTest {
                 testJsonString(
                     microfrontendId = "nivå3mkf",
                     ident = testIdent,
-                    levelOfAssurance = SUBSTANTIAL
+                    levelOfAssurance = Substantial
                 )
             )
 
@@ -334,7 +334,7 @@ internal class ApiTest {
                 testJsonString(
                     microfrontendId = "nivå3mkf",
                     ident = testident2,
-                    levelOfAssurance = HIGH
+                    levelOfAssurance = High
                 )
             )
 
@@ -369,7 +369,7 @@ internal class ApiTest {
                 testJsonString(
                     microfrontendId = "nivå3mkf",
                     ident = testident2,
-                    levelOfAssurance = HIGH
+                    levelOfAssurance = High
                 )
             )
 
@@ -428,7 +428,7 @@ internal class ApiTest {
                 testJsonString(
                     microfrontendId = "nivå3mkf",
                     ident = testident2,
-                    levelOfAssurance = HIGH
+                    levelOfAssurance = High
                 )
             )
 
@@ -516,7 +516,7 @@ internal class ApiTest {
 
     fun ApplicationTestBuilder.initSelectorApi(
         testident: String,
-        levelOfAssurance: LevelOfAssurance = HIGH,
+        testLoa: LevelOfAssurance = High,
         httpClient: HttpClient? = null,
         tokenFetcher: TokenFetcher = mockk<TokenFetcher>().apply {
             coEvery { meldekortApiToken(any()) } returns "<meldekortApi>"
@@ -562,22 +562,18 @@ internal class ApiTest {
                 )
             ) {
                 authentication {
-                    tokenXMock {
-                        alwaysAuthenticated = true
-                        setAsDefault = true
-                        staticUserPid = testident
-                        staticLevelOfAssurance = levelOfAssurance.toMockk()
+                    userTokenMock {
+                        levelOfAssurance = Substantial
+                        configureIssuers(Issuer.Tokenx)
+                        enableDefaultAuthentication {
+                            tokenIdent = testident
+                            tokenLoa = testLoa
+                        }
                     }
                 }
             }
         }
     }
-}
-
-private fun LevelOfAssurance.toMockk(): no.nav.tms.token.support.tokenx.validation.mock.LevelOfAssurance?  = when {
-    this == HIGH -> MockLevelOfAssurance.HIGH
-    this == SUBSTANTIAL -> MockLevelOfAssurance.SUBSTANTIAL
-    else -> throw IllegalArgumentException("Ukjent verdi for level of assurance; ${this.name}")
 }
 
 val mockEngine = MockEngine { _ ->

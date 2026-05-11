@@ -2,7 +2,7 @@ package no.nav.tms.mikrofrontend.selector.versions
 
 import com.nfeld.jsonpathkt.extension.read
 import no.nav.tms.kafka.application.JsonMessage
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
 
 abstract class MessageRequirements(
     vararg eventFields: String
@@ -27,10 +27,9 @@ object JsonMessageVersions {
             ?.let { value -> LevelOfAssuranceResolver.fromString(value) }
             ?: this.json.read<Int>("sikkerhetsnivå")
                 ?.let { nivå -> LevelOfAssuranceResolver.fromSikkerhetsnivå(nivå) }
-            ?: LevelOfAssurance.HIGH
+            ?: LevelOfAssurance.High
 
     val JsonMessage.initiatedBy: String?
         get() = json.read<String>("@initiated_by")
             ?: json.read<String>("initiated_by")
-    fun JsonMessage.traceInfo(sink: String) = mapOf("initiated_by" to (this.initiatedBy ?: ""), "sink" to sink)
 }

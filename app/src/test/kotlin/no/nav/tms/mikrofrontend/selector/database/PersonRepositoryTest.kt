@@ -16,8 +16,8 @@ import no.nav.tms.mikrofrontend.selector.testJsonMessage
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.SUBSTANTIAL
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance.Substantial
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -52,7 +52,7 @@ internal class PersonRepositoryTest {
             testJsonMessage(
                 microfrontendId = "mkf4",
                 ident = personIdent,
-                levelOfAssurance = SUBSTANTIAL,
+                levelOfAssurance = Substantial,
                 initiatedBy = "test-team-2"
             )
         )
@@ -88,7 +88,7 @@ internal class PersonRepositoryTest {
     fun `Skal sette inn mikrofrontend for ident som har gamle innslag i tabellen`() {
         val testId1 = "7766"
         database.insertLegacyFormat(ident = testId1, format = ::dbv1Format, "m1", "m2", "m3")
-        repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf4", ident = testId1, levelOfAssurance = SUBSTANTIAL))
+        repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf4", ident = testId1, levelOfAssurance = Substantial))
         database.getMicrofrontends(testId1).run {
             shouldNotBeNull()
             size shouldBe 4
@@ -101,9 +101,9 @@ internal class PersonRepositoryTest {
                 id shouldBeIn listOf("m1", "m2", "m3", "mkf4", "mfk6")
                 this.size shouldBe 5
                 find { it["microfrontend_id"].asText() == "mkf4" }?.get("sensitivitet")
-                    ?.asText() shouldBe SUBSTANTIAL.name.lowercase()
+                    ?.asText() shouldBe Substantial.name.lowercase()
                 find { it["microfrontend_id"].asText() == "m1" }?.get("sensitivitet")
-                    ?.asText() shouldBe LevelOfAssurance.HIGH.name.lowercase()
+                    ?.asText() shouldBe LevelOfAssurance.High.name.lowercase()
             }
 
         }
@@ -121,8 +121,8 @@ internal class PersonRepositoryTest {
             )
         )
         repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf3", ident = testIdent))
-        repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf4", ident = testIdent, levelOfAssurance = SUBSTANTIAL))
-        repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf4", ident = testIdent, levelOfAssurance = SUBSTANTIAL))
+        repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf4", ident = testIdent, levelOfAssurance = Substantial))
+        repository.enableMicrofrontend(testJsonMessage(microfrontendId = "mkf4", ident = testIdent, levelOfAssurance = Substantial))
 
         require(database.getMicrofrontends(testIdent)!!.size == 3)
 
@@ -182,7 +182,7 @@ internal class PersonRepositoryTest {
 
         database.insertLegacyFormat(ident = testId2, format = ::dbv1Format, "m1", "m2", "m3")
         repository.disableMicrofrontend(
-            testJsonMessage(DisableMessage, "mkk", testId2, SUBSTANTIAL, "init-team")
+            testJsonMessage(DisableMessage, "mkk", testId2, Substantial, "init-team")
         )
 
         database.getMicrofrontends(testId1).run {
@@ -193,7 +193,7 @@ internal class PersonRepositoryTest {
 
         database.insertLegacyFormat(ident = testId3, format = ::dbv2Format, "m1", "m2", "m3")
         repository.disableMicrofrontend(
-            testJsonMessage(DisableMessage, "mkk", testId3, SUBSTANTIAL, "init-team")
+            testJsonMessage(DisableMessage, "mkk", testId3, Substantial, "init-team")
         )
 
         database.getMicrofrontends(testId1).run {

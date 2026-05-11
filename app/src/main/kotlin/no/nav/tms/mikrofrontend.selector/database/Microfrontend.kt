@@ -11,7 +11,7 @@ import no.nav.tms.mikrofrontend.selector.versions.DatabaseJsonVersions.toDbNode
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.levelOfAssurance
 import no.nav.tms.mikrofrontend.selector.versions.LevelOfAssuranceResolver
 import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
 import org.postgresql.util.PGobject
 
 

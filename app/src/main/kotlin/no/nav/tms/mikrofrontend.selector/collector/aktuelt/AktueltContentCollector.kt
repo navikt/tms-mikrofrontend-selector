@@ -10,8 +10,8 @@ import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
-import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
+import no.nav.tms.token.support.user.token.verification.UserPrincipal
 
 class AktueltCollector(
     val repository: PersonRepository,
@@ -19,12 +19,12 @@ class AktueltCollector(
     val externalContentFecther: ExternalContentFecther,
 ) {
 
-    suspend fun getAktuelt(user: TokenXUser, innloggetnivå: LevelOfAssurance): AktueltResponse {
+    suspend fun getAktuelt(user: UserPrincipal): AktueltResponse {
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
-        return asyncCollector(user).build(microfrontends, innloggetnivå, manifestStorage.getDiscoveryManifest())
+        return asyncCollector(user).build(microfrontends, user.levelOfAssurance, manifestStorage.getDiscoveryManifest())
     }
 
-    suspend fun asyncCollector(user: TokenXUser) = coroutineScope {
+    suspend fun asyncCollector(user: UserPrincipal) = coroutineScope {
         val safResponse = async { externalContentFecther.fetchDocumentsFromSaf(user) }
         val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
 

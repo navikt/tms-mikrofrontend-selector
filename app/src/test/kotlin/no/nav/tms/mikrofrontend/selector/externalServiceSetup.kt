@@ -24,11 +24,9 @@ class SafRoute(
                         "navn": "dummyNavn",
                         "journalposter": [{
                             "relevanteDatoer": [ {
-                            
                                 "dato": "${LocalDateTime.now()}"
                             },
                             {
-                            
                                 "dato": "${LocalDateTime.now().minusMinutes(4)}"
                             }
                            ]
@@ -178,9 +176,7 @@ fun ApplicationTestBuilder.initExternalServices(
     hosts(testHost) {
         routing {
             routeProviders.forEach { provider ->
-                provider.run {
-                    this@routing.initRoute()
-                }
+                provider.initRoute(this)
             }
         }
     }
@@ -193,8 +189,8 @@ abstract class RouteProvider(
 ) {
     abstract fun content(): String
 
-    fun Route.initRoute() {
-        route(path, method) {
+    fun initRoute(routing: Routing) {
+        routing.route(path, method) {
             handle {
                 call.respondText(content(), status = statusCode, contentType = ContentType.Application.Json)
             }

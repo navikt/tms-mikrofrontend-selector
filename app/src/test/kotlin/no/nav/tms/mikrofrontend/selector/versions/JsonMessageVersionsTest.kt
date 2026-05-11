@@ -4,9 +4,8 @@ import io.kotest.matchers.shouldBe
 import no.nav.tms.kafka.application.JsonMessage
 import no.nav.tms.mikrofrontend.selector.toJsonMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.levelOfAssurance
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.HIGH
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.SUBSTANTIAL
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance.High
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance.Substantial
 import org.junit.jupiter.api.Test
 
 internal class JsonMessageVersionsTest {
@@ -45,11 +44,11 @@ internal class JsonMessageVersionsTest {
 
     @Test
     fun `konverterer sensitvitet riktig`() {
-        version1Message.levelOfAssurance shouldBe HIGH
-        version2Message.levelOfAssurance shouldBe HIGH
-        version2MessageSikkerhetsnivå3.levelOfAssurance shouldBe SUBSTANTIAL
-        version3Message.levelOfAssurance shouldBe HIGH
-        version3MessageSensitivitetSubstantial.levelOfAssurance shouldBe SUBSTANTIAL
+        version1Message.levelOfAssurance shouldBe High
+        version2Message.levelOfAssurance shouldBe High
+        version2MessageSikkerhetsnivå3.levelOfAssurance shouldBe Substantial
+        version3Message.levelOfAssurance shouldBe High
+        version3MessageSensitivitetSubstantial.levelOfAssurance shouldBe Substantial
 
     }
 }

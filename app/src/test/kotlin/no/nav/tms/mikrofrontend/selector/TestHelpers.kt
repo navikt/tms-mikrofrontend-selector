@@ -11,8 +11,7 @@ import no.nav.tms.mikrofrontend.selector.collector.Dokument
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.MessageRequirements
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance.HIGH
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import kotlin.reflect.full.primaryConstructor
@@ -25,7 +24,7 @@ fun testJsonString(
     messageRequirements: MessageRequirements = EnableMessage,
     microfrontendId: String,
     ident: String,
-    levelOfAssurance: LevelOfAssurance = HIGH,
+    levelOfAssurance: LevelOfAssurance = LevelOfAssurance.High,
     initiatedBy: String = "default-team"
 ) = objectMapper.writeValueAsString(
     jsonTestMap(
@@ -41,7 +40,7 @@ fun testJsonMessage(
     messageRequirements: MessageRequirements = EnableMessage,
     microfrontendId: String,
     ident: String,
-    levelOfAssurance: LevelOfAssurance = HIGH,
+    levelOfAssurance: LevelOfAssurance = LevelOfAssurance.High,
     initiatedBy: String = "default-team"
 ): JsonMessage =
     jsonTestMap(
@@ -57,7 +56,7 @@ fun jsonTestMap(
     messageRequirements: MessageRequirements,
     microfrontendId: String,
     ident: String,
-    levelOfAssurance: LevelOfAssurance = HIGH,
+    levelOfAssurance: LevelOfAssurance = LevelOfAssurance.High,
     initiatedBy: String = "default-team"
 ) = mutableMapOf(
     //TODO: fiks i kafkalib

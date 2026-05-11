@@ -13,7 +13,7 @@ import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.DisableMessage
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -78,7 +78,7 @@ internal class SubscriberTest {
         val enableMsg3 = testJsonString(
             microfrontendId = testmicrofeId2,
             ident = testIdent,
-            levelOfAssurance = LevelOfAssurance.SUBSTANTIAL
+            levelOfAssurance = LevelOfAssurance.Substantial
         )
 
         broadcaster.broadcastJson(enableMsg1)
@@ -90,7 +90,7 @@ internal class SubscriberTest {
                 messageRequirements = EnableMessage,
                 microfrontendId = microNewVersion,
                 ident = testIdent,
-                levelOfAssurance = LevelOfAssurance.HIGH,
+                levelOfAssurance = LevelOfAssurance.High,
                 initiatedBy = "test-team"
             )
         )
