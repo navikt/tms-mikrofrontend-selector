@@ -1,6 +1,7 @@
 package no.nav.tms.mikrofrontend.selector
 
 import io.ktor.client.*
+import no.nav.tms.kafka.application.Domain
 import no.nav.tms.kafka.application.KafkaApplication
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
@@ -88,6 +89,7 @@ private fun startApplication(
         }
 
         minSideMdc {
+            domain = Domain.microfrontend
             idFieldName = "microfrontend_id"
             producedBySupplier { it.initiatedBy }
         }
