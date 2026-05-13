@@ -22,6 +22,7 @@ import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
 import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
 import no.nav.tms.mikrofrontend.selector.database.DatabaseException
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
 import no.nav.tms.token.support.user.token.verification.UserPrincipal
 import no.nav.tms.token.support.user.token.verification.userToken
 import java.text.DateFormat
@@ -117,7 +118,7 @@ private val ApplicationCall.user get() = principal<UserPrincipal>()
 private fun installAuth(): Application.() -> Unit = {
     authentication {
         userToken {
-
+            levelOfAssurance = LevelOfAssurance.Substantial
         }
     }
 }
