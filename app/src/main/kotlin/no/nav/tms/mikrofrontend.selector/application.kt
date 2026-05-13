@@ -1,6 +1,7 @@
 package no.nav.tms.mikrofrontend.selector
 
 import io.ktor.client.*
+import no.nav.tms.kafka.application.Domain
 import no.nav.tms.kafka.application.KafkaApplication
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
@@ -11,8 +12,11 @@ import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.database.PostgresDatabase
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.initiatedBy
+import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.levelOfAssurance
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
-import no.nav.tms.token.support.tokendings.exchange.TokendingsServiceBuilder
+import no.nav.tms.token.support.user.token.exchange.UserTokenExchangerBuilder
 
 fun main() {
     val environment = Environment()
@@ -33,7 +37,7 @@ fun main() {
         pdlBehandlingsnummer = environment.pdlBehandlingsnummer,
         dokumentarkivUrlResolver = dokumentarkivUrlResolver,
         tokenFetcher = TokenFetcher(
-            tokendingsService = TokendingsServiceBuilder.buildTokendingsService(),
+            tokendingsService = UserTokenExchangerBuilder.build(),
             meldekortApiClientId = environment.meldekortApiClientId,
             dpMeldekortClientId = environment.dpMeldekortApiClientId,
             safClientId = environment.safClientId,
@@ -82,6 +86,12 @@ private fun startApplication(
 
         onStartup {
             Flyway.runFlywayMigrations(environment)
+        }
+
+        minSideMdc {
+            domain = Domain.microfrontend
+            idFieldName = "microfrontend_id"
+            producedBySupplier { it.initiatedBy }
         }
     }.start()
 }

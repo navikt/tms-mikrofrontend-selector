@@ -4,7 +4,7 @@ package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 import com.fasterxml.jackson.databind.JsonNode
 import com.nfeld.jsonpathkt.extension.read
 import no.nav.tms.mikrofrontend.selector.collector.Dokument
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
 import java.time.LocalDateTime
 
 interface ContentResolver {
@@ -140,7 +140,7 @@ class IncludeOnlyIfLoAIsHighRule(val requireHighLevelOfAssurance: Boolean) :
     override fun resolverOrNull(input: LevelOfAssurance?): ContentResolver? =
         input?.let {
             object : ContentResolver {
-                override fun skalVises(): Boolean = if(requireHighLevelOfAssurance && input != LevelOfAssurance.HIGH) {
+                override fun skalVises(): Boolean = if(requireHighLevelOfAssurance && input != LevelOfAssurance.High) {
                     false
                 } else {
                     true

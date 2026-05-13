@@ -9,7 +9,7 @@ import io.ktor.http.*
 import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
-import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
+import no.nav.tms.token.support.user.token.verification.UserPrincipal
 import java.net.SocketTimeoutException
 import java.util.UUID
 import kotlin.reflect.full.primaryConstructor
@@ -46,7 +46,7 @@ class ExternalContentFecther(
         }
     """.compactJson()
 
-    suspend fun fetchDocumentsFromSaf(user: TokenXUser): SafResponse = withErrorHandling("SAF", "$safUrl/graphql") {
+    suspend fun fetchDocumentsFromSaf(user: UserPrincipal): SafResponse = withErrorHandling("SAF", "$safUrl/graphql") {
         httpClient.post {
             url("$safUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
@@ -70,7 +70,7 @@ class ExternalContentFecther(
             }
     }
 
-    suspend fun fetchFellesMeldekort(user: TokenXUser): MeldekortResponse = getResponseAsJsonPath(
+    suspend fun fetchFellesMeldekort(user: UserPrincipal): MeldekortResponse = getResponseAsJsonPath(
         tokenFetcher = tokenFetcher::meldekortApiToken,
         user = user,
         url = "$meldekortApiUrl/api/person/meldekortstatus",
@@ -78,7 +78,7 @@ class ExternalContentFecther(
         map = { jsonPath -> MeldekortResponse(meldekortResponse = jsonPath) },
     )
 
-    suspend fun fetchDpMeldekort(user: TokenXUser): MeldekortResponse = getResponseAsJsonPath(
+    suspend fun fetchDpMeldekort(user: UserPrincipal): MeldekortResponse = getResponseAsJsonPath(
         tokenFetcher = tokenFetcher::dpMeldekortToken,
         user = user,
         url = "$dpMeldekortUrl/meldekortstatus",
@@ -94,7 +94,7 @@ class ExternalContentFecther(
         }
     )
 
-    suspend fun fetchDigisosSakstema(user: TokenXUser): DigisosResponse = getResponseAsJsonPath(
+    suspend fun fetchDigisosSakstema(user: UserPrincipal): DigisosResponse = getResponseAsJsonPath(
         tokenFetcher = tokenFetcher::digisosToken,
         user = user,
         url = "$digisosUrl/minesaker/innsendte",
@@ -111,7 +111,7 @@ class ExternalContentFecther(
     )
 
 
-    suspend fun fetchPersonOpplysninger(user: TokenXUser): PdlResponse = withErrorHandling("pdl", "$pdlUrl/graphql") {
+    suspend fun fetchPersonOpplysninger(user: UserPrincipal): PdlResponse = withErrorHandling("pdl", "$pdlUrl/graphql") {
         httpClient.post {
             url("$pdlUrl/graphql")
             header("Authorization", "Bearer ${tokenFetcher.pdlToken(user)}")
@@ -134,8 +134,8 @@ class ExternalContentFecther(
     }
 
     private suspend inline fun <reified T : ResponseWithErrors> getResponseAsJsonPath(
-        tokenFetcher: suspend (TokenXUser) -> String,
-        user: TokenXUser,
+        tokenFetcher: suspend (UserPrincipal) -> String,
+        user: UserPrincipal,
         url: String,
         tjeneste: String,
         requestOptions: HttpRequestBuilder.() -> Unit = {},

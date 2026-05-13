@@ -11,8 +11,8 @@ import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
 import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
-import no.nav.tms.token.support.tokenx.validation.user.TokenXUser
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
+import no.nav.tms.token.support.user.token.verification.UserPrincipal
 
 class PersonalContentCollector(
     val repository: PersonRepository,
@@ -21,22 +21,23 @@ class PersonalContentCollector(
     val produktkortCounter: ProduktkortCounter
 ) {
 
-    suspend fun getContent(user: TokenXUser, innloggetnivå: LevelOfAssurance): PersonalContentResponse {
+    suspend fun getContent(user: UserPrincipal): PersonalContentResponse {
         val microfrontends = repository.getEnabledMicrofrontends(user.ident)
-        return asyncCollector(user).build(microfrontends, innloggetnivå, manifestStorage.getDiscoveryManifest())
+        return asyncCollector(user)
+            .build(microfrontends, user.levelOfAssurance, manifestStorage.getDiscoveryManifest())
             .also {
                 produktkortCounter.countProduktkort(it.produktkort)
             }
     }
 
-    suspend fun asyncCollector(user: TokenXUser) = coroutineScope {
+    suspend fun asyncCollector(user: UserPrincipal) = coroutineScope {
         val safResponse = async { externalContentFecther.fetchDocumentsFromSaf(user) }
         val meldekortApiResponse = async { externalContentFecther.fetchFellesMeldekort(user) }
         val dpMeldekortResponse = async { externalContentFecther.fetchDpMeldekort(user) }
         val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
         val digisosResponse = async { externalContentFecther.fetchDigisosSakstema(user) }
 
-        return@coroutineScope PersonalContentFactory(
+        PersonalContentFactory(
             safResponse = safResponse.await(),
             meldekortApiResponse = meldekortApiResponse.await(),
             dpMeldekortResponse = dpMeldekortResponse.await(),
@@ -44,7 +45,6 @@ class PersonalContentCollector(
             digisosResponse = digisosResponse.await(),
             levelOfAssurance = user.levelOfAssurance
         )
-
     }
 }
 
@@ -64,8 +64,9 @@ class PersonalContentFactory(
     ) = PersonalContentResponse(
         microfrontends = microfrontends?.getDefinitions(levelOfAssurance, discoveryManifest) ?: emptyList(),
         produktkort = ContentDefinition.getProduktkort(
-            digisosResponse.dokumenter + safResponse.dokumenter, levelOfAssurance
-        ).filter { it.skalVises() }.map { it.id },
+                digisosResponse.dokumenter + safResponse.dokumenter, levelOfAssurance
+            ).filter { it.skalVises() }
+            .map { it.id },
         offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
         meldekort = meldekortApiResponse.harMeldekort || dpMeldekortResponse.harMeldekort,
         aktuelt = ContentDefinition.getAktueltContent(

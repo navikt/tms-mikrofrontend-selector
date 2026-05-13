@@ -3,7 +3,7 @@ package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 import io.kotest.matchers.shouldBe
 import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.Dokument
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -27,7 +27,7 @@ class ProduktkortTest {
                     dokumentarkivUrlResolver = dokumentarkivUrlResolver,
                     sistEndret = LocalDateTime.now()
                 )
-            ), LevelOfAssurance.HIGH
+            ), LevelOfAssurance.High
         )
             .also { it.size shouldBe 1 }
             .first()
@@ -44,7 +44,7 @@ class ProduktkortTest {
                     dokumentarkivUrlResolver = dokumentarkivUrlResolver,
                     sistEndret = LocalDateTime.now()
                 )
-            ), LevelOfAssurance.SUBSTANTIAL
+            ), LevelOfAssurance.Substantial
         )
             .also { it.size shouldBe 1 }
 
@@ -56,7 +56,7 @@ class ProduktkortTest {
                     dokumentarkivUrlResolver = dokumentarkivUrlResolver,
                     sistEndret = LocalDateTime.now()
                 )
-            ), LevelOfAssurance.HIGH
+            ), LevelOfAssurance.High
         )
             .also { it.size shouldBe 1 }
             .first()
@@ -73,7 +73,7 @@ class ProduktkortTest {
                     dokumentarkivUrlResolver = dokumentarkivUrlResolver,
                     sistEndret = LocalDateTime.now()
                 )
-            ), LevelOfAssurance.HIGH
+            ), LevelOfAssurance.High
         )
             .also { it.size shouldBe 1 }
             .first()
@@ -90,7 +90,7 @@ class ProduktkortTest {
                     dokumentarkivUrlResolver = dokumentarkivUrlResolver,
                     sistEndret = LocalDateTime.now()
                 )
-            ), LevelOfAssurance.HIGH
+            ), LevelOfAssurance.High
         )
             .also { it.size shouldBe 1 }
             .first()
@@ -107,7 +107,7 @@ class ProduktkortTest {
                     dokumentarkivUrlResolver = dokumentarkivUrlResolver,
                     sistEndret = LocalDateTime.now()
                 )
-            ), LevelOfAssurance.SUBSTANTIAL
+            ), LevelOfAssurance.Substantial
         )
             .also { it.size shouldBe 0 }
     }
@@ -132,7 +132,7 @@ class ProduktkortTest {
                     dokumentarkivUrlResolver = dokumentarkivUrlResolver,
                     sistEndret = LocalDateTime.now()
                 )
-            ), LevelOfAssurance.HIGH
+            ), LevelOfAssurance.High
         ).first().run {
             id shouldBe forventetKode
         }
@@ -148,7 +148,7 @@ class ProduktkortTest {
                     dokumentarkivUrlResolver = dokumentarkivUrlResolver,
                     sistEndret = LocalDateTime.now()
                 )
-            ), LevelOfAssurance.HIGH
+            ), LevelOfAssurance.High
         ).size shouldBe 0
     }
 }

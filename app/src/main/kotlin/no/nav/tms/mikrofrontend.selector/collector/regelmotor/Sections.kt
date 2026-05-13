@@ -3,7 +3,7 @@ package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 import com.fasterxml.jackson.databind.JsonNode
 import com.nfeld.jsonpathkt.extension.read
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
 
 abstract class Section(val name: String, private val microfrontendIds: List<String>) {
     fun getMicrofrontendsForSection(enabledMicrofrontends: Microfrontends?, innloggetNivå: LevelOfAssurance) = enabledMicrofrontends?.ids(innloggetNivå)

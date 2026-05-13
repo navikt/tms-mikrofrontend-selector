@@ -7,7 +7,7 @@ import no.nav.tms.mikrofrontend.selector.collector.Dokument
 import no.nav.tms.mikrofrontend.selector.collector.MicrofrontendsDefinition
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentRulesDefinition.Companion.initContentRules
 import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
-import no.nav.tms.token.support.tokenx.validation.LevelOfAssurance
+import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
 
 object ContentDefinition {
     private fun yamlObjectMapper() =

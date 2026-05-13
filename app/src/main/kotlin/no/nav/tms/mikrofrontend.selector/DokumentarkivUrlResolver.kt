@@ -6,5 +6,4 @@ class DokumentarkivUrlResolver(
 ) {
     fun urlFor(kode: String): String =
         temaspesifikkeLenker.getOrDefault(kode, "$generellLenke/$kode")
-
 }
