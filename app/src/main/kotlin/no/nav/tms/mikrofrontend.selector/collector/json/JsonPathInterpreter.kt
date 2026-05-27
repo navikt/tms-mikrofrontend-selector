@@ -6,7 +6,7 @@ import com.nfeld.jsonpathkt.extension.read
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.statement.*
 import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
-import no.nav.tms.mikrofrontend.selector.collector.Dokument
+import no.nav.tms.mikrofrontend.selector.collector.Tema
 import java.lang.NullPointerException
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -182,43 +182,21 @@ class JsonPathInterpreter private constructor(val jsonNode: JsonNode, val debugL
             initPathInterpreter(bodyAsText(), debugLog)
     }
 
-    fun safDokument(dokumentarkivUrlResolver: DokumentarkivUrlResolver) = jsonNode.read<JsonNode>("\$.data.dokumentoversiktSelvbetjening.tema")?.map { it ->
-        val datoPath = "\$.journalposter..relevanteDatoer..dato"
-        val kodePath = "\$.kode"
-        val navnPath = "\$.navn"
-
-        Dokument(
-            kode = it.read<String>(kodePath) ?: throw JsonPathSearchException(
-                jsonPath = kodePath,
-                jsonNode = it,
-                originalJson = jsonNode
-            ),
-            navn  = it.read<String>(navnPath) ?: "ukjent",
-            dokumentarkivUrlResolver = dokumentarkivUrlResolver,
-            sistEndret = it.read<List<String>>(datoPath)
-                ?.map { json -> LocalDateTime.parse(json) }
-                ?.maxByOrNull { parsedDate -> parsedDate }
-                ?: throw JsonPathSearchException(
-                    jsonPath =datoPath,
-                    jsonNode = it,
-                    originalJson = jsonNode
-                )
-        )
-    }
-
     fun digisosDokument(dokumentarkivUrlResolver: DokumentarkivUrlResolver) = jsonNode.read<JsonNode>("$")?.map {
         val kodePath = "$.kode"
         val datoPath = "$.sistEndret"
         val navnPath = "\$.navn"
 
-        Dokument(
-            kode = it.read<String>(kodePath) ?: throw JsonPathSearchException(
-                jsonPath = kodePath,
-                jsonNode = it,
-                originalJson = jsonNode
-            ),
+        val kode = it.read<String>(kodePath) ?: throw JsonPathSearchException(
+            jsonPath = kodePath,
+            jsonNode = it,
+            originalJson = jsonNode
+        )
+
+        Tema(
+            kode = kode,
             navn  = it.read<String>(navnPath) ?: "ukjent",
-            dokumentarkivUrlResolver = dokumentarkivUrlResolver,
+            url = dokumentarkivUrlResolver.urlFor(kode),
             sistEndret = it.read<String>(datoPath)
                 ?.let { json -> LocalDateTime.parse(json) }
                 ?: throw JsonPathSearchException(

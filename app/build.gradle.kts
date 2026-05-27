@@ -1,7 +1,13 @@
+import com.expediagroup.graphql.plugin.gradle.config.TimeoutConfiguration
+import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLDownloadSDLTask
+import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLGenerateClientTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm").version(Kotlin.version)
+
+    id(GraphQL.pluginId) version GraphQL.version
 
     id(TmsJarBundling.plugin)
 
@@ -27,6 +33,8 @@ dependencies {
     implementation(TmsCommonLib.utils)
     implementation(Flyway9.core)
     implementation(Hikari.cp)
+    implementation(GraphQL.kotlinClient)
+    implementation(GraphQL.kotlinKtorClient)
     implementation(KotlinLogging.logging)
     implementation(Ktor.Server.core)
     implementation(Ktor.Server.netty)
@@ -82,4 +90,47 @@ tasks {
             events("passed", "skipped", "failed")
         }
     }
+}
+
+
+// Generates graphql schemas for SAF
+val graphqlDownloadSafSdl by tasks.register("graphqlDownloadSafSdl", GraphQLDownloadSDLTask::class) {
+
+    outputFile.set(file("${getLayout().buildDirectory}/graphql/saf.graphql"))
+    endpoint.set("https://navikt.github.io/safselvbetjening/schema.graphqls")
+    timeoutConfig.set(TimeoutConfiguration(connect = 10_000, read = 30_000))
+}
+
+val generateSafClient by tasks.register("generateSafClient", GraphQLGenerateClientTask::class) {
+
+    packageName.set("no.nav.dokument.saf.selvbetjening.generated.dto")
+    schemaFile.set(graphqlDownloadSafSdl.outputFile)
+    // optional
+    allowDeprecatedFields.set(true)
+    queryFileDirectory.set(File("${project.projectDir.absolutePath}/src/main/resources/graphql/saf"))
+
+    dependsOn("graphqlDownloadSafSdl")
+}
+
+// Generates graphql schemas for PDL
+val graphqlDownloadPdlSdl by tasks.register("graphqlDownloadPdlSdl", GraphQLDownloadSDLTask::class) {
+    outputFile.set(file("${getLayout().buildDirectory}/graphql/pdl.graphql"))
+    endpoint.set("https://navikt.github.io/pdl/pdl-api-sdl.graphqls")
+    timeoutConfig.set(TimeoutConfiguration(connect = 10_000, read = 30_000))
+}
+
+val generatePdlClient by tasks.register("generatePdlClient", GraphQLGenerateClientTask::class) {
+
+    packageName.set("no.nav.pdl.generated.dto")
+    schemaFile.set(graphqlDownloadPdlSdl.outputFile)
+    // optional
+    allowDeprecatedFields.set(true)
+    queryFileDirectory.set(File("${project.projectDir.absolutePath}/src/main/resources/graphql/pdl"))
+
+    dependsOn("graphqlDownloadPdlSdl")
+}
+
+// Ensures graphql plugins are run as part of compile
+tasks.withType<KotlinCompile> {
+    dependsOn(generateSafClient, generatePdlClient)
 }

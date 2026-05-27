@@ -7,7 +7,7 @@ import no.nav.tms.kafka.application.EventMetadata
 import no.nav.tms.kafka.application.JsonMessage
 import no.nav.tms.kafka.application.KafkaEvent
 import no.nav.tms.kafka.application.MessageBroadcaster
-import no.nav.tms.mikrofrontend.selector.collector.Dokument
+import no.nav.tms.mikrofrontend.selector.collector.Tema
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.EnableMessage
 import no.nav.tms.mikrofrontend.selector.versions.MessageRequirements
@@ -70,7 +70,12 @@ fun jsonTestMap(
         this["sensitivitet"] = levelOfAssurance.name.lowercase()
 }
 
-fun String.safTestDokument(sistEndret: LocalDateTime = LocalDateTime.now()) = Dokument(this, DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dagpenger")), navn = "Dagpenger", sistEndret = sistEndret)
+fun String.safTestDokument(sistEndret: LocalDateTime = LocalDateTime.now()) = Tema(
+    this,
+    url = if (this == "DAG") "https://www.nav.no/dokumentarkiv/dagpenger" else "https://www.nav.no",
+    navn = "Dagpenger",
+    sistEndret = sistEndret
+)
 
 fun setupBroadcaster(personRepository: PersonRepository) = MessageBroadcaster(
     listOf(

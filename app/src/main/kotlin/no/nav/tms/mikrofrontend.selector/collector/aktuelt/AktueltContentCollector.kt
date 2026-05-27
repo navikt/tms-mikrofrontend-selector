@@ -16,7 +16,7 @@ import no.nav.tms.token.support.user.token.verification.UserPrincipal
 class AktueltCollector(
     val repository: PersonRepository,
     val manifestStorage: ManifestsStorage,
-    val externalContentFecther: ExternalContentFecther,
+    val externalContentFetcher: ExternalContentFetcher,
 ) {
 
     suspend fun getAktuelt(user: UserPrincipal): AktueltResponse {
@@ -25,8 +25,8 @@ class AktueltCollector(
     }
 
     suspend fun asyncCollector(user: UserPrincipal) = coroutineScope {
-        val safResponse = async { externalContentFecther.fetchDocumentsFromSaf(user) }
-        val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
+        val safResponse = async { externalContentFetcher.fetchDocumentsFromSaf(user) }
+        val pdlResponse = async { externalContentFetcher.fetchFoedselsdato(user) }
 
         AktueltFactory(
             safResponse = safResponse.await(),
@@ -51,7 +51,7 @@ class AktueltFactory(
         offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
         microfrontends = ContentDefinition.getAktueltContent(
             pdlResponse.calculateAge(),
-            safResponse.dokumenter,
+            safResponse.temaer,
             discoveryManifest,
             levelOfAssurance
         )

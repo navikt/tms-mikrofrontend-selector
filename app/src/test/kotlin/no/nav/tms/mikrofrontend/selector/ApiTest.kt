@@ -18,8 +18,10 @@ import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.prometheus.metrics.model.registry.PrometheusRegistry
-import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
+import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFetcher
+import no.nav.tms.mikrofrontend.selector.collector.PdlConsumer
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
+import no.nav.tms.mikrofrontend.selector.collector.SafConsumer
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
 import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
@@ -528,37 +530,36 @@ internal class ApiTest {
     ) {
         val apiClient = httpClient ?: createClient { configureClient() }
         application {
+            val externalContentFetcher = ExternalContentFetcher(
+                httpClient = apiClient,
+                meldekortApiUrl = testHost,
+                dpMeldekortUrl = testHost,
+                digisosUrl = testHost,
+                tokenFetcher = tokenFetcher,
+                pdlConsumer = PdlConsumer(
+                    httpClient = apiClient,
+                    pdlApiUrl = "$testHost/pdl",
+                    behandlingsNummer = "B000"
+                ),
+                safConsumer = SafConsumer(
+                    httpClient = apiClient,
+                    safUrl = testHost,
+                    dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
+                ),
+                dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
+            )
+
             selectorApi(
                 personalContentCollector = PersonalContentCollector(
                     repository = personRepository,
                     manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
-                    externalContentFecther = ExternalContentFecther(
-                        safUrl = testHost,
-                        httpClient = apiClient,
-                        meldekortApiUrl = testHost,
-                        dpMeldekortUrl = testHost,
-                        pdlUrl = "$testHost/pdl",
-                        digisosUrl = testHost,
-                        pdlBehandlingsnummer = "B000",
-                        tokenFetcher = tokenFetcher,
-                        dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
-                    ),
+                    externalContentFetcher = externalContentFetcher,
                     produktkortCounter = produktkortCounter
                 ),
                 aktueltCollector = AktueltCollector(
                     repository = personRepository,
                     manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
-                    externalContentFecther = ExternalContentFecther(
-                        safUrl = testHost,
-                        httpClient = apiClient,
-                        meldekortApiUrl = testHost,
-                        dpMeldekortUrl = testHost,
-                        pdlUrl = "$testHost/pdl",
-                        digisosUrl = testHost,
-                        pdlBehandlingsnummer = "B000",
-                        tokenFetcher = tokenFetcher,
-                        dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
-                    ),
+                    externalContentFetcher = externalContentFetcher,
                 )
             ) {
                 authentication {

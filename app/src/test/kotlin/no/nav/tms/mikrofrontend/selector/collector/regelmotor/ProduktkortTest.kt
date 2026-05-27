@@ -2,7 +2,7 @@ package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 
 import io.kotest.matchers.shouldBe
 import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
-import no.nav.tms.mikrofrontend.selector.collector.Dokument
+import no.nav.tms.mikrofrontend.selector.collector.Tema
 import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
 
 import org.junit.jupiter.api.Test
@@ -21,10 +21,10 @@ class ProduktkortTest {
 
         ContentDefinition.getProduktkort(
             listOf(
-                Dokument(
+                Tema(
                     kode = "PEN",
                     navn = "Pensjon",
-                    dokumentarkivUrlResolver = dokumentarkivUrlResolver,
+                    url = "https://www.nav.no",
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.High
@@ -38,10 +38,10 @@ class ProduktkortTest {
 
         ContentDefinition.getProduktkort(
             listOf(
-                Dokument(
+                Tema(
                     kode = "PEN",
                     navn = "Pensjon",
-                    dokumentarkivUrlResolver = dokumentarkivUrlResolver,
+                    url = "https://www.nav.no",
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.Substantial
@@ -50,10 +50,10 @@ class ProduktkortTest {
 
         ContentDefinition.getProduktkort(
             listOf(
-                Dokument(
+                Tema(
                     kode = "PEN",
                     navn = "Pensjon",
-                    dokumentarkivUrlResolver = dokumentarkivUrlResolver,
+                    url = "https://www.nav.no",
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.High
@@ -67,10 +67,10 @@ class ProduktkortTest {
 
         ContentDefinition.getProduktkort(
             listOf(
-                Dokument(
+                Tema(
                     kode = "DAG",
                     navn = "Dagpenger",
-                    dokumentarkivUrlResolver = dokumentarkivUrlResolver,
+                    url = "https://www.nav.no/dokumentarkiv/dagpenger",
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.High
@@ -84,10 +84,10 @@ class ProduktkortTest {
 
         ContentDefinition.getProduktkort(
             listOf(
-                Dokument(
+                Tema(
                     kode = "DAG",
                     navn = "Dagpenger",
-                    dokumentarkivUrlResolver = dokumentarkivUrlResolver,
+                    url = "https://www.nav.no/dokumentarkiv/dagpenger",
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.High
@@ -101,10 +101,10 @@ class ProduktkortTest {
 
         ContentDefinition.getProduktkort(
             listOf(
-                Dokument(
+                Tema(
                     kode = "DAG",
                     navn = "Dagpenger",
-                    dokumentarkivUrlResolver = dokumentarkivUrlResolver,
+                    url = "https://www.nav.no/dokumentarkiv/dagpenger",
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.Substantial
@@ -126,10 +126,10 @@ class ProduktkortTest {
     fun `skal mappes til riktige koder og navn`(kode: String, forventetKode: String) {
         ContentDefinition.getProduktkort(
             listOf(
-                Dokument(
+                Tema(
                     kode,
                     navn = "Pensjon",
-                    dokumentarkivUrlResolver = dokumentarkivUrlResolver,
+                    url = "https://www.nav.no",
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.High
@@ -142,10 +142,10 @@ class ProduktkortTest {
     fun `skal ikke legge til produktkort for ukjente verdier`() {
         ContentDefinition.getProduktkort(
             listOf(
-                Dokument(
+                Tema(
                     "ABC",
                     navn = "Pensjon",
-                    dokumentarkivUrlResolver = dokumentarkivUrlResolver,
+                    url = "https://www.nav.no",
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.High

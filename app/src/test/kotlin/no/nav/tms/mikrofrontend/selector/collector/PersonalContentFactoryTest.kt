@@ -34,8 +34,13 @@ class PersonalContentFactoryTest {
     @Test
     fun `skal ha microfrontends og produktkort innlogingsnivå 4`() {
         testFactory(
-            safResponse = SafResponse(listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now()))),
-            digisosResponse = DigisosResponse(listOf(Dokument(kode = "KOM", navn = "Sosialhjelp", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now()))),
+            safResponse = SafResponse(
+                temaer = listOf(Tema("DAG", navn = "Dagpenger", url = "https://www.nav.no/dokumentarkiv/dagpenger", sistEndret = LocalDateTime.now())),
+                errors = emptyList()
+            ),
+            digisosResponse = DigisosResponse(
+                listOf(Tema(kode = "KOM", navn = "Sosialhjelp", url = "https://www.nav.no", sistEndret = LocalDateTime.now()))
+            ),
         ).build(
             microfrontends = microfrontendMocck(level4Microfrontends = MicrofrontendsDefinition("id", "url", "appname", "namespace", "fallback", true) * 5),
             levelOfAssurance = LevelOfAssurance.High,
@@ -85,7 +90,7 @@ class PersonalContentFactoryTest {
     fun `skal ha produkkort, ny-aia, meldekort og microfrontends`() {
         testFactory(
             safResponse = SafResponse(
-                dokumenter = listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now())),
+                temaer = listOf(Tema("DAG", navn = "Dagpenger", url = "https://www.nav.no/dokumentarkiv/dagpenger", sistEndret = LocalDateTime.now())),
                 errors = emptyList()
             ),
             meldekortApiResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
@@ -111,7 +116,7 @@ class PersonalContentFactoryTest {
         // er både aia og meldekort nivå 4? Hva med produktkort?
         testFactory(
             safResponse = SafResponse(
-                listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now())),
+                listOf(Tema("DAG", navn = "Dagpenger", url = "https://www.nav.no/dokumentarkiv/dagpenger", sistEndret = LocalDateTime.now())),
                 emptyList()
             )
         ).build(

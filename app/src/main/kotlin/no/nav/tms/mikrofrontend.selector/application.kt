@@ -4,7 +4,9 @@ import io.ktor.client.*
 import no.nav.tms.kafka.application.Domain
 import no.nav.tms.kafka.application.KafkaApplication
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
-import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
+import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFetcher
+import no.nav.tms.mikrofrontend.selector.collector.PdlConsumer
+import no.nav.tms.mikrofrontend.selector.collector.SafConsumer
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
 import no.nav.tms.mikrofrontend.selector.database.Flyway
@@ -12,9 +14,7 @@ import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.database.PostgresDatabase
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
-import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions
 import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.initiatedBy
-import no.nav.tms.mikrofrontend.selector.versions.JsonMessageVersions.levelOfAssurance
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.user.token.exchange.UserTokenExchangerBuilder
 
@@ -27,15 +27,28 @@ fun main() {
         counter = MicrofrontendCounter()
     )
 
-    val externalContentFecther = ExternalContentFecther(
+    val httpClient = HttpClient { configureClient() }
+
+    val pdlConsumer = PdlConsumer(
+        httpClient = httpClient,
+        pdlApiUrl = environment.pdlApiUrl,
+        behandlingsNummer = environment.pdlBehandlingsnummer,
+    )
+
+    val safConsumer = SafConsumer(
+        httpClient = httpClient,
         safUrl = environment.safUrl,
-        httpClient = HttpClient { configureClient() },
+        dokumentarkivUrlResolver = dokumentarkivUrlResolver
+    )
+
+    val externalContentFetcher = ExternalContentFetcher(
+        httpClient = httpClient,
         meldekortApiUrl = environment.meldekortApiUrl,
         dpMeldekortUrl = environment.dpMeldekortUrl,
-        pdlUrl = environment.pdlApiUrl,
         digisosUrl = environment.digisosUrl,
-        pdlBehandlingsnummer = environment.pdlBehandlingsnummer,
         dokumentarkivUrlResolver = dokumentarkivUrlResolver,
+        pdlConsumer = pdlConsumer,
+        safConsumer = safConsumer,
         tokenFetcher = TokenFetcher(
             tokendingsService = UserTokenExchangerBuilder.build(),
             meldekortApiClientId = environment.meldekortApiClientId,
@@ -50,7 +63,7 @@ fun main() {
         environment = environment,
         manifestStorage = ManifestsStorage(environment.initGcpStorage(), environment.storageBucketName),
         personRepository = personRepository,
-        externalContentFecther = externalContentFecther
+        externalContentFetcher = externalContentFetcher
     )
 }
 
@@ -58,7 +71,7 @@ private fun startApplication(
     environment: Environment,
     manifestStorage: ManifestsStorage,
     personRepository: PersonRepository,
-    externalContentFecther: ExternalContentFecther,
+    externalContentFetcher: ExternalContentFetcher,
 ) {
     KafkaApplication.build {
         kafkaConfig {
@@ -71,13 +84,13 @@ private fun startApplication(
                 PersonalContentCollector(
                     repository = personRepository,
                     manifestStorage = manifestStorage,
-                    externalContentFecther = externalContentFecther,
+                    externalContentFetcher = externalContentFetcher,
                     produktkortCounter = ProduktkortCounter()
                 ),
                 AktueltCollector(
                     repository = personRepository,
                     manifestStorage = manifestStorage,
-                    externalContentFecther = externalContentFecther
+                    externalContentFetcher = externalContentFetcher
                 )
             )
         }

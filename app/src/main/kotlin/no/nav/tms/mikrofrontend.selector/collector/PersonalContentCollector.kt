@@ -17,7 +17,7 @@ import no.nav.tms.token.support.user.token.verification.UserPrincipal
 class PersonalContentCollector(
     val repository: PersonRepository,
     val manifestStorage: ManifestsStorage,
-    val externalContentFecther: ExternalContentFecther,
+    val externalContentFetcher: ExternalContentFetcher,
     val produktkortCounter: ProduktkortCounter
 ) {
 
@@ -31,11 +31,11 @@ class PersonalContentCollector(
     }
 
     suspend fun asyncCollector(user: UserPrincipal) = coroutineScope {
-        val safResponse = async { externalContentFecther.fetchDocumentsFromSaf(user) }
-        val meldekortApiResponse = async { externalContentFecther.fetchFellesMeldekort(user) }
-        val dpMeldekortResponse = async { externalContentFecther.fetchDpMeldekort(user) }
-        val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
-        val digisosResponse = async { externalContentFecther.fetchDigisosSakstema(user) }
+        val safResponse = async { externalContentFetcher.fetchDocumentsFromSaf(user) }
+        val meldekortApiResponse = async { externalContentFetcher.fetchFellesMeldekort(user) }
+        val dpMeldekortResponse = async { externalContentFetcher.fetchDpMeldekort(user) }
+        val pdlResponse = async { externalContentFetcher.fetchFoedselsdato(user) }
+        val digisosResponse = async { externalContentFetcher.fetchDigisosSakstema(user) }
 
         PersonalContentFactory(
             safResponse = safResponse.await(),
@@ -64,14 +64,14 @@ class PersonalContentFactory(
     ) = PersonalContentResponse(
         microfrontends = microfrontends?.getDefinitions(levelOfAssurance, discoveryManifest) ?: emptyList(),
         produktkort = ContentDefinition.getProduktkort(
-                digisosResponse.dokumenter + safResponse.dokumenter, levelOfAssurance
+                digisosResponse.dokumenter + safResponse.temaer, levelOfAssurance
             ).filter { it.skalVises() }
             .map { it.id },
         offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
         meldekort = meldekortApiResponse.harMeldekort || dpMeldekortResponse.harMeldekort,
         aktuelt = ContentDefinition.getAktueltContent(
             pdlResponse.calculateAge(),
-            safResponse.dokumenter,
+            safResponse.temaer,
             discoveryManifest,
             levelOfAssurance
         )

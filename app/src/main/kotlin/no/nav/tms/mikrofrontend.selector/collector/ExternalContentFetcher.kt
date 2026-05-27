@@ -1,6 +1,5 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -14,60 +13,18 @@ import java.net.SocketTimeoutException
 import java.util.UUID
 import kotlin.reflect.full.primaryConstructor
 
-class ExternalContentFecther(
-    val safUrl: String,
-    val httpClient: HttpClient,
-    val meldekortApiUrl: String,
-    val dpMeldekortUrl: String,
-    val pdlUrl: String,
-    val digisosUrl: String,
-    val pdlBehandlingsnummer: String,
-    val tokenFetcher: TokenFetcher,
-    val dokumentarkivUrlResolver: DokumentarkivUrlResolver
+class ExternalContentFetcher(
+    private val httpClient: HttpClient,
+    private val meldekortApiUrl: String,
+    private val dpMeldekortUrl: String,
+    private val digisosUrl: String,
+    private val pdlConsumer: PdlConsumer,
+    private val safConsumer: SafConsumer,
+    private val tokenFetcher: TokenFetcher,
+    private val dokumentarkivUrlResolver: DokumentarkivUrlResolver
 ) {
-
-    val log = KotlinLogging.logger { }
-
-    private fun safQuery(ident: String) = """ {
-        "query": "query(${'$'}ident: String!) {
-            dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
-                tema {
-                    kode
-                    navn
-                    journalposter{
-                        relevanteDatoer {
-                            dato
-                        }
-                    }
-                }
-              }
-           }",
-          "variables": {"ident" : "$ident"}
-        }
-    """.compactJson()
-
-    suspend fun fetchDocumentsFromSaf(user: UserPrincipal): SafResponse = withErrorHandling("SAF", "$safUrl/graphql") {
-        httpClient.post {
-            url("$safUrl/graphql")
-            header("Authorization", "Bearer ${tokenFetcher.safToken(user)}")
-            header("Content-Type", "application/json")
-            setBody(safQuery(user.ident))
-            timeout {
-                requestTimeoutMillis = 5000
-            }
-        }
-            .let { response ->
-                if (response.status != HttpStatusCode.OK) {
-                    ResponseWithErrors.createFromHttpError(response)
-
-                } else {
-                    val jsonResponse = response.bodyAsNullOrJsonNode()
-                    SafResponse(
-                        dokumenter = jsonResponse?.safDokument(dokumentarkivUrlResolver),
-                        errors = jsonResponse?.getAll<String>("errors..message")
-                    )
-                }
-            }
+    suspend fun fetchDocumentsFromSaf(user: UserPrincipal): SafResponse = withErrorHandling("SAF", "") {
+        return safConsumer.hentTemaer(user.ident, tokenFetcher.safToken(user))
     }
 
     suspend fun fetchFellesMeldekort(user: UserPrincipal): MeldekortResponse = getResponseAsJsonPath(
@@ -110,27 +67,8 @@ class ExternalContentFecther(
         },
     )
 
-
-    suspend fun fetchPersonOpplysninger(user: UserPrincipal): PdlResponse = withErrorHandling("pdl", "$pdlUrl/graphql") {
-        httpClient.post {
-            url("$pdlUrl/graphql")
-            header("Authorization", "Bearer ${tokenFetcher.pdlToken(user)}")
-            header("Content-Type", "application/json")
-            header("Behandlingsnummer", pdlBehandlingsnummer)
-            setBody(HentAlder(user.ident))
-        }
-            .let { response ->
-                if (response.status != HttpStatusCode.OK) {
-                    ResponseWithErrors.createFromHttpError(response)
-                } else {
-                    val jsonResponse = response.bodyAsNullOrJsonNode()
-                    PdlResponse(
-                        fødselsdato = jsonResponse?.localDateOrNull("foedselsdato..foedselsdato"),
-                        fødselsår = jsonResponse?.intOrNull("foedselsdato..foedselsaar"),
-                        errors = jsonResponse?.getAll<String>("errors..message") ?: emptyList(),
-                    )
-                }
-            }
+    suspend fun fetchFoedselsdato(user: UserPrincipal): PdlResponse = withErrorHandling("pdl", "") {
+        pdlConsumer.hentFoedselsdato(user.ident, tokenFetcher.pdlToken(user))
     }
 
     private suspend inline fun <reified T : ResponseWithErrors> getResponseAsJsonPath(
@@ -160,6 +98,7 @@ class ExternalContentFecther(
             }
         }
     }
+
     private inline fun <reified T : ResponseWithErrors> withErrorHandling(
         tjeneste: String,
         url: String,
@@ -192,48 +131,3 @@ class ExternalContentFecther(
 
 class ApiException(tjeneste: String, url: String, e: Exception) :
     Exception("Kall til ekstern tjeneste $tjeneste feiler. Url: $url ${errorDetails(e)}.")
-
-
-private class HentAlder(ident: String) {
-    val query = """
-        query(${'$'}ident: ID!) {
-            hentPerson(ident: ${'$'}ident) {
-                foedselsdato {
-                    foedselsdato,
-                    foedselsaar,
-                }
-            }
-        }
-    """.compactJson()
-
-    val variables = mapOf(
-        "ident" to ident
-    )
-}
-
-private class HentSafDokumenter(ident: String) {
-    val query = """ 
-        query(${'$'}ident: String!) {
-            dokumentoversiktSelvbetjening(ident:${'$'}ident, tema:[]) {
-                tema {
-                    kode
-                    journalposter{
-                        relevanteDatoer {
-                            dato
-                        }
-                    }
-                }
-              }
-           }
-    """.compactJson()
-
-    val variables = mapOf(
-        "ident" to ident
-    )
-}
-
-private fun String.compactJson(): String =
-    trimIndent()
-        .replace("\r", " ")
-        .replace("\n", " ")
-        .replace("\\s+".toRegex(), " ")

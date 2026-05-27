@@ -3,7 +3,7 @@ package no.nav.tms.mikrofrontend.selector.collector.regelmotor
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.nfeld.jsonpathkt.extension.read
-import no.nav.tms.mikrofrontend.selector.collector.Dokument
+import no.nav.tms.mikrofrontend.selector.collector.Tema
 import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
 import java.time.LocalDateTime
 
@@ -24,7 +24,7 @@ class ContentRulesDefinition(
     val includeOnlyIfLoAIsHigh: IncludeOnlyIfLoAIsHighRule?
 ) {
 
-    fun createRules(safDokumenter: List<Dokument>, alder: Int?, userLevelOfAssurance: LevelOfAssurance) = mutableListOf<ContentResolver>().apply {
+    fun createRules(safDokumenter: List<Tema>, alder: Int?, userLevelOfAssurance: LevelOfAssurance) = mutableListOf<ContentResolver>().apply {
         includeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.kode })?.let { add(it) }
         exludeIfSakstema?.resolverOrNull(safDokumenter.map { dok -> dok.kode })?.let { add(it) }
         usersAgeOver?.resolverOrNull(alder)?.let { add(it) }
@@ -108,8 +108,8 @@ open class IncludeIfSakstemaContentRule(val includeList: List<String>) :
 class WeeksSinceLastDocumentContentRule(
     val sakstemakode: String,
     val periodInWeeks: Int,
-) : ContentRule<List<Dokument>> {
-    override fun resolverOrNull(input: List<Dokument>?): ContentResolver? =
+) : ContentRule<List<Tema>> {
+    override fun resolverOrNull(input: List<Tema>?): ContentResolver? =
         input?.let { safDokumenter ->
             object : ContentResolver {
                 override fun skalVises(): Boolean =

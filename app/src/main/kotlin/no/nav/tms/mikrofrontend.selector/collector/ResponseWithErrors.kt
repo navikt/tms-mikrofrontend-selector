@@ -4,7 +4,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.statement.*
 import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
 import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
-import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.redactedMessage
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -88,7 +87,7 @@ abstract class ResponseWithErrors(private val errors: String?) {
                 if (elementType == String::class.starProjectedType) {
                     emptyList<String>()
                 } else {
-                    throw IllegalArgumentException("No default value defined for list of type $elementType")
+                    emptyList<Unit>()
                 }
             }
 
@@ -98,34 +97,6 @@ abstract class ResponseWithErrors(private val errors: String?) {
     }
 }
 
-
-class SafResponse(
-    dokumenter: List<Dokument>? = null,
-    errors: List<String>? = null
-) : ResponseWithErrors(errors?.joinToString(";")) {
-    val dokumenter = dokumenter ?: emptyList()
-    override val source: String = "SAF"
-}
-
-class Dokument(
-    val kode: String,
-    dokumentarkivUrlResolver: DokumentarkivUrlResolver,
-    val sistEndret: LocalDateTime,
-    val navn: String,
-) {
-    val url = dokumentarkivUrlResolver.urlFor(kode)
-    companion object {
-        fun List<Dokument>.getLatest(): List<Dokument> =
-            sortedByDescending { it.sistEndret }.let {
-                when(it.size) {
-                    0 -> emptyList()
-                    1 -> listOf(it.first())
-                    else -> it.slice(0..1)
-                }
-            }
-    }
-
-}
 
 class MeldekortResponse(
     meldekortResponse: JsonPathInterpreter? = null,
@@ -140,21 +111,8 @@ class MeldekortResponse(
         }
 }
 
-class PdlResponse(
-    val fødselsdato: LocalDate? = null,
-    val fødselsår: Int?,
-    errors: List<String>? = null,
-) : ResponseWithErrors(errors?.joinToString(";")) {
-    override val source = "pdl"
-    fun calculateAge() = when {
-        fødselsdato != null -> ChronoUnit.YEARS.between(fødselsdato, LocalDate.now()).toInt()
-        fødselsår != null -> LocalDate.now().year - fødselsår
-        else -> 0
-    }
-}
-
 class DigisosResponse(
-    dokumenter: List<Dokument>? = null,
+    dokumenter: List<Tema>? = null,
     errors: List<String>? = null,
 ) : ResponseWithErrors(errors?.joinToString(";")) {
     override val source = "digisos"
