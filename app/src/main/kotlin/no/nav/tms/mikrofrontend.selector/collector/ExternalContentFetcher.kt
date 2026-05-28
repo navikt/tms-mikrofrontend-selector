@@ -1,16 +1,14 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import io.ktor.client.*
+import io.ktor.client.call.body
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
-import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
-import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
-import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.token.support.user.token.verification.UserPrincipal
 import java.net.SocketTimeoutException
-import java.util.UUID
+import java.time.LocalDateTime
 import kotlin.reflect.full.primaryConstructor
 
 class ExternalContentFetcher(
@@ -21,83 +19,97 @@ class ExternalContentFetcher(
     private val pdlConsumer: PdlConsumer,
     private val safConsumer: SafConsumer,
     private val tokenFetcher: TokenFetcher,
-    private val dokumentarkivUrlResolver: DokumentarkivUrlResolver
+    private val sosialHjelpInnsynUrl: String
 ) {
     suspend fun fetchDocumentsFromSaf(user: UserPrincipal): SafResponse = withErrorHandling("SAF", "") {
         return safConsumer.hentTemaer(user.ident, tokenFetcher.safToken(user))
     }
 
-    suspend fun fetchFellesMeldekort(user: UserPrincipal): MeldekortResponse = getResponseAsJsonPath(
-        tokenFetcher = tokenFetcher::meldekortApiToken,
-        user = user,
+    suspend fun fetchFellesMeldekort(user: UserPrincipal): MeldekortResponse = getMeldekort(
+        tokenSupplier = { tokenFetcher.meldekortApiToken(user) },
         url = "$meldekortApiUrl/api/person/meldekortstatus",
         tjeneste = "meldekortApi",
-        map = { jsonPath -> MeldekortResponse(meldekortResponse = jsonPath) },
     )
 
-    suspend fun fetchDpMeldekort(user: UserPrincipal): MeldekortResponse = getResponseAsJsonPath(
-        tokenFetcher = tokenFetcher::dpMeldekortToken,
-        user = user,
+    suspend fun fetchDpMeldekort(user: UserPrincipal): MeldekortResponse = getMeldekort(
+        tokenSupplier = { tokenFetcher.dpMeldekortToken(user) },
         url = "$dpMeldekortUrl/meldekortstatus",
-        tjeneste = "dpMeldekort",
-        map = { jsonPath -> MeldekortResponse(meldekortResponse = jsonPath) },
-        errorHandlerOverride = { response ->
-            // dp-meldekortregister sender 404 når de ikke har noen meldekort på bruker
-            if(response.status == HttpStatusCode.NotFound) {
-                MeldekortResponse()
-            } else {
-                null
-            }
-        }
+        tjeneste = "dpMeldekort"
     )
 
-    suspend fun fetchDigisosSakstema(user: UserPrincipal): DigisosResponse = getResponseAsJsonPath(
-        tokenFetcher = tokenFetcher::digisosToken,
-        user = user,
-        url = "$digisosUrl/minesaker/innsendte",
-        tjeneste = "digisos",
-        requestOptions = {
-            accept(ContentType.Application.Json)
-            header("Nav-Callid", UUID.randomUUID())
-        },
-        map = { jsonPath ->
-            DigisosResponse(
-                dokumenter = jsonPath.digisosDokument(dokumentarkivUrlResolver)
-            )
-        },
+    suspend fun fetchDigisosSakstema(user: UserPrincipal): DigisosResponse = getDigisosSakstema(
+        tokenSupplier = { tokenFetcher.digisosToken(user) },
+        url = "$digisosUrl/minesaker/innsendte"
     )
 
     suspend fun fetchFoedselsdato(user: UserPrincipal): PdlResponse = withErrorHandling("pdl", "") {
         pdlConsumer.hentFoedselsdato(user.ident, tokenFetcher.pdlToken(user))
     }
 
-    private suspend inline fun <reified T : ResponseWithErrors> getResponseAsJsonPath(
-        tokenFetcher: suspend (UserPrincipal) -> String,
-        user: UserPrincipal,
-        url: String,
-        tjeneste: String,
-        requestOptions: HttpRequestBuilder.() -> Unit = {},
-        errorHandlerOverride: (HttpResponse) -> T? = { null },
-        crossinline map: (JsonPathInterpreter) -> T,
-    ): T = withErrorHandling(tjeneste, url) {
-        val token = tokenFetcher(user)
+    private suspend fun getDigisosSakstema(
+        tokenSupplier: suspend () -> String,
+        url: String
+    ): DigisosResponse = withErrorHandling("digisos", url) {
         httpClient.get {
             url(url)
-            header("Authorization", "Bearer $token")
-            header("Content-Type", "application/json")
+            header(HttpHeaders.Authorization, "Bearer ${tokenSupplier()}")
+            header(HttpHeaders.Accept, ContentType.Application.Json)
             header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
-            requestOptions()
         }.let { response ->
 
-            if (response.status == HttpStatusCode.OK) {
-                response.bodyAsNullOrJsonNode()?.let(map)
-                    ?: ResponseWithErrors.errorInJsonResponse()
-            } else when(val override = errorHandlerOverride(response)) {
-                null -> ResponseWithErrors.createFromHttpError(response)
-                else -> override
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    val response: List<DigisosInnsendtSoknadDto> = response.body()
+
+                    val temaer = response.map {
+                        Tema(
+                            kode = it.kode,
+                            navn = it.navn,
+                            sistEndret = LocalDateTime.parse(it.sistEndret),
+                            url = sosialHjelpInnsynUrl
+                        )
+                    }
+
+                    DigisosResponse(temaer)
+                }
+                else -> ResponseWithErrors.createFromHttpError(response)
             }
         }
     }
+
+    private data class DigisosInnsendtSoknadDto(
+        val navn: String,
+        val kode: String,
+        val sistEndret: String,
+    )
+
+    private suspend fun getMeldekort(
+        tokenSupplier: suspend () -> String,
+        url: String,
+        tjeneste: String
+    ): MeldekortResponse = withErrorHandling(tjeneste, url) {
+        httpClient.get {
+            url(url)
+            header(HttpHeaders.Authorization, "Bearer ${tokenSupplier()}")
+            header(HttpHeaders.Accept, ContentType.Application.Json)
+            header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
+        }.let { response ->
+
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    val response: MeldekortDto = response.body()
+
+                    MeldekortResponse(response.meldekortTilUtfylling.isNotEmpty())
+                }
+                HttpStatusCode.NotFound -> MeldekortResponse(harMeldekort = false)
+                else -> ResponseWithErrors.createFromHttpError(response)
+            }
+        }
+    }
+
+    private data class MeldekortDto(
+        val meldekortTilUtfylling: List<Any> = emptyList()
+    )
 
     private inline fun <reified T : ResponseWithErrors> withErrorHandling(
         tjeneste: String,

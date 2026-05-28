@@ -5,7 +5,6 @@ import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
-import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.versions.Discovery
 import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
@@ -15,7 +14,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 class PersonalContentFactoryTest {
-    val dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dagpenger"))
 
     @Test
     fun `Skal være tom`() {
@@ -35,7 +33,7 @@ class PersonalContentFactoryTest {
     fun `skal ha microfrontends og produktkort innlogingsnivå 4`() {
         testFactory(
             safResponse = SafResponse(
-                temaer = listOf(Tema("DAG", navn = "Dagpenger", url = "https://www.nav.no/dokumentarkiv/dagpenger", sistEndret = LocalDateTime.now())),
+                temaer = listOf(Tema("DAG", navn = "Dagpenger", url = "https://www.intern.dev.nav.no/dokumentarkiv/tema", sistEndret = LocalDateTime.now())),
                 errors = emptyList()
             ),
             digisosResponse = DigisosResponse(
@@ -72,7 +70,7 @@ class PersonalContentFactoryTest {
     @Test
     fun `skal ha produkkort og aia-standard og 207 pga meldekort`() {
         testFactory(
-            meldekortApiResponse = MeldekortResponse(errors = "Feil som skjedde")
+            meldekortApiResponse = MeldekortResponse(harMeldekort = false, errors = "Feil som skjedde")
         ).build(
             microfrontends = Microfrontends(),
             levelOfAssurance = LevelOfAssurance.High,
@@ -90,10 +88,10 @@ class PersonalContentFactoryTest {
     fun `skal ha produkkort, ny-aia, meldekort og microfrontends`() {
         testFactory(
             safResponse = SafResponse(
-                temaer = listOf(Tema("DAG", navn = "Dagpenger", url = "https://www.nav.no/dokumentarkiv/dagpenger", sistEndret = LocalDateTime.now())),
+                temaer = listOf(Tema("DAG", navn = "Dagpenger", url = "https://www.intern.dev.nav.no/dokumentarkiv/tema", sistEndret = LocalDateTime.now())),
                 errors = emptyList()
             ),
-            meldekortApiResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
+            meldekortApiResponse = MeldekortResponse(false),
         ).build(
             microfrontends = microfrontendMocck(
                 level4Microfrontends = MicrofrontendsDefinition("id", "url", "appname", "namespace", "fallback", true) * 5,
@@ -116,7 +114,7 @@ class PersonalContentFactoryTest {
         // er både aia og meldekort nivå 4? Hva med produktkort?
         testFactory(
             safResponse = SafResponse(
-                listOf(Tema("DAG", navn = "Dagpenger", url = "https://www.nav.no/dokumentarkiv/dagpenger", sistEndret = LocalDateTime.now())),
+                listOf(Tema("DAG", navn = "Dagpenger", url = "https://www.intern.dev.nav.no/dokumentarkiv/tema", sistEndret = LocalDateTime.now())),
                 emptyList()
             )
         ).build(
@@ -143,8 +141,8 @@ private operator fun MicrofrontendsDefinition.times(i: Int): List<Microfrontends
 
 private fun testFactory(
     safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
-    meldekortApiResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{meldekort:0}")),
-    dpMeldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{etterregistrerteMeldekort:0}")),
+    meldekortApiResponse: MeldekortResponse = MeldekortResponse(false),
+    dpMeldekortResponse: MeldekortResponse = MeldekortResponse(false),
     pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"), 1988),
     digisosResponse: DigisosResponse = DigisosResponse(),
     levelOfAssurance: LevelOfAssurance = LevelOfAssurance.High

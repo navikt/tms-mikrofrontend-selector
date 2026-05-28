@@ -79,9 +79,11 @@ class MeldekortApiRoute(private val harMeldekort: Boolean = false, httpStatusCod
            "redirectUrl": "https://www.nav.no"
         }""".trimIndent()
     else """
+        {
           "harInnsendteMeldekort": false,
           "meldekortTilUtfylling": [],
           "redirectUrl": "https://www.nav.no"
+        }
         """.trimIndent()
 }
 

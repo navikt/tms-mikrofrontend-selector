@@ -2,11 +2,6 @@ package no.nav.tms.mikrofrontend.selector.collector
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.statement.*
-import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
-import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 import kotlin.reflect.KFunction
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubtypeOf
@@ -81,6 +76,7 @@ abstract class ResponseWithErrors(private val errors: String?) {
             this.isMarkedNullable -> null
             this == String::class.starProjectedType -> ""
             this == Int::class.starProjectedType -> 0
+            this == Boolean::class.starProjectedType -> false
             this.isSubtypeOf(List::class.starProjectedType) -> {
                 val elementType =
                     this.arguments.first().type ?: throw IllegalArgumentException("List type argument not found")
@@ -97,27 +93,18 @@ abstract class ResponseWithErrors(private val errors: String?) {
     }
 }
 
-
 class MeldekortResponse(
-    meldekortResponse: JsonPathInterpreter? = null,
+    val harMeldekort: Boolean,
     errors: String? = null,
 ) : ResponseWithErrors(errors) {
     override val source = "meldekort"
-    val harMeldekort: Boolean =
-        when {
-            meldekortResponse == null -> false
-            !meldekortResponse.hasContent() -> false
-            else -> meldekortResponse.getOrNull<List<Any>>("meldekortTilUtfylling")?.isNotEmpty() ?: false
-        }
 }
 
 class DigisosResponse(
-    dokumenter: List<Tema>? = null,
+    val temaer: List<Tema> = emptyList(),
     errors: List<String>? = null,
 ) : ResponseWithErrors(errors?.joinToString(";")) {
     override val source = "digisos"
-    val dokumenter = dokumenter ?: emptyList()
-
 }
 
 

@@ -28,7 +28,6 @@ import no.nav.tms.mikrofrontend.selector.collector.SafConsumer
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
 import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
-import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
@@ -79,13 +78,13 @@ internal class AktueltApiTest {
 
             client.get("/aktuelt").let { response ->
                 response.status shouldBe HttpStatusCode.OK
-                response.bodyAsNullOrJsonNode(true).run {
-                    shouldNotBeNull()
+                response.bodyAsJson().let { body ->
+                    body.shouldNotBeNull()
 
-                    listOrNull<JsonNode>("microfrontends").run {
-                        shouldNotBeNull()
-                        size shouldBe 1
-                        find {
+                    body["microfrontends"].let {
+                        it.shouldNotBeNull()
+                        it.size() shouldBe 1
+                        it.find {
                             it["microfrontend_id"].asText() == "pensjonskalkulator-microfrontend"
                         }.let { microfrontend ->
                             microfrontend.shouldNotBeNull()
@@ -112,13 +111,12 @@ internal class AktueltApiTest {
 
             client.get("/aktuelt").let { response ->
                 response.status shouldBe HttpStatusCode.OK
-                response.bodyAsNullOrJsonNode(true).run {
-                    shouldNotBeNull()
+                response.bodyAsJson().let { body ->
+                    body.shouldNotBeNull()
 
-                    listOrNull<JsonNode>("microfrontends").run {
-                        println(this.toString())
-                        shouldNotBeNull()
-                        size shouldBe 0
+                    body["microfrontends"].let {
+                        it.shouldNotBeNull()
+                        it.size() shouldBe 0
                     }
                 }
             }
@@ -202,7 +200,7 @@ internal class AktueltApiTest {
         testApplication {
             val testident2 = "12345678912"
 
-            initSelectorApi(testident = testident2, httpClient = sockettimeoutClient)
+            initSelectorApi(testident = testident2, apiClient = sockettimeoutClient)
 
             client.get("/aktuelt").run {
                 status shouldBe HttpStatusCode.ServiceUnavailable
@@ -241,13 +239,12 @@ internal class AktueltApiTest {
     fun ApplicationTestBuilder.initSelectorApi(
         testident: String,
         testLoa: LevelOfAssurance = LevelOfAssurance.High,
-        httpClient: HttpClient? = null,
+        apiClient: HttpClient = createClient { configureClient() },
         tokenFetcher: TokenFetcher = mockk<TokenFetcher>().apply {
             coEvery { safToken(any()) } returns "<saf>"
             coEvery { pdlToken(any()) } returns "<pdl>"
         }
     ) {
-        val apiClient = httpClient ?: createClient { configureClient() }
         application {
             val externalContentFetcher = ExternalContentFetcher(
                 httpClient = apiClient,
@@ -263,9 +260,9 @@ internal class AktueltApiTest {
                 safConsumer = SafConsumer(
                     httpClient = apiClient,
                     safUrl = testHost,
-                    dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
+                    dokumentarkivUrl = "https://www.nav.no/dokumentarkiv/tema",
                 ),
-                dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
+                sosialHjelpInnsynUrl = "https://www.nav.no/sosialhjelp/innsyn",
             )
 
             selectorApi(

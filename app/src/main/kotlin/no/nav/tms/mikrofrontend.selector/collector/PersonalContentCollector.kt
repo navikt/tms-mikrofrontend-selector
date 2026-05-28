@@ -64,7 +64,7 @@ class PersonalContentFactory(
     ) = PersonalContentResponse(
         microfrontends = microfrontends?.getDefinitions(levelOfAssurance, discoveryManifest) ?: emptyList(),
         produktkort = ContentDefinition.getProduktkort(
-                digisosResponse.dokumenter + safResponse.temaer, levelOfAssurance
+                digisosResponse.temaer + safResponse.temaer, levelOfAssurance
             ).filter { it.skalVises() }
             .map { it.id },
         offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,

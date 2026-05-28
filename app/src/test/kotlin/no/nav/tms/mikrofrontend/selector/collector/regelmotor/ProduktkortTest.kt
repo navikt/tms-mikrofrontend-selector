@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 class ProduktkortTest {
     val dokumentarkivUrlResolver = DokumentarkivUrlResolver(
         generellLenke = "https://www.nav.no",
-        temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dagpenger")
+        temaspesifikkeLenker = mapOf("DAG" to "https://www.intern.dev.nav.no/dokumentarkiv/tema")
     )
 
     @Test
@@ -70,7 +70,7 @@ class ProduktkortTest {
                 Tema(
                     kode = "DAG",
                     navn = "Dagpenger",
-                    url = "https://www.nav.no/dokumentarkiv/dagpenger",
+                    url = "https://www.intern.dev.nav.no/dokumentarkiv/tema",
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.High
@@ -87,7 +87,7 @@ class ProduktkortTest {
                 Tema(
                     kode = "DAG",
                     navn = "Dagpenger",
-                    url = "https://www.nav.no/dokumentarkiv/dagpenger",
+                    url = "https://www.intern.dev.nav.no/dokumentarkiv/tema",
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.High
@@ -104,7 +104,7 @@ class ProduktkortTest {
                 Tema(
                     kode = "DAG",
                     navn = "Dagpenger",
-                    url = "https://www.nav.no/dokumentarkiv/dagpenger",
+                    url = "https://www.intern.dev.nav.no/dokumentarkiv/tema",
                     sistEndret = LocalDateTime.now()
                 )
             ), LevelOfAssurance.Substantial

@@ -85,7 +85,7 @@ spec:
       value: https://safselvbetjening.dev-fss-pub.nais.io
     - name: SOSIALHJELP_INNSYN
       value: https://www-q0.dev.nav.no/sosialhjelp/innsyn
-    - name: DEFAULT_INNSYN_LENKE
+    - name: DOKUMENTARKIV_URL
       value: https://www.intern.dev.nav.no/dokumentarkiv/tema
     - name: SAF_CLIENT_ID
       value: dev-fss:teamdokumenthandtering:safselvbetjening

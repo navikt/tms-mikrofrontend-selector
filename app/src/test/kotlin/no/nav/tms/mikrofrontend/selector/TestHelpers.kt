@@ -3,6 +3,8 @@ package no.nav.tms.mikrofrontend.selector
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import no.nav.tms.kafka.application.EventMetadata
 import no.nav.tms.kafka.application.JsonMessage
 import no.nav.tms.kafka.application.KafkaEvent
@@ -72,7 +74,7 @@ fun jsonTestMap(
 
 fun String.safTestDokument(sistEndret: LocalDateTime = LocalDateTime.now()) = Tema(
     this,
-    url = if (this == "DAG") "https://www.nav.no/dokumentarkiv/dagpenger" else "https://www.nav.no",
+    url = if (this == "DAG") "https://www.intern.dev.nav.no/dokumentarkiv/tema" else "https://www.nav.no",
     navn = "Dagpenger",
     sistEndret = sistEndret
 )
@@ -103,4 +105,15 @@ fun <K, V> Map<out K, V>.toJsonMessage(): JsonMessage {
     }.toTypedArray()
 
     return constructor.call(*args)
+}
+
+suspend fun HttpResponse.bodyAsJson() = objectMapper.readTree(bodyAsText())
+inline fun <reified T> JsonNode.parseOrNull(name: String): T? {
+    val node = this[name]
+
+    return if (node.isNull || node.isEmpty) {
+        null
+    } else {
+        jacksonObjectMapper().treeToValue(this, T::class.java)
+    }
 }

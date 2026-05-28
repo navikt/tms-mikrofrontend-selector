@@ -27,7 +27,7 @@ import java.time.LocalDateTime
 class SafConsumer(
     private val httpClient: HttpClient,
     private val safUrl: String,
-    private val dokumentarkivUrlResolver: DokumentarkivUrlResolver
+    private val dokumentarkivUrl: String
 ) {
     private val log = KotlinLogging.logger {}
     private val teamLog = TeamLogs.logger { }
@@ -93,7 +93,7 @@ class SafConsumer(
                     kode = tema.kode,
                     navn = tema.navn,
                     sistEndret = sistEndret,
-                    url = dokumentarkivUrlResolver.urlFor(tema.kode)
+                    url = dokumentarkivUrl
                 )
             }
 

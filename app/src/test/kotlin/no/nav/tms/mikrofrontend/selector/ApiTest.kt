@@ -25,7 +25,6 @@ import no.nav.tms.mikrofrontend.selector.collector.SafConsumer
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
 import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
-import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
@@ -99,20 +98,20 @@ internal class ApiTest {
 
             client.get("/din-oversikt").let { response ->
                 response.status shouldBe HttpStatusCode.OK
-                response.bodyAsNullOrJsonNode(true).run {
-                    shouldNotBeNull()
-                    listOrNull<JsonNode>("microfrontends").run {
-                        shouldNotBeNull()
-                        size shouldBe 2
+                response.bodyAsJson().let { body ->
+                    body.shouldNotBeNull()
+                    body["microfrontends"].let { microfrontends ->
+                        microfrontends.shouldNotBeNull()
+                        microfrontends.size() shouldBe 2
 
-                        find {
+                        microfrontends.find {
                             it["microfrontend_id"].asText() == kafkastyrtDinOversikt.first
                         }.let { microfrontend ->
                             microfrontend.shouldNotBeNull()
                             microfrontend["url"].asText() shouldBe kafkastyrtDinOversikt.second
                         }
 
-                        find {
+                        microfrontends.find {
                             it["microfrontend_id"].asText() == kafkastyrtDinOversikt2.first
                         }.let { microfrontend ->
                             microfrontend.shouldNotBeNull()
@@ -120,10 +119,10 @@ internal class ApiTest {
                         }
                     }
 
-                    listOrNull<JsonNode>("aktuelt").run {
-                        shouldNotBeNull()
-                        size shouldBe 1
-                        find {
+                    body["aktuelt"].let {
+                        it.shouldNotBeNull()
+                        it.size() shouldBe 1
+                        it.find {
                             it["microfrontend_id"].asText() == "pensjonskalkulator-microfrontend"
                         }.let { microfrontend ->
                             microfrontend.shouldNotBeNull()
@@ -178,17 +177,17 @@ internal class ApiTest {
 
         client.get("/din-oversikt").run {
             status shouldBe HttpStatusCode.OK
-            bodyAsNullOrJsonNode(true).run {
-                shouldNotBeNull()
-                getOrNull<List<JsonNode>>("microfrontends").run {
-                    shouldNotBeNull()
-                    size shouldBe expectedMicrofrontends.size
+            bodyAsJson().let { body ->
+                body.shouldNotBeNull()
+                body["microfrontends"].let {
+                    it.shouldNotBeNull()
+                    it.size() shouldBe expectedMicrofrontends.size
                 }
-                getAll<String>("microfrontends..url")
-                list<String>("produktkort").size shouldBe 1
-                list<String>("aktuelt").size shouldBe 0
-                boolean("meldekort") shouldBe true
-                boolean("offerStepup") shouldBe false
+
+                body["produktkort"].size() shouldBe 1
+                body["aktuelt"].size() shouldBe 0
+                body["meldekort"].asBoolean() shouldBe true
+                body["offerStepup"].asBoolean() shouldBe false
             }
         }
     }
@@ -226,14 +225,14 @@ internal class ApiTest {
 
         client.get("/din-oversikt").run {
             status shouldBe HttpStatusCode.OK
-            bodyAsNullOrJsonNode().run {
-                shouldNotBeNull()
-                listOrNull<JsonNode>("microfrontends")?.size shouldBe 3
-                boolean("offerStepup") shouldBe false
-                list<String>("produktkort").run {
+            bodyAsJson().let { body ->
+                body.shouldNotBeNull()
+                body["microfrontends"].size() shouldBe 3
+                body["offerStepup"].asBoolean() shouldBe false
+                body["produktkort"].let {
 
-                    size shouldBe 2
-                    sorted() shouldBe expectedProduktkort.sorted()
+                    it.size() shouldBe 2
+                    it.map(JsonNode::asText).sorted() shouldBe expectedProduktkort.sorted()
                 }
             }
         }
@@ -544,9 +543,9 @@ internal class ApiTest {
                 safConsumer = SafConsumer(
                     httpClient = apiClient,
                     safUrl = testHost,
-                    dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
+                    dokumentarkivUrl = "https://www.nav.no/dokumentarkiv/tema",
                 ),
-                dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
+                sosialHjelpInnsynUrl = "https://www.nav.no/sosialhjelp/innsyn"
             )
 
             selectorApi(

@@ -20,7 +20,6 @@ import no.nav.tms.token.support.user.token.exchange.UserTokenExchangerBuilder
 
 fun main() {
     val environment = Environment()
-    val dokumentarkivUrlResolver = DokumentarkivUrlResolver(environment.innsynsLenker, environment.defaultInnsynLenke)
 
     val personRepository = PersonRepository(
         database = PostgresDatabase(environment),
@@ -38,7 +37,7 @@ fun main() {
     val safConsumer = SafConsumer(
         httpClient = httpClient,
         safUrl = environment.safUrl,
-        dokumentarkivUrlResolver = dokumentarkivUrlResolver
+        dokumentarkivUrl = environment.dokumentArkivUrl
     )
 
     val externalContentFetcher = ExternalContentFetcher(
@@ -46,7 +45,7 @@ fun main() {
         meldekortApiUrl = environment.meldekortApiUrl,
         dpMeldekortUrl = environment.dpMeldekortUrl,
         digisosUrl = environment.digisosUrl,
-        dokumentarkivUrlResolver = dokumentarkivUrlResolver,
+        sosialHjelpInnsynUrl = environment.sosialhjelpInnsynUrl,
         pdlConsumer = pdlConsumer,
         safConsumer = safConsumer,
         tokenFetcher = TokenFetcher(
