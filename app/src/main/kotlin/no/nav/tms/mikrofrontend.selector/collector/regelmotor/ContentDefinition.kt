@@ -38,9 +38,9 @@ object ContentDefinition {
             }
         }.filter { it.skalVises() }.mapNotNull { it.definition }
 
-    fun getProduktkort(safDokument: List<Tema>, levelOfAssurance: LevelOfAssurance) = produktkort.map { definition ->
+    fun getProduktkort(temaer: List<Tema>, levelOfAssurance: LevelOfAssurance) = produktkort.map { definition ->
         Produktkort(id = definition.id).apply {
-            rules = definition.createRules(safDokumenter = safDokument, alder = null, userLevelOfAssurance = levelOfAssurance)
+            rules = definition.createRules(safDokumenter = temaer, alder = null, userLevelOfAssurance = levelOfAssurance)
         }
     }.filter { it.skalVises() }
 }

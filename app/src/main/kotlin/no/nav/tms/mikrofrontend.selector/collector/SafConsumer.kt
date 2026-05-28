@@ -29,34 +29,25 @@ class SafConsumer(
     private val safUrl: String,
     private val dokumentarkivUrl: String
 ) {
-    private val log = KotlinLogging.logger {}
-    private val teamLog = TeamLogs.logger { }
 
     suspend fun hentTemaer(
         ident: String, token: String,
-    ): SafResponse {
+    ): Temaliste {
         val response = sendQuery(
             request = HentTema(HentTema.Variables(ident)),
             accessToken = token
         )
 
-        // TODO mer utfyllende feil og logging
         if (!response.status.isSuccess()) {
-            return ResponseWithErrors.createFromHttpError(response)
+            throw HttpStatusException(response)
         }
 
         val result = response.body<KotlinxGraphQLResponse<HentTema.Result>>()
 
         if (!result.errors.isNullOrEmpty()) {
-            return SafResponse(
-                temaer = emptyList(),
-                errors = result.errors?.map { it.message } ?: emptyList()
-            )
+            throw GraphQlErrorException(result.errors!!.map { it.message })
         } else if (result.data == null) {
-            return SafResponse(
-                temaer = emptyList(),
-                errors = emptyList()
-            )
+            throw GraphQlEmptyResponseException()
         }
 
         return mapResponse(result.data!!)
@@ -79,7 +70,7 @@ class SafConsumer(
             }
         }
 
-    private fun mapResponse(result: HentTema.Result): SafResponse {
+    private fun mapResponse(result: HentTema.Result): Temaliste {
         val temaer = result.dokumentoversiktSelvbetjening
             .tema
             .map { tema ->
@@ -97,20 +88,6 @@ class SafConsumer(
                 )
             }
 
-        return SafResponse(temaer, emptyList())
+        return Temaliste(temaer)
     }
 }
-
-class SafResponse(
-    val temaer: List<Tema>,
-    errors: List<String>
-) : ResponseWithErrors(errors.joinToString(";")) {
-    override val source: String = "SAF"
-}
-
-data class Tema(
-    val kode: String,
-    val sistEndret: LocalDateTime,
-    val navn: String,
-    val url: String
-)

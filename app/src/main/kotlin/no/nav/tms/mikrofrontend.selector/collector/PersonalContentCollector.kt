@@ -3,6 +3,7 @@ package no.nav.tms.mikrofrontend.selector.collector
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.http.*
+import io.netty.channel.unix.Errors
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import no.nav.tms.mikrofrontend.selector.collector.regelmotor.ContentDefinition
@@ -13,6 +14,8 @@ import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
 import no.nav.tms.mikrofrontend.selector.versions.ManifestsStorage
 import no.nav.tms.token.support.user.token.verification.LevelOfAssurance
 import no.nav.tms.token.support.user.token.verification.UserPrincipal
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 class PersonalContentCollector(
     val repository: PersonRepository,
@@ -49,11 +52,11 @@ class PersonalContentCollector(
 }
 
 class PersonalContentFactory(
-    val safResponse: SafResponse,
-    val meldekortApiResponse: MeldekortResponse,
-    val dpMeldekortResponse: MeldekortResponse,
-    val pdlResponse: PdlResponse,
-    val digisosResponse: DigisosResponse,
+    val safResponse: ExternalResponse<Temaliste>,
+    val meldekortApiResponse: ExternalResponse<MeldekortStatus>,
+    val dpMeldekortResponse: ExternalResponse<MeldekortStatus>,
+    val pdlResponse: ExternalResponse<Foedselsdato>,
+    val digisosResponse: ExternalResponse<Temaliste>,
     val levelOfAssurance: LevelOfAssurance
 ) {
 
@@ -61,29 +64,34 @@ class PersonalContentFactory(
         microfrontends: Microfrontends?,
         levelOfAssurance: LevelOfAssurance,
         discoveryManifest: DiscoveryManifest,
-    ) = PersonalContentResponse(
-        microfrontends = microfrontends?.getDefinitions(levelOfAssurance, discoveryManifest) ?: emptyList(),
-        produktkort = ContentDefinition.getProduktkort(
-                digisosResponse.temaer + safResponse.temaer, levelOfAssurance
-            ).filter { it.skalVises() }
-            .map { it.id },
-        offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
-        meldekort = meldekortApiResponse.harMeldekort || dpMeldekortResponse.harMeldekort,
-        aktuelt = ContentDefinition.getAktueltContent(
-            pdlResponse.calculateAge(),
-            safResponse.temaer,
-            discoveryManifest,
-            levelOfAssurance
-        )
-
-    ).apply {
-        errors = listOf(
+    ): PersonalContentResponse {
+        val errors = listOf(
             safResponse,
             meldekortApiResponse,
             dpMeldekortResponse,
             pdlResponse,
             digisosResponse
-        ).mapNotNull { it.errorMessage() }.joinToString()
+        )
+            .filter { it.isError }
+            .joinToString { it.getErrorMessage() }
+
+
+        return PersonalContentResponse(
+            microfrontends = microfrontends?.getDefinitions(levelOfAssurance, discoveryManifest) ?: emptyList(),
+            produktkort = ContentDefinition.getProduktkort(
+                digisosResponse.value.temaer + safResponse.value.temaer, levelOfAssurance
+            ).filter { it.skalVises() }
+                .map { it.id },
+            offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
+            meldekort = meldekortApiResponse.value.harMeldekort || dpMeldekortResponse.value.harMeldekort,
+            aktuelt = ContentDefinition.getAktueltContent(
+                pdlResponse.value.calculateAge(),
+                safResponse.value.temaer,
+                discoveryManifest,
+                levelOfAssurance
+            ),
+            errors = errors
+        )
     }
 }
 
@@ -92,10 +100,9 @@ class PersonalContentResponse(
     val produktkort: List<String>,
     val offerStepup: Boolean,
     val meldekort: Boolean,
-    val aktuelt: List<MicrofrontendsDefinition>
+    val aktuelt: List<MicrofrontendsDefinition>,
+    @JsonIgnore val errors: String?
 ) {
-    @JsonIgnore
-    var errors: String? = null
     fun resolveStatus(): HttpStatusCode =
         if (errors.isNullOrEmpty()) HttpStatusCode.OK else HttpStatusCode.MultiStatus
 }

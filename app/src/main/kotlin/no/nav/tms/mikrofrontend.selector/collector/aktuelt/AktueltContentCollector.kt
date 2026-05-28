@@ -38,8 +38,8 @@ class AktueltCollector(
 }
 
 class AktueltFactory(
-    val safResponse: SafResponse,
-    val pdlResponse: PdlResponse,
+    val safResponse: ExternalResponse<Temaliste>,
+    val pdlResponse: ExternalResponse<Foedselsdato>,
     val levelOfAssurance: LevelOfAssurance
 ) {
 
@@ -50,26 +50,26 @@ class AktueltFactory(
     ) = AktueltResponse(
         offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
         microfrontends = ContentDefinition.getAktueltContent(
-            pdlResponse.calculateAge(),
-            safResponse.temaer,
+            pdlResponse.value.calculateAge(),
+            safResponse.value.temaer,
             discoveryManifest,
             levelOfAssurance
-        )
-
-    ).apply {
+        ),
         errors = listOf(
             safResponse,
             pdlResponse,
-        ).mapNotNull { it.errorMessage() }.joinToString()
-    }
+        )
+            .filter { it.isError }
+            .joinToString()
+    )
 }
 
 class AktueltResponse(
     val offerStepup: Boolean,
-    val microfrontends: List<MicrofrontendsDefinition>
-) {
+    val microfrontends: List<MicrofrontendsDefinition>,
     @JsonIgnore
-    var errors: String? = null
+    var errors: String?
+) {
 
     fun resolveStatus(): HttpStatusCode =
         if (errors.isNullOrEmpty()) HttpStatusCode.OK else HttpStatusCode.ServiceUnavailable
