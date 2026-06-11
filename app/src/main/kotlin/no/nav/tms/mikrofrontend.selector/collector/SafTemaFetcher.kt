@@ -1,8 +1,7 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import com.expediagroup.graphql.client.serialization.types.KotlinxGraphQLResponse
-import com.expediagroup.graphql.client.types.GraphQLClientResponse
-import io.github.oshai.kotlinlogging.KotlinLogging
+import com.github.benmanes.caffeine.cache.Caffeine
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.timeout
@@ -17,22 +16,43 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.future.future
 import kotlinx.coroutines.withContext
 import no.nav.dokument.saf.selvbetjening.generated.dto.HentTema
-import no.nav.tms.common.logging.TeamLogs
-import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
+import java.time.Duration
 import java.time.LocalDateTime
 
-class SafConsumer(
+class SafTemaFetcher(
     private val httpClient: HttpClient,
     private val safUrl: String,
     private val dokumentarkivUrl: String
 ) {
+    // Bruker async cache med await() for å beholde kompatibilitet med coroutines
+    private val cache = Caffeine.newBuilder()
+        .maximumSize(20000)
+        .expireAfterWrite(Duration.ofMinutes(15))
+        .buildAsync<String, List<Tema>>()
 
     suspend fun hentTemaer(
         ident: String, token: String,
-    ): Temaliste {
+    ): List<Tema> = coroutineScope {
+        val cacheGet = cache.get(ident) { _, _ ->
+            future {
+                fetchTemaer(ident, token)
+            }
+        }
+
+        cacheGet.await()
+    }
+
+    private suspend fun fetchTemaer(
+        ident: String, token: String,
+    ): List<Tema> {
         val response = sendQuery(
             request = HentTema(HentTema.Variables(ident)),
             accessToken = token
@@ -70,8 +90,8 @@ class SafConsumer(
             }
         }
 
-    private fun mapResponse(result: HentTema.Result): Temaliste {
-        val temaer = result.dokumentoversiktSelvbetjening
+    private fun mapResponse(result: HentTema.Result): List<Tema> {
+        return result.dokumentoversiktSelvbetjening
             .tema
             .map { tema ->
                 val sistEndret = tema.journalposter
@@ -87,7 +107,5 @@ class SafConsumer(
                     url = dokumentarkivUrl
                 )
             }
-
-        return Temaliste(temaer)
     }
 }

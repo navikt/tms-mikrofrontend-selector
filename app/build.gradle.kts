@@ -29,8 +29,7 @@ repositories {
 }
 
 dependencies {
-
-    implementation(TmsCommonLib.utils)
+    implementation(Caffeine.caffeine)
     implementation(Flyway9.core)
     implementation(Hikari.cp)
     implementation(GraphQL.kotlinClient)
@@ -52,6 +51,7 @@ dependencies {
     implementation(KotlinLogging.logging)
     implementation(TmsCommonLib.metrics)
     implementation(TmsCommonLib.observability)
+    implementation(TmsCommonLib.utils)
     implementation(TmsCommonLib.teamLogger)
     implementation(GoogleCloud.storage)
     implementation(Kotlinx.coroutines)

@@ -19,7 +19,7 @@ spec:
     enabled: true
   replicas:
     min: 2
-    max: 8
+    max: 4
     cpuThresholdPercentage: 100
   ingresses:
     - "https://tms-mikrofrontend-selector.nav.no"

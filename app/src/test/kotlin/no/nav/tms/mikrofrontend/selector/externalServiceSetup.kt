@@ -173,13 +173,15 @@ class PdlRoute(
 
 
 fun ApplicationTestBuilder.initExternalServices(
-    vararg routeProviders: RouteProvider
+    vararg routeProviders: RouteProvider,
+    customRoute: Routing.() -> Unit = {}
 ) = externalServices {
     hosts(testHost) {
         routing {
             routeProviders.forEach { provider ->
                 provider.initRoute(this)
             }
+            customRoute()
         }
     }
 }

@@ -4,7 +4,6 @@ import no.nav.tms.mikrofrontend.selector.*
 import no.nav.tms.mikrofrontend.selector.objectMapper
 import no.nav.tms.mikrofrontend.selector.selectorApi
 import LocalPostgresDatabase
-import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.ktor.client.*
@@ -24,7 +23,7 @@ import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFetcher
 import no.nav.tms.mikrofrontend.selector.collector.PdlConsumer
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
-import no.nav.tms.mikrofrontend.selector.collector.SafConsumer
+import no.nav.tms.mikrofrontend.selector.collector.SafTemaFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
 import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
@@ -257,7 +256,7 @@ internal class AktueltApiTest {
                     pdlApiUrl = "$testHost/pdl",
                     behandlingsNummer = "B000"
                 ),
-                safConsumer = SafConsumer(
+                safTemaFetcher = SafTemaFetcher(
                     httpClient = apiClient,
                     safUrl = testHost,
                     dokumentarkivUrl = "https://www.nav.no/dokumentarkiv/tema",

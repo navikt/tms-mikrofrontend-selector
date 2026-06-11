@@ -6,7 +6,7 @@ import no.nav.tms.kafka.application.KafkaApplication
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFetcher
 import no.nav.tms.mikrofrontend.selector.collector.PdlConsumer
-import no.nav.tms.mikrofrontend.selector.collector.SafConsumer
+import no.nav.tms.mikrofrontend.selector.collector.SafTemaFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
 import no.nav.tms.mikrofrontend.selector.database.Flyway
@@ -34,7 +34,7 @@ fun main() {
         behandlingsNummer = environment.pdlBehandlingsnummer,
     )
 
-    val safConsumer = SafConsumer(
+    val safTemaFetcher = SafTemaFetcher(
         httpClient = httpClient,
         safUrl = environment.safUrl,
         dokumentarkivUrl = environment.dokumentArkivUrl
@@ -47,7 +47,7 @@ fun main() {
         digisosUrl = environment.digisosUrl,
         sosialHjelpInnsynUrl = environment.sosialhjelpInnsynUrl,
         pdlConsumer = pdlConsumer,
-        safConsumer = safConsumer,
+        safTemaFetcher = safTemaFetcher,
         tokenFetcher = TokenFetcher(
             tokendingsService = UserTokenExchangerBuilder.build(),
             meldekortApiClientId = environment.meldekortApiClientId,

@@ -52,11 +52,11 @@ class PersonalContentCollector(
 }
 
 class PersonalContentFactory(
-    val safResponse: ExternalResponse<Temaliste>,
+    val safResponse: ExternalResponse<List<Tema>>,
     val meldekortApiResponse: ExternalResponse<MeldekortStatus>,
     val dpMeldekortResponse: ExternalResponse<MeldekortStatus>,
     val pdlResponse: ExternalResponse<Foedselsdato>,
-    val digisosResponse: ExternalResponse<Temaliste>,
+    val digisosResponse: ExternalResponse<List<Tema>>,
     val levelOfAssurance: LevelOfAssurance
 ) {
 
@@ -79,14 +79,14 @@ class PersonalContentFactory(
         return PersonalContentResponse(
             microfrontends = microfrontends?.getDefinitions(levelOfAssurance, discoveryManifest) ?: emptyList(),
             produktkort = ContentDefinition.getProduktkort(
-                digisosResponse.value.temaer + safResponse.value.temaer, levelOfAssurance
+                digisosResponse.value + safResponse.value, levelOfAssurance
             ).filter { it.skalVises() }
                 .map { it.id },
             offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
             meldekort = meldekortApiResponse.value.harMeldekort || dpMeldekortResponse.value.harMeldekort,
             aktuelt = ContentDefinition.getAktueltContent(
                 pdlResponse.value.calculateAge(),
-                safResponse.value.temaer,
+                safResponse.value,
                 discoveryManifest,
                 levelOfAssurance
             ),

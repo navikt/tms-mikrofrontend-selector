@@ -18,15 +18,15 @@ class ExternalContentFetcher(
     private val dpMeldekortUrl: String,
     private val digisosUrl: String,
     private val pdlConsumer: PdlConsumer,
-    private val safConsumer: SafConsumer,
+    private val safTemaFetcher: SafTemaFetcher,
     private val tokenFetcher: TokenFetcher,
     private val sosialHjelpInnsynUrl: String
 ) {
-    suspend fun fetchDocumentsFromSaf(user: UserPrincipal): ExternalResponse<Temaliste> = withErrorHandling(
+    suspend fun fetchDocumentsFromSaf(user: UserPrincipal): ExternalResponse<List<Tema>> = withErrorHandling(
         tjeneste = ExternalService.Saf,
-        default = Temaliste(emptyList())
+        default = emptyList()
     ) {
-        safConsumer.hentTemaer(user.ident, tokenFetcher.safToken(user))
+        safTemaFetcher.hentTemaer(user.ident, tokenFetcher.safToken(user))
     }
 
     suspend fun fetchFellesMeldekort(user: UserPrincipal): ExternalResponse<MeldekortStatus> = getMeldekort(
@@ -41,7 +41,7 @@ class ExternalContentFetcher(
         tjeneste = ExternalService.DpMeldekort
     )
 
-    suspend fun fetchDigisosSakstema(user: UserPrincipal): ExternalResponse<Temaliste> = getDigisosSakstema(
+    suspend fun fetchDigisosSakstema(user: UserPrincipal): ExternalResponse<List<Tema>> = getDigisosSakstema(
         tokenSupplier = { tokenFetcher.digisosToken(user) },
         url = "$digisosUrl/minesaker/innsendte"
     )
@@ -56,9 +56,9 @@ class ExternalContentFetcher(
     private suspend fun getDigisosSakstema(
         tokenSupplier: suspend () -> String,
         url: String
-    ): ExternalResponse<Temaliste> = withErrorHandling(
+    ): ExternalResponse<List<Tema>> = withErrorHandling(
         tjeneste = ExternalService.Digisos,
-        default = Temaliste(emptyList())
+        default = emptyList()
     ) {
         httpClient.get {
             url(url)
@@ -71,7 +71,7 @@ class ExternalContentFetcher(
                 HttpStatusCode.OK -> {
                     val response: List<DigisosInnsendtSoknadDto> = response.body()
 
-                    val temaer = response.map {
+                    response.map {
                         Tema(
                             kode = it.kode,
                             navn = it.navn,
@@ -79,8 +79,6 @@ class ExternalContentFetcher(
                             url = sosialHjelpInnsynUrl
                         )
                     }
-
-                    Temaliste(temaer)
                 }
                 else -> throw HttpStatusException(response)
             }
@@ -197,10 +195,6 @@ data class Tema(
     val sistEndret: LocalDateTime,
     val navn: String,
     val url: String
-)
-
-data class Temaliste(
-    val temaer: List<Tema>
 )
 
 class ApiException(tjeneste: ExternalService, e: Exception) :

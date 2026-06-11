@@ -1,6 +1,7 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import com.expediagroup.graphql.client.serialization.types.KotlinxGraphQLResponse
+import com.github.benmanes.caffeine.cache.Caffeine
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.timeout
@@ -16,8 +17,12 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.future.future
 import kotlinx.coroutines.withContext
 import no.nav.pdl.generated.dto.HentFoedslsdato
+import java.time.Duration
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -26,7 +31,25 @@ class PdlConsumer(
     private val pdlApiUrl: String,
     private val behandlingsNummer: String
 ) {
+    // Bruker async cache med await() for å beholde kompatibilitet med coroutines
+    private val cache = Caffeine.newBuilder()
+        .maximumSize(50000)
+        .expireAfterWrite(Duration.ofHours(3))
+        .buildAsync<String, Foedselsdato>()
+
     suspend fun hentFoedselsdato(
+        ident: String, token: String,
+    ): Foedselsdato = coroutineScope {
+        val cacheGet = cache.get(ident) { _, _ ->
+            future {
+                fetchFoedselsdato(ident, token)
+            }
+        }
+
+        cacheGet.await()
+    }
+
+    private suspend fun fetchFoedselsdato(
         ident: String, token: String,
     ): Foedselsdato {
         val response = sendQuery(
@@ -34,7 +57,6 @@ class PdlConsumer(
             accessToken = token
         )
 
-        // TODO mer utfyllende feil og logging
         if (!response.status.isSuccess()) {
             throw HttpStatusException(response)
         }

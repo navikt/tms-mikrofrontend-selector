@@ -14,6 +14,10 @@ import io.ktor.http.*
 import io.ktor.network.sockets.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.auth.*
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -21,7 +25,7 @@ import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFetcher
 import no.nav.tms.mikrofrontend.selector.collector.PdlConsumer
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
-import no.nav.tms.mikrofrontend.selector.collector.SafConsumer
+import no.nav.tms.mikrofrontend.selector.collector.SafTemaFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
 import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
@@ -190,6 +194,96 @@ internal class ApiTest {
                 body["offerStepup"].asBoolean() shouldBe false
             }
         }
+    }
+
+    @Test
+    fun `Cacher svar fra pdl ved repeterte kall`() = testApplication {
+        initSelectorApi(testident = "N/A")
+
+        val response = """{
+                "data": {
+                    "hentPerson": {
+                        "foedselsdato": [
+                            {
+                                "foedselsdato": "1990-06-01",
+                                "foedselsaar": 1990
+                            }
+                        ]
+                    }
+                }
+            }
+        """
+
+        var pdlCallCounter = 0
+
+        initExternalServices(
+            SafRoute(sakstemaer = listOf("DAG")),
+            MeldekortApiRoute(harMeldekort = true),
+            DpMeldekortRoute(),
+            DigisosRoute()
+        ) {
+            post("pdl/graphql") {
+                pdlCallCounter += 1
+                call.respondText(response, contentType = ContentType.Application.Json)
+            }
+        }
+
+        client.get("/din-oversikt").status shouldBe HttpStatusCode.OK
+        client.get("/din-oversikt").status shouldBe HttpStatusCode.OK
+        client.get("/din-oversikt").status shouldBe HttpStatusCode.OK
+
+        pdlCallCounter shouldBe 1
+    }
+
+
+    @Test
+    fun `Cacher svar fra saf ved repeterte kall`() = testApplication {
+        initSelectorApi(testident = "N/A")
+
+
+        val response = """
+{
+   "data":{
+      "dokumentoversiktSelvbetjening":{
+         "tema":[
+            {
+               "kode":"PEN",
+               "navn":"Pensjon",
+               "journalposter":[
+                  {
+                     "relevanteDatoer":[
+                        {
+                           "dato":"2020-01-01T00:11:22"
+                        }
+                     ]
+                  }
+               ]
+            }
+         ]
+      }
+   }
+}
+        """
+
+        var safCallCounter = 0
+
+        initExternalServices(
+            MeldekortApiRoute(harMeldekort = true),
+            DpMeldekortRoute(),
+            DigisosRoute(),
+            PdlRoute()
+        ) {
+            post("graphql") {
+                safCallCounter += 1
+                call.respondText(response, contentType = ContentType.Application.Json)
+            }
+        }
+
+        client.get("/din-oversikt").status shouldBe HttpStatusCode.OK
+        client.get("/din-oversikt").status shouldBe HttpStatusCode.OK
+        client.get("/din-oversikt").status shouldBe HttpStatusCode.OK
+
+        safCallCounter shouldBe 1
     }
 
     @Test
@@ -540,7 +634,7 @@ internal class ApiTest {
                     pdlApiUrl = "$testHost/pdl",
                     behandlingsNummer = "B000"
                 ),
-                safConsumer = SafConsumer(
+                safTemaFetcher = SafTemaFetcher(
                     httpClient = apiClient,
                     safUrl = testHost,
                     dokumentarkivUrl = "https://www.nav.no/dokumentarkiv/tema",

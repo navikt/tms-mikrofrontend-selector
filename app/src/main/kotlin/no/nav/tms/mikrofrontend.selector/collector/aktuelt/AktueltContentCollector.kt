@@ -38,7 +38,7 @@ class AktueltCollector(
 }
 
 class AktueltFactory(
-    val safResponse: ExternalResponse<Temaliste>,
+    val safResponse: ExternalResponse<List<Tema>>,
     val pdlResponse: ExternalResponse<Foedselsdato>,
     val levelOfAssurance: LevelOfAssurance
 ) {
@@ -51,7 +51,7 @@ class AktueltFactory(
         offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
         microfrontends = ContentDefinition.getAktueltContent(
             pdlResponse.value.calculateAge(),
-            safResponse.value.temaer,
+            safResponse.value,
             discoveryManifest,
             levelOfAssurance
         ),
