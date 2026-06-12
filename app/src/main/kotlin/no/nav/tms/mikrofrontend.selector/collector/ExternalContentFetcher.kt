@@ -10,6 +10,7 @@ import io.ktor.client.statement.request
 import io.ktor.http.*
 import no.nav.tms.token.support.user.token.verification.UserPrincipal
 import java.net.SocketTimeoutException
+import java.time.Duration
 import java.time.LocalDateTime
 
 class ExternalContentFetcher(
@@ -22,6 +23,15 @@ class ExternalContentFetcher(
     private val tokenFetcher: TokenFetcher,
     private val sosialHjelpInnsynUrl: String
 ) {
+    private val meldekortApiCache = CacheWrapper<MeldekortStatus>(
+        cacheSize = 20_000,
+        expiryDuration = Duration.ofMinutes(15)
+    )
+    private val dpMeldekortCache = CacheWrapper<MeldekortStatus>(
+        cacheSize = 20_000,
+        expiryDuration = Duration.ofMinutes(15)
+    )
+
     suspend fun fetchDocumentsFromSaf(user: UserPrincipal): ExternalResponse<List<Tema>> = withErrorHandling(
         tjeneste = ExternalService.Saf,
         default = emptyList()
@@ -29,17 +39,29 @@ class ExternalContentFetcher(
         safTemaFetcher.hentTemaer(user.ident, tokenFetcher.safToken(user))
     }
 
-    suspend fun fetchFellesMeldekort(user: UserPrincipal): ExternalResponse<MeldekortStatus> = getMeldekort(
-        tokenSupplier = { tokenFetcher.meldekortApiToken(user) },
-        url = "$meldekortApiUrl/api/person/meldekortstatus",
-        tjeneste = ExternalService.MeldekortApi
-    )
+    suspend fun fetchFellesMeldekort(user: UserPrincipal): ExternalResponse<MeldekortStatus> = withErrorHandling(
+        tjeneste = ExternalService.MeldekortApi,
+        default = MeldekortStatus(false)
+    ) {
+        meldekortApiCache.get(user.ident) {
+            getMeldekort(
+                accessToken = tokenFetcher.meldekortApiToken(user),
+                url = "$meldekortApiUrl/api/person/meldekortstatus"
+            )
+        }
+    }
 
-    suspend fun fetchDpMeldekort(user: UserPrincipal): ExternalResponse<MeldekortStatus> = getMeldekort(
-        tokenSupplier = { tokenFetcher.dpMeldekortToken(user) },
-        url = "$dpMeldekortUrl/meldekortstatus",
-        tjeneste = ExternalService.DpMeldekort
-    )
+    suspend fun fetchDpMeldekort(user: UserPrincipal): ExternalResponse<MeldekortStatus> = withErrorHandling(
+        tjeneste = ExternalService.DpMeldekort,
+        default = MeldekortStatus(false)
+    ) {
+        dpMeldekortCache.get(user.ident) {
+            getMeldekort(
+                accessToken = tokenFetcher.dpMeldekortToken(user),
+                url = "$dpMeldekortUrl/meldekortstatus"
+            )
+        }
+    }
 
     suspend fun fetchDigisosSakstema(user: UserPrincipal): ExternalResponse<List<Tema>> = getDigisosSakstema(
         tokenSupplier = { tokenFetcher.digisosToken(user) },
@@ -92,16 +114,12 @@ class ExternalContentFetcher(
     )
 
     private suspend fun getMeldekort(
-        tokenSupplier: suspend () -> String,
-        url: String,
-        tjeneste: ExternalService
-    ): ExternalResponse<MeldekortStatus> = withErrorHandling(
-        tjeneste = tjeneste,
-        default = MeldekortStatus(false)
-    ) {
-        httpClient.get {
+        accessToken: String,
+        url: String
+    ): MeldekortStatus {
+        return httpClient.get {
             url(url)
-            header(HttpHeaders.Authorization, "Bearer ${tokenSupplier()}")
+            header(HttpHeaders.Authorization, "Bearer $accessToken")
             header(HttpHeaders.Accept, ContentType.Application.Json)
             header("Nav-Consumer-Id", "min-side:tms-mikrofrontend-selector")
         }.let { response ->

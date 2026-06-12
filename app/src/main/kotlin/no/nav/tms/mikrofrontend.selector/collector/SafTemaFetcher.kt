@@ -1,7 +1,6 @@
 package no.nav.tms.mikrofrontend.selector.collector
 
 import com.expediagroup.graphql.client.serialization.types.KotlinxGraphQLResponse
-import com.github.benmanes.caffeine.cache.Caffeine
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.timeout
@@ -16,12 +15,7 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.future.await
-import kotlinx.coroutines.future.future
 import kotlinx.coroutines.withContext
 import no.nav.dokument.saf.selvbetjening.generated.dto.HentTema
 import java.time.Duration
@@ -32,22 +26,17 @@ class SafTemaFetcher(
     private val safUrl: String,
     private val dokumentarkivUrl: String
 ) {
-    // Bruker async cache med await() for å beholde kompatibilitet med coroutines
-    private val cache = Caffeine.newBuilder()
-        .maximumSize(20000)
-        .expireAfterWrite(Duration.ofMinutes(15))
-        .buildAsync<String, List<Tema>>()
+    private val cache = CacheWrapper<List<Tema>>(
+        cacheSize = 20_000,
+        expiryDuration = Duration.ofMinutes(15)
+    )
 
     suspend fun hentTemaer(
         ident: String, token: String,
-    ): List<Tema> = coroutineScope {
-        val cacheGet = cache.get(ident) { _, _ ->
-            future {
-                fetchTemaer(ident, token)
-            }
+    ): List<Tema>  {
+        return cache.get(ident) {
+            fetchTemaer(ident, token)
         }
-
-        cacheGet.await()
     }
 
     private suspend fun fetchTemaer(
