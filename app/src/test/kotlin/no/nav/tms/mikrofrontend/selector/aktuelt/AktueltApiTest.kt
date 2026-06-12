@@ -4,7 +4,6 @@ import no.nav.tms.mikrofrontend.selector.*
 import no.nav.tms.mikrofrontend.selector.objectMapper
 import no.nav.tms.mikrofrontend.selector.selectorApi
 import LocalPostgresDatabase
-import com.fasterxml.jackson.databind.JsonNode
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.ktor.client.*
@@ -21,12 +20,13 @@ import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.prometheus.metrics.model.registry.PrometheusRegistry
-import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
+import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFetcher
+import no.nav.tms.mikrofrontend.selector.collector.PdlConsumer
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
+import no.nav.tms.mikrofrontend.selector.collector.SafTemaFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
 import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
-import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
@@ -77,13 +77,13 @@ internal class AktueltApiTest {
 
             client.get("/aktuelt").let { response ->
                 response.status shouldBe HttpStatusCode.OK
-                response.bodyAsNullOrJsonNode(true).run {
-                    shouldNotBeNull()
+                response.bodyAsJson().let { body ->
+                    body.shouldNotBeNull()
 
-                    listOrNull<JsonNode>("microfrontends").run {
-                        shouldNotBeNull()
-                        size shouldBe 1
-                        find {
+                    body["microfrontends"].let {
+                        it.shouldNotBeNull()
+                        it.size() shouldBe 1
+                        it.find {
                             it["microfrontend_id"].asText() == "pensjonskalkulator-microfrontend"
                         }.let { microfrontend ->
                             microfrontend.shouldNotBeNull()
@@ -110,13 +110,12 @@ internal class AktueltApiTest {
 
             client.get("/aktuelt").let { response ->
                 response.status shouldBe HttpStatusCode.OK
-                response.bodyAsNullOrJsonNode(true).run {
-                    shouldNotBeNull()
+                response.bodyAsJson().let { body ->
+                    body.shouldNotBeNull()
 
-                    listOrNull<JsonNode>("microfrontends").run {
-                        println(this.toString())
-                        shouldNotBeNull()
-                        size shouldBe 0
+                    body["microfrontends"].let {
+                        it.shouldNotBeNull()
+                        it.size() shouldBe 0
                     }
                 }
             }
@@ -200,7 +199,7 @@ internal class AktueltApiTest {
         testApplication {
             val testident2 = "12345678912"
 
-            initSelectorApi(testident = testident2, httpClient = sockettimeoutClient)
+            initSelectorApi(testident = testident2, apiClient = sockettimeoutClient)
 
             client.get("/aktuelt").run {
                 status shouldBe HttpStatusCode.ServiceUnavailable
@@ -239,45 +238,43 @@ internal class AktueltApiTest {
     fun ApplicationTestBuilder.initSelectorApi(
         testident: String,
         testLoa: LevelOfAssurance = LevelOfAssurance.High,
-        httpClient: HttpClient? = null,
+        apiClient: HttpClient = createClient { configureClient() },
         tokenFetcher: TokenFetcher = mockk<TokenFetcher>().apply {
             coEvery { safToken(any()) } returns "<saf>"
             coEvery { pdlToken(any()) } returns "<pdl>"
         }
     ) {
-        val apiClient = httpClient ?: createClient { configureClient() }
         application {
+            val externalContentFetcher = ExternalContentFetcher(
+                httpClient = apiClient,
+                meldekortApiUrl = testHost,
+                dpMeldekortUrl = testHost,
+                digisosUrl = testHost,
+                tokenFetcher = tokenFetcher,
+                pdlConsumer = PdlConsumer(
+                    httpClient = apiClient,
+                    pdlApiUrl = "$testHost/pdl",
+                    behandlingsNummer = "B000"
+                ),
+                safTemaFetcher = SafTemaFetcher(
+                    httpClient = apiClient,
+                    safUrl = testHost,
+                    dokumentarkivUrl = "https://www.nav.no/dokumentarkiv/tema",
+                ),
+                sosialHjelpInnsynUrl = "https://www.nav.no/sosialhjelp/innsyn",
+            )
+
             selectorApi(
                 personalContentCollector = PersonalContentCollector(
                     repository = personRepository,
                     manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
-                    externalContentFecther = ExternalContentFecther(
-                        safUrl = testHost,
-                        httpClient = apiClient,
-                        meldekortApiUrl = testHost,
-                        dpMeldekortUrl = testHost,
-                        pdlUrl = "$testHost/pdl",
-                        digisosUrl = testHost,
-                        pdlBehandlingsnummer = "B000",
-                        tokenFetcher = tokenFetcher,
-                        dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
-                    ),
+                    externalContentFetcher = externalContentFetcher,
                     produktkortCounter = produktkortCounter
                 ),
                 aktueltCollector = AktueltCollector(
                     repository = personRepository,
                     manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
-                    externalContentFecther = ExternalContentFecther(
-                        safUrl = testHost,
-                        httpClient = apiClient,
-                        meldekortApiUrl = testHost,
-                        dpMeldekortUrl = testHost,
-                        pdlUrl = "$testHost/pdl",
-                        digisosUrl = testHost,
-                        pdlBehandlingsnummer = "B000",
-                        tokenFetcher = tokenFetcher,
-                        dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
-                    ),
+                    externalContentFetcher = externalContentFetcher,
                 )
             ) {
                 authentication {

@@ -79,9 +79,11 @@ class MeldekortApiRoute(private val harMeldekort: Boolean = false, httpStatusCod
            "redirectUrl": "https://www.nav.no"
         }""".trimIndent()
     else """
+        {
           "harInnsendteMeldekort": false,
           "meldekortTilUtfylling": [],
           "redirectUrl": "https://www.nav.no"
+        }
         """.trimIndent()
 }
 
@@ -171,13 +173,15 @@ class PdlRoute(
 
 
 fun ApplicationTestBuilder.initExternalServices(
-    vararg routeProviders: RouteProvider
+    vararg routeProviders: RouteProvider,
+    customRoute: Routing.() -> Unit = {}
 ) = externalServices {
     hosts(testHost) {
         routing {
             routeProviders.forEach { provider ->
                 provider.initRoute(this)
             }
+            customRoute()
         }
     }
 }

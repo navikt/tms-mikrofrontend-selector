@@ -1,0 +1,13 @@
+query($ident: String!) {
+    dokumentoversiktSelvbetjening(ident: $ident, tema:[]) {
+        tema {
+            kode
+            navn
+            journalposter{
+                relevanteDatoer {
+                    dato
+                }
+            }
+        }
+    }
+}

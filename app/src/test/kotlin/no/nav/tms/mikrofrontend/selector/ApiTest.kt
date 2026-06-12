@@ -14,16 +14,21 @@ import io.ktor.http.*
 import io.ktor.network.sockets.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.auth.*
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.prometheus.metrics.model.registry.PrometheusRegistry
-import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFecther
+import no.nav.tms.mikrofrontend.selector.collector.ExternalContentFetcher
+import no.nav.tms.mikrofrontend.selector.collector.PdlConsumer
 import no.nav.tms.mikrofrontend.selector.collector.PersonalContentCollector
+import no.nav.tms.mikrofrontend.selector.collector.SafTemaFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher
 import no.nav.tms.mikrofrontend.selector.collector.TokenFetcher.TokenFetcherException
 import no.nav.tms.mikrofrontend.selector.collector.aktuelt.AktueltCollector
-import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter.Companion.bodyAsNullOrJsonNode
 import no.nav.tms.mikrofrontend.selector.database.PersonRepository
 import no.nav.tms.mikrofrontend.selector.metrics.MicrofrontendCounter
 import no.nav.tms.mikrofrontend.selector.metrics.ProduktkortCounter
@@ -97,20 +102,20 @@ internal class ApiTest {
 
             client.get("/din-oversikt").let { response ->
                 response.status shouldBe HttpStatusCode.OK
-                response.bodyAsNullOrJsonNode(true).run {
-                    shouldNotBeNull()
-                    listOrNull<JsonNode>("microfrontends").run {
-                        shouldNotBeNull()
-                        size shouldBe 2
+                response.bodyAsJson().let { body ->
+                    body.shouldNotBeNull()
+                    body["microfrontends"].let { microfrontends ->
+                        microfrontends.shouldNotBeNull()
+                        microfrontends.size() shouldBe 2
 
-                        find {
+                        microfrontends.find {
                             it["microfrontend_id"].asText() == kafkastyrtDinOversikt.first
                         }.let { microfrontend ->
                             microfrontend.shouldNotBeNull()
                             microfrontend["url"].asText() shouldBe kafkastyrtDinOversikt.second
                         }
 
-                        find {
+                        microfrontends.find {
                             it["microfrontend_id"].asText() == kafkastyrtDinOversikt2.first
                         }.let { microfrontend ->
                             microfrontend.shouldNotBeNull()
@@ -118,10 +123,10 @@ internal class ApiTest {
                         }
                     }
 
-                    listOrNull<JsonNode>("aktuelt").run {
-                        shouldNotBeNull()
-                        size shouldBe 1
-                        find {
+                    body["aktuelt"].let {
+                        it.shouldNotBeNull()
+                        it.size() shouldBe 1
+                        it.find {
                             it["microfrontend_id"].asText() == "pensjonskalkulator-microfrontend"
                         }.let { microfrontend ->
                             microfrontend.shouldNotBeNull()
@@ -176,19 +181,109 @@ internal class ApiTest {
 
         client.get("/din-oversikt").run {
             status shouldBe HttpStatusCode.OK
-            bodyAsNullOrJsonNode(true).run {
-                shouldNotBeNull()
-                getOrNull<List<JsonNode>>("microfrontends").run {
-                    shouldNotBeNull()
-                    size shouldBe expectedMicrofrontends.size
+            bodyAsJson().let { body ->
+                body.shouldNotBeNull()
+                body["microfrontends"].let {
+                    it.shouldNotBeNull()
+                    it.size() shouldBe expectedMicrofrontends.size
                 }
-                getAll<String>("microfrontends..url")
-                list<String>("produktkort").size shouldBe 1
-                list<String>("aktuelt").size shouldBe 0
-                boolean("meldekort") shouldBe true
-                boolean("offerStepup") shouldBe false
+
+                body["produktkort"].size() shouldBe 1
+                body["aktuelt"].size() shouldBe 0
+                body["meldekort"].asBoolean() shouldBe true
+                body["offerStepup"].asBoolean() shouldBe false
             }
         }
+    }
+
+    @Test
+    fun `Cacher svar fra pdl ved repeterte kall`() = testApplication {
+        initSelectorApi(testident = "N/A")
+
+        val response = """{
+                "data": {
+                    "hentPerson": {
+                        "foedselsdato": [
+                            {
+                                "foedselsdato": "1990-06-01",
+                                "foedselsaar": 1990
+                            }
+                        ]
+                    }
+                }
+            }
+        """
+
+        var pdlCallCounter = 0
+
+        initExternalServices(
+            SafRoute(sakstemaer = listOf("DAG")),
+            MeldekortApiRoute(harMeldekort = true),
+            DpMeldekortRoute(),
+            DigisosRoute()
+        ) {
+            post("pdl/graphql") {
+                pdlCallCounter += 1
+                call.respondText(response, contentType = ContentType.Application.Json)
+            }
+        }
+
+        client.get("/din-oversikt").status shouldBe HttpStatusCode.OK
+        client.get("/din-oversikt").status shouldBe HttpStatusCode.OK
+        client.get("/din-oversikt").status shouldBe HttpStatusCode.OK
+
+        pdlCallCounter shouldBe 1
+    }
+
+
+    @Test
+    fun `Cacher svar fra saf ved repeterte kall`() = testApplication {
+        initSelectorApi(testident = "N/A")
+
+
+        val response = """
+{
+   "data":{
+      "dokumentoversiktSelvbetjening":{
+         "tema":[
+            {
+               "kode":"PEN",
+               "navn":"Pensjon",
+               "journalposter":[
+                  {
+                     "relevanteDatoer":[
+                        {
+                           "dato":"2020-01-01T00:11:22"
+                        }
+                     ]
+                  }
+               ]
+            }
+         ]
+      }
+   }
+}
+        """
+
+        var safCallCounter = 0
+
+        initExternalServices(
+            MeldekortApiRoute(harMeldekort = true),
+            DpMeldekortRoute(),
+            DigisosRoute(),
+            PdlRoute()
+        ) {
+            post("graphql") {
+                safCallCounter += 1
+                call.respondText(response, contentType = ContentType.Application.Json)
+            }
+        }
+
+        client.get("/din-oversikt").status shouldBe HttpStatusCode.OK
+        client.get("/din-oversikt").status shouldBe HttpStatusCode.OK
+        client.get("/din-oversikt").status shouldBe HttpStatusCode.OK
+
+        safCallCounter shouldBe 1
     }
 
     @Test
@@ -224,14 +319,14 @@ internal class ApiTest {
 
         client.get("/din-oversikt").run {
             status shouldBe HttpStatusCode.OK
-            bodyAsNullOrJsonNode().run {
-                shouldNotBeNull()
-                listOrNull<JsonNode>("microfrontends")?.size shouldBe 3
-                boolean("offerStepup") shouldBe false
-                list<String>("produktkort").run {
+            bodyAsJson().let { body ->
+                body.shouldNotBeNull()
+                body["microfrontends"].size() shouldBe 3
+                body["offerStepup"].asBoolean() shouldBe false
+                body["produktkort"].let {
 
-                    size shouldBe 2
-                    sorted() shouldBe expectedProduktkort.sorted()
+                    it.size() shouldBe 2
+                    it.map(JsonNode::asText).sorted() shouldBe expectedProduktkort.sorted()
                 }
             }
         }
@@ -528,37 +623,36 @@ internal class ApiTest {
     ) {
         val apiClient = httpClient ?: createClient { configureClient() }
         application {
+            val externalContentFetcher = ExternalContentFetcher(
+                httpClient = apiClient,
+                meldekortApiUrl = testHost,
+                dpMeldekortUrl = testHost,
+                digisosUrl = testHost,
+                tokenFetcher = tokenFetcher,
+                pdlConsumer = PdlConsumer(
+                    httpClient = apiClient,
+                    pdlApiUrl = "$testHost/pdl",
+                    behandlingsNummer = "B000"
+                ),
+                safTemaFetcher = SafTemaFetcher(
+                    httpClient = apiClient,
+                    safUrl = testHost,
+                    dokumentarkivUrl = "https://www.nav.no/dokumentarkiv/tema",
+                ),
+                sosialHjelpInnsynUrl = "https://www.nav.no/sosialhjelp/innsyn"
+            )
+
             selectorApi(
                 personalContentCollector = PersonalContentCollector(
                     repository = personRepository,
                     manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
-                    externalContentFecther = ExternalContentFecther(
-                        safUrl = testHost,
-                        httpClient = apiClient,
-                        meldekortApiUrl = testHost,
-                        dpMeldekortUrl = testHost,
-                        pdlUrl = "$testHost/pdl",
-                        digisosUrl = testHost,
-                        pdlBehandlingsnummer = "B000",
-                        tokenFetcher = tokenFetcher,
-                        dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
-                    ),
+                    externalContentFetcher = externalContentFetcher,
                     produktkortCounter = produktkortCounter
                 ),
                 aktueltCollector = AktueltCollector(
                     repository = personRepository,
                     manifestStorage = ManifestsStorage(gcpStorage.storage, LocalGCPStorage.testBucketName),
-                    externalContentFecther = ExternalContentFecther(
-                        safUrl = testHost,
-                        httpClient = apiClient,
-                        meldekortApiUrl = testHost,
-                        dpMeldekortUrl = testHost,
-                        pdlUrl = "$testHost/pdl",
-                        digisosUrl = testHost,
-                        pdlBehandlingsnummer = "B000",
-                        tokenFetcher = tokenFetcher,
-                        dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dag")),
-                    ),
+                    externalContentFetcher = externalContentFetcher,
                 )
             ) {
                 authentication {

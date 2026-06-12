@@ -16,7 +16,7 @@ import no.nav.tms.token.support.user.token.verification.UserPrincipal
 class AktueltCollector(
     val repository: PersonRepository,
     val manifestStorage: ManifestsStorage,
-    val externalContentFecther: ExternalContentFecther,
+    val externalContentFetcher: ExternalContentFetcher,
 ) {
 
     suspend fun getAktuelt(user: UserPrincipal): AktueltResponse {
@@ -25,8 +25,8 @@ class AktueltCollector(
     }
 
     suspend fun asyncCollector(user: UserPrincipal) = coroutineScope {
-        val safResponse = async { externalContentFecther.fetchDocumentsFromSaf(user) }
-        val pdlResponse = async { externalContentFecther.fetchPersonOpplysninger(user) }
+        val safResponse = async { externalContentFetcher.fetchDocumentsFromSaf(user) }
+        val pdlResponse = async { externalContentFetcher.fetchFoedselsdato(user) }
 
         AktueltFactory(
             safResponse = safResponse.await(),
@@ -38,8 +38,8 @@ class AktueltCollector(
 }
 
 class AktueltFactory(
-    val safResponse: SafResponse,
-    val pdlResponse: PdlResponse,
+    val safResponse: ExternalResponse<List<Tema>>,
+    val pdlResponse: ExternalResponse<Foedselsdato>,
     val levelOfAssurance: LevelOfAssurance
 ) {
 
@@ -50,26 +50,26 @@ class AktueltFactory(
     ) = AktueltResponse(
         offerStepup = microfrontends?.offerStepup(levelOfAssurance) ?: false,
         microfrontends = ContentDefinition.getAktueltContent(
-            pdlResponse.calculateAge(),
-            safResponse.dokumenter,
+            pdlResponse.value.calculateAge(),
+            safResponse.value,
             discoveryManifest,
             levelOfAssurance
-        )
-
-    ).apply {
+        ),
         errors = listOf(
             safResponse,
             pdlResponse,
-        ).mapNotNull { it.errorMessage() }.joinToString()
-    }
+        )
+            .filter { it.isError }
+            .joinToString()
+    )
 }
 
 class AktueltResponse(
     val offerStepup: Boolean,
-    val microfrontends: List<MicrofrontendsDefinition>
-) {
+    val microfrontends: List<MicrofrontendsDefinition>,
     @JsonIgnore
-    var errors: String? = null
+    var errors: String?
+) {
 
     fun resolveStatus(): HttpStatusCode =
         if (errors.isNullOrEmpty()) HttpStatusCode.OK else HttpStatusCode.ServiceUnavailable

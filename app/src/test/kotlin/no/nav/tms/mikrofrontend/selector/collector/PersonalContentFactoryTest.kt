@@ -4,8 +4,6 @@ import io.kotest.matchers.shouldBe
 import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.tms.mikrofrontend.selector.DokumentarkivUrlResolver
-import no.nav.tms.mikrofrontend.selector.collector.json.JsonPathInterpreter
 import no.nav.tms.mikrofrontend.selector.database.Microfrontends
 import no.nav.tms.mikrofrontend.selector.versions.Discovery
 import no.nav.tms.mikrofrontend.selector.versions.DiscoveryManifest
@@ -15,7 +13,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 class PersonalContentFactoryTest {
-    val dokumentarkivUrlResolver = DokumentarkivUrlResolver(generellLenke = "https://www.nav.no", temaspesifikkeLenker = mapOf("DAG" to "https://www.nav.no/dokumentarkiv/dagpenger"))
 
     @Test
     fun `Skal være tom`() {
@@ -34,8 +31,15 @@ class PersonalContentFactoryTest {
     @Test
     fun `skal ha microfrontends og produktkort innlogingsnivå 4`() {
         testFactory(
-            safResponse = SafResponse(listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now()))),
-            digisosResponse = DigisosResponse(listOf(Dokument(kode = "KOM", navn = "Sosialhjelp", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now()))),
+            safResponse = ExternalResponse.ok(
+                service = ExternalService.Saf,
+                value = listOf(Tema("DAG", navn = "Dagpenger", url = "https://www.intern.dev.nav.no/dokumentarkiv/tema", sistEndret = LocalDateTime.now())),
+            ),
+            digisosResponse = ExternalResponse.ok(
+                service = ExternalService.Digisos,
+                value = listOf(Tema(kode = "KOM", navn = "Sosialhjelp", url = "https://www.nav.no", sistEndret = LocalDateTime.now()))
+
+            ),
         ).build(
             microfrontends = microfrontendMocck(level4Microfrontends = MicrofrontendsDefinition("id", "url", "appname", "namespace", "fallback", true) * 5),
             levelOfAssurance = LevelOfAssurance.High,
@@ -51,7 +55,7 @@ class PersonalContentFactoryTest {
     @Test
     fun `skal ha returstatus 207 pga SAF`() {
         testFactory(
-            safResponse = SafResponse(emptyList(), listOf("Saf feilet fordi det gikk feil")),
+            safResponse = ExternalResponse.error(emptyList(), ExternalService.Saf, "Saf feilet fordi det gikk feil"),
         ).build(
             microfrontends = Microfrontends(),
             levelOfAssurance = LevelOfAssurance.High,
@@ -67,7 +71,7 @@ class PersonalContentFactoryTest {
     @Test
     fun `skal ha produkkort og aia-standard og 207 pga meldekort`() {
         testFactory(
-            meldekortApiResponse = MeldekortResponse(errors = "Feil som skjedde")
+            meldekortApiResponse = ExternalResponse.error(MeldekortStatus(false), ExternalService.MeldekortApi, "Feil som skjedde")
         ).build(
             microfrontends = Microfrontends(),
             levelOfAssurance = LevelOfAssurance.High,
@@ -84,11 +88,14 @@ class PersonalContentFactoryTest {
     @Test
     fun `skal ha produkkort, ny-aia, meldekort og microfrontends`() {
         testFactory(
-            safResponse = SafResponse(
-                dokumenter = listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now())),
-                errors = emptyList()
+            safResponse = ExternalResponse.ok(
+                service = ExternalService.Saf,
+                value = listOf(Tema("DAG", navn = "Dagpenger", url = "https://www.intern.dev.nav.no/dokumentarkiv/tema", sistEndret = LocalDateTime.now())),
             ),
-            meldekortApiResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{}")),
+            meldekortApiResponse = ExternalResponse.ok(
+                service = ExternalService.MeldekortApi,
+                value = MeldekortStatus(false)
+            )
         ).build(
             microfrontends = microfrontendMocck(
                 level4Microfrontends = MicrofrontendsDefinition("id", "url", "appname", "namespace", "fallback", true) * 5,
@@ -110,9 +117,9 @@ class PersonalContentFactoryTest {
     fun `skal ha microfrontends men ikke produktkort innloggingsnivå 3`() {
         // er både aia og meldekort nivå 4? Hva med produktkort?
         testFactory(
-            safResponse = SafResponse(
-                listOf(Dokument("DAG", navn = "Dagpenger", dokumentarkivUrlResolver = dokumentarkivUrlResolver, sistEndret = LocalDateTime.now())),
-                emptyList()
+            safResponse = ExternalResponse.ok(
+                service = ExternalService.Saf,
+                value = listOf(Tema("DAG", navn = "Dagpenger", url = "https://www.intern.dev.nav.no/dokumentarkiv/tema", sistEndret = LocalDateTime.now())),
             )
         ).build(
             microfrontendMocck(
@@ -137,11 +144,11 @@ private operator fun MicrofrontendsDefinition.times(i: Int): List<Microfrontends
 
 
 private fun testFactory(
-    safResponse: SafResponse = SafResponse(emptyList(), emptyList()),
-    meldekortApiResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{meldekort:0}")),
-    dpMeldekortResponse: MeldekortResponse = MeldekortResponse(JsonPathInterpreter.initPathInterpreter("{etterregistrerteMeldekort:0}")),
-    pdlResponse: PdlResponse = PdlResponse(LocalDate.parse("1988-09-08"), 1988),
-    digisosResponse: DigisosResponse = DigisosResponse(),
+    safResponse: ExternalResponse<List<Tema>> = ExternalResponse.ok(ExternalService.Saf, emptyList()),
+    meldekortApiResponse: ExternalResponse<MeldekortStatus> = ExternalResponse.ok(ExternalService.MeldekortApi, MeldekortStatus(false)),
+    dpMeldekortResponse: ExternalResponse<MeldekortStatus> = ExternalResponse.ok(ExternalService.DpMeldekort, MeldekortStatus(false)),
+    pdlResponse: ExternalResponse<Foedselsdato> = ExternalResponse.ok(ExternalService.Pdl, Foedselsdato(LocalDate .parse("1988-09-08"), 1988)),
+    digisosResponse: ExternalResponse<List<Tema>> = ExternalResponse.ok(ExternalService.Digisos, emptyList()),
     levelOfAssurance: LevelOfAssurance = LevelOfAssurance.High
 ) =
     PersonalContentFactory(
