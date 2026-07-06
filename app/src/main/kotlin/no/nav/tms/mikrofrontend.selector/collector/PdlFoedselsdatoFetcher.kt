@@ -17,9 +17,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.future.await
-import kotlinx.coroutines.future.future
 import kotlinx.coroutines.withContext
 import no.nav.pdl.generated.dto.HentFoedslsdato
 import java.time.Duration
@@ -32,21 +29,17 @@ class PdlConsumer(
     private val behandlingsNummer: String
 ) {
     // Bruker async cache med await() for å beholde kompatibilitet med coroutines
-    private val cache = Caffeine.newBuilder()
-        .maximumSize(50000)
-        .expireAfterWrite(Duration.ofHours(3))
-        .buildAsync<String, Foedselsdato>()
+    private val cache = CacheWrapper<Foedselsdato>(
+        cacheSize = 50_000,
+        expiryDuration = Duration.ofHours(3)
+    )
 
     suspend fun hentFoedselsdato(
         ident: String, token: String,
-    ): Foedselsdato = coroutineScope {
-        val cacheGet = cache.get(ident) { _, _ ->
-            future {
-                fetchFoedselsdato(ident, token)
-            }
+    ): Foedselsdato {
+        return cache.get(ident) {
+            fetchFoedselsdato(ident, token)
         }
-
-        cacheGet.await()
     }
 
     private suspend fun fetchFoedselsdato(
