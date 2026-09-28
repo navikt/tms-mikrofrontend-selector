@@ -51,7 +51,7 @@ spec:
   gcp:
     sqlInstances:
       - name: microfrontend
-        type: POSTGRES_14
+        type: POSTGRES_18
         tier: db-custom-1-4096
         diskType: SSD
         diskSize: 10
