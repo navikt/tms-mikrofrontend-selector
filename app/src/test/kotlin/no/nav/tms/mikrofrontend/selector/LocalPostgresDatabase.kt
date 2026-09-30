@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 class LocalPostgresDatabase private constructor() : Database {
 
     private val memDataSource: HikariDataSource
-    private val container = PostgreSQLContainer("postgres:14.5")
+    private val container = PostgreSQLContainer("postgres:18")
 
     companion object {
         private val instance by lazy {
