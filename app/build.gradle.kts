@@ -96,7 +96,7 @@ tasks {
 // Generates graphql schemas for SAF
 val graphqlDownloadSafSdl by tasks.register("graphqlDownloadSafSdl", GraphQLDownloadSDLTask::class) {
 
-    outputFile.set(file("${getLayout().buildDirectory}/graphql/saf.graphql"))
+    outputFile.set(layout.buildDirectory.file("graphql/saf.graphql"))
     endpoint.set("https://navikt.github.io/safselvbetjening/schema.graphqls")
     timeoutConfig.set(TimeoutConfiguration(connect = 10_000, read = 30_000))
 }
@@ -114,7 +114,7 @@ val generateSafClient by tasks.register("generateSafClient", GraphQLGenerateClie
 
 // Generates graphql schemas for PDL
 val graphqlDownloadPdlSdl by tasks.register("graphqlDownloadPdlSdl", GraphQLDownloadSDLTask::class) {
-    outputFile.set(file("${getLayout().buildDirectory}/graphql/pdl.graphql"))
+    outputFile.set(layout.buildDirectory.file("graphql/pdl.graphql"))
     endpoint.set("https://navikt.github.io/pdl/pdl-api-sdl.graphqls")
     timeoutConfig.set(TimeoutConfiguration(connect = 10_000, read = 30_000))
 }
