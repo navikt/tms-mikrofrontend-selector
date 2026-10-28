@@ -16,6 +16,9 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("managed") {
             from("no.nav.tms:tms-dependency-admin:20261027.8.1")
+            library("kotlin-reflect","org.jetbrains.kotlin","kotlin-reflect").versionRef("kotlin")
+            library("jackson-yaml","com.fasterxml.jackson.dataformat","jackson-dataformat-yaml").versionRef("jacksonDatatype")
+
         }
     }
 }
