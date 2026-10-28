@@ -5,11 +5,9 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm").version(Kotlin.version)
-
-    id(GraphQL.pluginId) version GraphQL.version
-
-    id(TmsJarBundling.plugin)
+    kotlin("jvm").version(managed.versions.kotlin)
+    alias(managed.plugins.tms.jarBundling)
+    alias(libs.plugins.graphql)
 
     application
 }
@@ -29,50 +27,39 @@ repositories {
 }
 
 dependencies {
-    implementation(Caffeine.caffeine)
-    implementation(Flyway9.core)
-    implementation(Hikari.cp)
-    implementation(GraphQL.kotlinClient)
-    implementation(GraphQL.kotlinKtorClient)
-    implementation(KotlinLogging.logging)
-    implementation(Ktor.Server.core)
-    implementation(Ktor.Server.netty)
-    implementation(Ktor.Server.contentNegotiation)
-    implementation(Ktor.Client.contentNegotiation)
-    implementation(Ktor.Server.auth)
-    implementation(Ktor.Server.authJwt)
-    implementation(Ktor.Server.statusPages)
-    implementation(Ktor.Serialization.jackson)
-    implementation(Logstash.logbackEncoder)
-    implementation(TmsKtorTokenSupport.userTokenVerification)
-    implementation(TmsKtorTokenSupport.userTokenExchange)
-    implementation(Postgresql.postgresql)
-    implementation(KotliQuery.kotliquery)
-    implementation(KotlinLogging.logging)
-    implementation(TmsCommonLib.metrics)
-    implementation(TmsCommonLib.observability)
-    implementation(TmsCommonLib.utils)
-    implementation(TmsCommonLib.teamLogger)
-    implementation(GoogleCloud.storage)
-    implementation(Kotlinx.coroutines)
-    implementation(Kotlin.reflect)
-    implementation(JacksonExt.dataformatYaml)
-    implementation(JacksonDatatype.datatypeJsr310)
-    implementation(TmsKafkaTools.kafkaApplication)
-    implementation(Prometheus.metricsCore)
-    implementation(JacksonJsonPath.core)
+    implementation(libs.caffeine)
+    implementation(managed.bundles.database)
+    implementation(managed.kotliQuery)
+    implementation(managed.kotlinLogging)
+    implementation(managed.bundles.ktorServer)
+    implementation(managed.ktor.serialization.jackson)
+    implementation(managed.ktor.client.contentNegotiation)
+    implementation(managed.logback.encoder)
+    implementation(managed.tms.ktorTokenSupport.userToken.verification)
+    implementation(managed.tms.ktorTokenSupport.userToken.exchange)
+    implementation(managed.tms.commonLib.observability)
+    implementation(managed.tms.commonLib.utils)
+    implementation(managed.tms.commonLib.metrics)
+    implementation(managed.tms.commonLib.teamLogger)
+    implementation(managed.kotlinx.coroutines)
+    implementation(managed.kotlin.reflect)
+    implementation(managed.bundles.jackson)
+    implementation(managed.jackson.yaml)
+    implementation(managed.tms.kafka.application)
+    implementation(managed.prometheus.metric.core)
+    implementation(libs.jsonpathKt)
+    implementation(libs.graphql.kotlinClient)
+    implementation(libs.graphql.ktorKotlinClient)
+    implementation(libs.google.cloud.storage)
 
-    testImplementation(JunitPlatform.launcher)
-    testImplementation(JunitJupiter.api)
-    testImplementation(JunitJupiter.engine)
-    testImplementation(JunitJupiter.params)
-    testImplementation(TestContainers.postgresql)
-    testImplementation(Kotest.runnerJunit5)
-    testImplementation(Kotest.assertionsCore)
-    testImplementation(Ktor.Test.serverTestHost)
-    testImplementation(TmsKtorTokenSupport.userTokenVerificationMock)
-    testImplementation(Mockk.mockk)
-    testImplementation(Ktor.Test.clientMock)
+    testImplementation(managed.bundles.junit)
+    testImplementation(managed.junit.params)
+    testImplementation(managed.bundles.testContainers)
+    testImplementation(managed.bundles.kotest)
+    testImplementation(managed.ktor.test.server)
+    testImplementation(managed.ktor.test.clientMock)
+    testImplementation(managed.tms.ktorTokenSupport.userToken.verificationMock)
+    testImplementation(managed.mockk)
 
     testImplementation(project(":lib"))
 
@@ -96,7 +83,7 @@ tasks {
 // Generates graphql schemas for SAF
 val graphqlDownloadSafSdl by tasks.register("graphqlDownloadSafSdl", GraphQLDownloadSDLTask::class) {
 
-    outputFile.set(file("${getLayout().buildDirectory}/graphql/saf.graphql"))
+    outputFile.set(layout.buildDirectory.file("graphql/saf.graphql"))
     endpoint.set("https://navikt.github.io/safselvbetjening/schema.graphqls")
     timeoutConfig.set(TimeoutConfiguration(connect = 10_000, read = 30_000))
 }
@@ -114,7 +101,7 @@ val generateSafClient by tasks.register("generateSafClient", GraphQLGenerateClie
 
 // Generates graphql schemas for PDL
 val graphqlDownloadPdlSdl by tasks.register("graphqlDownloadPdlSdl", GraphQLDownloadSDLTask::class) {
-    outputFile.set(file("${getLayout().buildDirectory}/graphql/pdl.graphql"))
+    outputFile.set(layout.buildDirectory.file("graphql/pdl.graphql"))
     endpoint.set("https://navikt.github.io/pdl/pdl-api-sdl.graphqls")
     timeoutConfig.set(TimeoutConfiguration(connect = 10_000, read = 30_000))
 }
