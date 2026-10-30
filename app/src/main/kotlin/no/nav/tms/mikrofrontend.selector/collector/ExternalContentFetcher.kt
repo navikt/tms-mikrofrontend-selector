@@ -114,7 +114,7 @@ class ExternalContentFetcher(
                         harMeldekort = response.meldekortTilUtfylling.isNotEmpty()
                     )
                 }
-                HttpStatusCode.NotFound -> MeldekortStatus(
+                HttpStatusCode.NotFound, HttpStatusCode.NoContent -> MeldekortStatus(
                     harMeldekort = false
                 )
                 else -> throw HttpStatusException(response)
