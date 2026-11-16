@@ -45,6 +45,8 @@ spec:
           namespace: teamdigisos
         - application: dp-meldekortregister
           namespace: teamdagpenger
+        - application: dp-meldekort
+          namespace: teamdagpenger
         - application: logging
           namespace: nais-system
       external:
@@ -94,9 +96,9 @@ spec:
     - name: MELDEKORT_API_CLIENT_ID
       value: dev-gcp:meldekort:meldekort-api-q2
     - name: DP_MELDEKORT_URL
-      value: http://dp-meldekortregister.teamdagpenger
+      value: http://dp-meldekort.teamdagpenger
     - name: DP_MELDEKORT_CLIENT_ID
-      value: dev-gcp:teamdagpenger:dp-meldekortregister
+      value: dev-gcp:teamdagpenger:dp-meldekort
     - name: PDL_API_URL
       value: "https://pdl-api.dev-fss-pub.nais.io"
     - name: PDL_API_CLIENT_ID
