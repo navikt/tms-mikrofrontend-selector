@@ -26,13 +26,26 @@ jobs:
       - name: 'Henter manifestfil'
         run:  gcloud storage cp gs://microfrontend-manifest-dev/manifests-v2.json manifests-v2.json
       - name : 'Oppdater fil'
-        run:  python3 update-manifests-v2.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }} ${{ github.event.client_payload.appname }} ${{ github.event.client_payload.namespace }} ${{ github.event.client_payload.fallback }} ${{ github.event.client_payload.ssr }}
+        env:
+          MF_ID: ${{ github.event.client_payload.id }}
+          MF_URL: ${{ github.event.client_payload.url }}
+          MF_APPNAME: ${{ github.event.client_payload.appname }}
+          MF_NAMESPACE: ${{ github.event.client_payload.namespace }}
+          MF_FALLBACK: ${{ github.event.client_payload.fallback }}
+          MF_SSR: ${{ github.event.client_payload.ssr }}
+        run: python3 update-manifests-v2.py "$MF_ID" "$MF_URL" "$MF_APPNAME" "$MF_NAMESPACE" "$MF_FALLBACK" "$MF_SSR"
       - name: 'Last opp til bucket'
         run: gcloud storage cp manifests-v2.json gs://microfrontend-manifest-dev
       - name: 'info'
+        env:
+          MF_INITIATOR: ${{ github.event.client_payload.initiator }}
+          MF_ID: ${{ github.event.client_payload.id }}
+          MF_URL: ${{ github.event.client_payload.url }}
+          MF_SSR: ${{ github.event.client_payload.ssr }}
+          MF_COMMITMSG: ${{ github.event.client_payload.commitmsg }}
         run: |
-          echo '${{ github.event.client_payload.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload.url }} og ssr ${{ github.event.client_payload.ssr }}'
-          echo 'commitmessage: ${{ github.event.client_payload.commitmsg }}'
+          printf '%s har oppdaterert manifestfil for id %s med url %s og ssr %s\n' "$MF_INITIATOR" "$MF_ID" "$MF_URL" "$MF_SSR"
+          printf 'commitmessage: %s\n' "$MF_COMMITMSG"
 
   update-prod-manifest:
     concurrency: prod-manifest
@@ -54,12 +67,25 @@ jobs:
       - name: 'Henter manifestfil'
         run: gcloud storage cp gs://microfrontend-manifest-prod/manifests-v2.json manifests-v2.json
       - name: 'Oppdater fil'
-        run:  python3 update-manifests-v2.py ${{ github.event.client_payload.id }} ${{ github.event.client_payload.url }} ${{ github.event.client_payload.appname }} ${{ github.event.client_payload.namespace }} ${{ github.event.client_payload.fallback }} ${{ github.event.client_payload.ssr }}
+        env:
+          MF_ID: ${{ github.event.client_payload.id }}
+          MF_URL: ${{ github.event.client_payload.url }}
+          MF_APPNAME: ${{ github.event.client_payload.appname }}
+          MF_NAMESPACE: ${{ github.event.client_payload.namespace }}
+          MF_FALLBACK: ${{ github.event.client_payload.fallback }}
+          MF_SSR: ${{ github.event.client_payload.ssr }}
+        run: python3 update-manifests-v2.py "$MF_ID" "$MF_URL" "$MF_APPNAME" "$MF_NAMESPACE" "$MF_FALLBACK" "$MF_SSR"
       - name: 'Last opp til bucket'
         run: gcloud storage cp manifests-v2.json gs://microfrontend-manifest-prod
       - name: 'info'
+        env:
+          MF_INITIATOR: ${{ github.event.client_payload.initiator }}
+          MF_ID: ${{ github.event.client_payload.id }}
+          MF_URL: ${{ github.event.client_payload.url }}
+          MF_SSR: ${{ github.event.client_payload.ssr }}
+          MF_COMMITMSG: ${{ github.event.client_payload.commitmsg }}
         run: |
-          echo '${{ github.event.client_payload.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload.url }} og ssr ${{ github.event.client_payload.ssr }}'
-          echo 'commitmessage: ${{ github.event.client_payload.commitmsg }}'
+          printf '%s har oppdaterert manifestfil for id %s med url %s og ssr %s\n' "$MF_INITIATOR" "$MF_ID" "$MF_URL" "$MF_SSR"
+          printf 'commitmessage: %s\n' "$MF_COMMITMSG"
 
 

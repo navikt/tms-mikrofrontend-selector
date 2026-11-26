@@ -40,17 +40,30 @@ jobs:
       - name: 'Henter manifestfil'
         run:  gcloud storage cp gs://microfrontend-manifest-dev/manifests.json manifests.json
       - name : 'oppdater fil'
-        run:  python3 update-manifests.py ${{ inputs.id }} ${{ inputs.url }}
+        env:
+          MF_ID: ${{ inputs.id }}
+          MF_URL: ${{ inputs.url }}
+        run: python3 update-manifests.py "$MF_ID" "$MF_URL"
       - name: 'Last opp til bucket'
         run: gcloud storage cp manifests.json gs://microfrontend-manifest-dev
       - name: 'info'
-        run: echo '${{ github.actor }} har oppdaterert manifestfil for id ${{ inputs.id }} med url ${{ inputs.url }}'
+        env:
+          MF_INITIATOR: ${{ github.actor }}
+          MF_ID: ${{ inputs.id }}
+          MF_URL: ${{ inputs.url }}
+        run: |
+          printf '%s har oppdaterert manifestfil for id %s med url %s\n' "$MF_INITIATOR" "$MF_ID" "$MF_URL"
       - name: 'Sjekk oppdatering'
         run: gcloud storage cp gs://microfrontend-manifest-dev/manifests.json manifests.json && cat manifests.json
       - name: 'info'
+        env:
+          MF_INITIATOR: ${{ github.actor }}
+          MF_ID: ${{ inputs.id }}
+          MF_URL: ${{ inputs.url }}
+          MF_COMMITMSG: ${{ inputs.commitmsg }}
         run: |
-         echo '${{ inputs.initiator }} har oppdaterert manifestfil for id ${{ github.event.client_payload.id }} med url ${{ github.event.client_payload.url }}'
-         echo ${{ inputs.commitmsg }}
+          printf '%s har oppdaterert manifestfil for id %s med url %s\n' "$MF_INITIATOR" "$MF_ID" "$MF_URL"
+          printf '%s\n' "$MF_COMMITMSG"
 
 
 #  update-prod-manifest:
